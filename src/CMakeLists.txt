@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-MESSAGE(STATUS "configured ${CMAKE_CURRENT_SOURCE_DIR}/awsversion.cpp.in --> ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp")
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/awsversion.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp)
+MESSAGE(STATUS "configured ${CMAKE_CURRENT_SOURCE_DIR}/awsversion.cpp.in --> ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -40,6 +40,9 @@ ENDFOREACH (SRCS)
 
 ADD_LIBRARY(aws SHARED ${AWS_SRCS})
 TARGET_LINK_LIBRARIES(aws ${requiredlibs})
+
+SET_TARGET_PROPERTIES(aws PROPERTIES VERSION ${LIBAWS_MAJOR_VERSION}.${LIBAWS_MINOR_VERSION}.${LIBAWS_PATCH_VERSION})
+SET_TARGET_PROPERTIES(aws PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 
 
 # install the library

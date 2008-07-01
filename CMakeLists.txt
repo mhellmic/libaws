@@ -64,3 +64,19 @@ ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(bin)
 ADD_SUBDIRECTORY(fuse)
 ADD_SUBDIRECTORY(doc)
+
+# add the uninstall support
+CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMakeUninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake"
+    @ONLY)
+MESSAGE(STATUS "configured ${CMAKE_CURRENT_SOURCE_DIR}/CMakeUninstall.cmake.in --> ${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake")
+ADD_CUSTOM_TARGET(uninstall
+    "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake")
+
+INCLUDE(InstallRequiredSystemLibraries)
+
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CPackSourceConfig.cmake.in 
+               ${CMAKE_BINARY_DIR}/CPackSourceConfig.cmake)
+MESSAGE(STATUS "configured ${CMAKE_SOURCE_DIR}/CPackSourceConfig.cmake.in --> ${CMAKE_BINARY_DIR}/CPackSourceConfig.cmake")
+
