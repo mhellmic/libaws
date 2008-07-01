@@ -284,6 +284,9 @@ public:
     const long long 
     getContentLength() const {  return theContentLength; }
 
+    const std::string&
+    getContentType() const { return theContentType; }
+
     const Time&
     getLastModified() const { return theLastModified; }
 
@@ -296,6 +299,7 @@ protected:
     long long         theContentLength;
     CurlStreamBuffer* theStreamBuffer;
     std::istream*     theInputStream;
+    std::string       theContentType;
     Time              theLastModified;
     bool              theIsModified;
 };

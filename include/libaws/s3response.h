@@ -200,6 +200,9 @@ namespace aws {
       virtual const long long
       getContentLength() const;
 
+      virtual const std::string&
+      getContentType() const;
+
     private:
       friend class S3ConnectionImpl;
       GetResponse(s3::GetResponse*);

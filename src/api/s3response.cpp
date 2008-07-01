@@ -247,6 +247,12 @@ namespace aws {
     return theS3Response->getContentLength();
   }
 
+  const std::string&
+  GetResponse::getContentType() const
+  {
+    return theS3Response->getContentType();
+  }
+
   /**
    * HeadResponse
    */

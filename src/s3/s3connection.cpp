@@ -221,11 +221,13 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
     lWrapper.destroyParser();
     curl_free(lEscapedPrefixChar);
     curl_free(lEscapedMarkerChar);
+    curl_free(lEscapedDelimiterChar);
     throw e;
   }
   lWrapper.destroyParser();
   curl_free(lEscapedPrefixChar);
   curl_free(lEscapedMarkerChar);
+  curl_free(lEscapedDelimiterChar);
 
   if ( ! lRes->isSuccessful() )
     throw ListBucketException( lRes->theS3ResponseError );
@@ -776,6 +778,8 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
       lGetResponse->theIsModified = false;
     } else if ( lTmp.find("Content-Length:") != std::string::npos) {
       lGetResponse->theContentLength = atoll(lTmp.c_str() + 16);
+    } else if ( lTmp.find("Content-Type:") != std::string::npos) {
+      lGetResponse->theContentType = lTmp.substr(14, lTmp.length());
     }
     
   } else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes))) {

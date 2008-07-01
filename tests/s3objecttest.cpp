@@ -119,7 +119,8 @@ getobject(S3Connection* lS3Rest)
 
       std::istream& lInStream = lGet->getInputStream();
 
-      std::cout << "content length: " << lGet->getContentLength() << std::endl;
+      std::cout << "content-length: " << lGet->getContentLength() << std::endl;
+      std::cout << "content-type: " << lGet->getContentType() << std::endl;
 
       char lBuf[lGet->getContentLength()+1];
       size_t lRead = lInStream.readsome(lBuf, lGet->getContentLength());
