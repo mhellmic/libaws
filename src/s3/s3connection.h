@@ -93,6 +93,7 @@ namespace aws {
           const std::string& aKey,
           std::istream& aObject,
           const std::string& aContentType,
+          const std::map<std::string, std::string>* aMetaDataMap,
           long aSize);
 
       PutResponse*
@@ -100,6 +101,7 @@ namespace aws {
           const std::string& aKey,
           const char* aObject, 
           const std::string& aContentType,
+          const std::map<std::string, std::string>* aMetaDataMap,
           long aSize);
 
       GetResponse*

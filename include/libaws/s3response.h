@@ -17,6 +17,7 @@
 #define AWS_S3RESPONSE_API_H
 
 #include <vector>
+#include <map>
 #include <string>
 #include <libaws/common.h>
 
@@ -196,6 +197,9 @@ namespace aws {
       virtual std::istream&
       getInputStream() const;
 
+      virtual const long long
+      getContentLength() const;
+
     private:
       friend class S3ConnectionImpl;
       GetResponse(s3::GetResponse*);
@@ -208,6 +212,9 @@ namespace aws {
 
       virtual const std::string&
       getBucketName() const;
+
+      virtual const std::map<std::string, std::string>&
+      getMetaData() const;
 
     private:
       friend class S3ConnectionImpl;

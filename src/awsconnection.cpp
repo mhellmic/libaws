@@ -26,7 +26,6 @@
 
 namespace aws { 
 
-std::string AWSConnection::METADATA_PREFIX 		      = "x-amz-meta-";
 std::string AWSConnection::AMAZON_HEADER_PREFIX 	  = "x-amz-";
 std::string AWSConnection::ALTERNATIVE_DATE_HEADER  = "x-amz-date";
     

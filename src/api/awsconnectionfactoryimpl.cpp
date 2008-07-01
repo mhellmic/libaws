@@ -61,11 +61,11 @@ AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()
 void
 AWSConnectionFactoryImpl::shutdown()
 {
-  theIsInitialized = false;
   if ( ! theInitializationFailed ) {
     xmlCleanupParser();
     curl_global_cleanup();
   }
+  theIsInitialized = false;
 }
 
 std::string

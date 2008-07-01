@@ -241,6 +241,12 @@ namespace aws {
     return theS3Response->getInputStream();
   }
 
+  const long long
+  GetResponse::getContentLength() const
+  {
+    return theS3Response->getContentLength();
+  }
+
   /**
    * HeadResponse
    */
@@ -251,6 +257,12 @@ namespace aws {
   HeadResponse::getBucketName() const
   {
     return theS3Response->getBucketName();
+  }
+
+  const std::map<std::string, std::string>&
+  HeadResponse::getMetaData() const
+  {
+    return theS3Response->getMetaData();
   }
 
   /**

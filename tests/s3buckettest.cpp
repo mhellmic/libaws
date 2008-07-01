@@ -91,7 +91,7 @@ listbuckettest(S3Connection* lS3Rest)
 {
   {
     try {
-      ListBucketResponsePtr lListBucket = lS3Rest->listBucket("28msec_s3buckettest", "", "", 10);
+      ListBucketResponsePtr lListBucket = lS3Rest->listBucket("28msec_s3buckettest");
       std::cout << "Listing Buckets:" << std::endl;
       ListBucketResponse::Object lObject;
       lListBucket->open();

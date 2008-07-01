@@ -16,6 +16,7 @@
 #include "common.h"
 
 #include <time.h>
+#include <cassert>
 
 #include "s3/s3handler.h"
 #include "s3/s3response.h"

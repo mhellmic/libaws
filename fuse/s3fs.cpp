@@ -18,6 +18,7 @@
 #include <string.h>
 #include <iostream>
 #include <vector>
+#include <sys/stat.h>
 
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION  26
@@ -26,46 +27,74 @@
 
 using namespace aws;
 
-static const char  *file_path      = "/s3.txt";
-static const char   file_content[] = "S3 World!\n";
-static const size_t file_size      = sizeof(file_content)/sizeof(char) - 1;
 
 static AWSConnectionFactory* theFactory;
 static char* theAccessKeyId;
 static char* theSecretAccessKey;
 
-static int
-s3_getattr(const char *path, struct stat *stbuf)
-{
-    memset(stbuf, 0, sizeof(struct stat));
-
-    if (strcmp(path, "/") == 0) { /* The root directory of our file system. */
-        stbuf->st_mode = S_IFDIR | 0755;
-        stbuf->st_nlink = 3;
-    } else if (strcmp(path, file_path) == 0) { /* The only file we have. */
-        stbuf->st_mode = S_IFREG | 0444;
-        stbuf->st_nlink = 1;
-        stbuf->st_size = file_size;
-    } else { /* We reject everything else. */
-        return -ENOENT;
-    }
-
-    return 0;
+/**
+ * accessor and release functions for S3 Connection objects
+ */
+static S3ConnectionPtr getConnection() {
+  return theFactory->createS3Connection(theAccessKeyId, theSecretAccessKey);
 }
 
-//static int
-//s3_open(const char *path, struct fuse_file_info *fi)
-//{
-//    if (strcmp(path, file_path) != 0) { /* We only recognize one file. */
-//        return -ENOENT;
-//    }
-//
-//    if ((fi->flags & O_ACCMODE) != O_RDONLY) { /* Only reading allowed. */
-//        return -EACCES;
-//    }
-//
-//    return 0;
-//}
+static void releaseConnection(const S3ConnectionPtr& aConnection) {
+}
+
+/**
+ * macro that should be used to exit a function
+ * it releases the connection object used in the function and returns with the given return code
+ */
+#define S3FS_EXIT(code) \
+  releaseConnection(lCon); \
+  return code;
+
+/**
+ * macros that should be used for try-catch combinations
+ */
+#define S3FS_TRY try {
+
+#ifndef NDEBUG
+#  define S3FS_CATCH(kind) \
+    } catch (kind ## Exception & s3Exception) { \
+      std::cerr << s3Exception.what() << std::endl; \
+      S3FS_EXIT(-ENOENT); \
+    } catch (AWSConnectionException & conException) { \
+      std::cerr << conException.what() << std::endl; \
+      S3FS_EXIT(-ECONNREFUSED); \
+    }
+#else
+#  define S3FS_CATCH(kind) \
+    } catch (kind ## Exception & s3Exception) { \
+      std::cerr << s3Exception.what() << std::endl; \
+      S3FS_EXIT(-ENOENT); \
+    } catch (AWSConnectionException & conException) { \
+      std::cerr << conException.what() << std::endl; \
+      S3FS_EXIT(-ECONNREFUSED); \
+    }
+#endif
+
+
+/**
+ * File open operation.
+ * Open should check if the operation is permitted for the given flags. 
+ */
+static int
+s3_open(const char *path, struct fuse_file_info *fi)
+{
+#ifndef NDEBUG
+  std::cerr << "s3_open; path: " << path << std::endl;
+#endif
+
+  S3ConnectionPtr lCon = getConnection();
+
+  HeadResponsePtr lRes;
+  S3FS_TRY
+    lRes = lCon->head("msb", path);
+  S3FS_CATCH(Head)
+  S3FS_EXIT(0);
+}
 
 static int
 s3_readdir(const char *path,
@@ -74,67 +103,158 @@ s3_readdir(const char *path,
            off_t offset,
            struct fuse_file_info *fi)
 {
-    S3ConnectionPtr lConnection = theFactory->createS3Connection(theAccessKeyId, theSecretAccessKey);
+  fprintf(stderr, "readdir path: '%s'\n", path);
 
-    filler(buf, ".", NULL, 0);           /* Current directory (.)  */
-    filler(buf, "..", NULL, 0);          /* Parent directory (..)  */
-    try {
-      ListBucketResponsePtr lRes = lConnection->listBucket("msb", path, "/", "/", -1);
+  S3ConnectionPtr lCon = getConnection();
+
+  filler(buf, ".", NULL, 0);           /* Current directory (.)  */
+  filler(buf, "..", NULL, 0);          /* Parent directory (..)  */
+
+  // TODO handle full buffer by remember the marker
+  // TODO provide metadata
+  // TODO catch connection exception
+  // TODO return error code if an exception is thrown
+
+  ListBucketResponsePtr lRes;
+  try {
+    std::string lMarker;
+    do {
+      lRes = lCon->listBucket("msb", path, lMarker, "/", -1);
       lRes->open();
       ListBucketResponse::Object o;
       while (lRes->next(o)) {
-        filler(buf, o.KeyValue.c_str(), NULL, 0);
+        struct stat lStat;
+        lStat.st_mode |= S_IFREG;
+        lStat.st_size = o.Size;
+        std::string lTmp = o.KeyValue.replace(0, strlen(path), "");
+        filler(buf, lTmp.c_str(), &lStat, 0);
+        lMarker = o.KeyValue;
       }
       lRes->close();
-      std::vector<std::string> lCommonPrefixes = lRes->getCommonPrefixes();
-      for (std::vector<std::string>::const_iterator lIter = lCommonPrefixes.begin();
-           lIter != lCommonPrefixes.end(); ++lIter) {
-        filler(buf, (*lIter).c_str(), NULL, 0);
-      }
-    } catch (ListBucketException &e) {
-      std::cerr << e.what() << std::endl;
+    } while (lRes->isTruncated());
+
+    std::vector<std::string> lCommonPrefixes = lRes->getCommonPrefixes();
+    for (std::vector<std::string>::const_iterator lIter = lCommonPrefixes.begin();
+         lIter != lCommonPrefixes.end(); ++lIter) {
+      fprintf(stderr, "common prefix: '%s'\n", (*lIter).c_str());
+      std::string lTmp = (*lIter);
+      lTmp.replace(0, strlen(path), "");
+      lTmp.erase(lTmp.length()-1);
+      struct stat lStat;
+      lStat.st_mode |= S_IFDIR | S_IFREG;
+      filler(buf, lTmp.c_str(), &lStat, 0);
     }
+  } catch (ListBucketException &e) {
+    std::cerr << e.what() << std::endl;
+    S3FS_EXIT(-ENOENT);
+  }
 
-
-    return 0;
+  S3FS_EXIT(0);
 }
 
-//static int
-//s3_read(const char *path, char *buf, size_t size, off_t offset,
-//           struct fuse_file_info *fi)
-//{
-//    if (strcmp(path, file_path) != 0) {
-//        return -ENOENT;
-//    }
-//
-//    if (offset >= file_size) { /* Trying to read past the end of file. */
-//        return 0;
-//    }
-//
-//    if (offset + size > file_size) { /* Trim the read to the file size. */
-//        size = file_size - offset;
-//    }
-//
-//    memcpy(buf, file_content + offset, size); /* Provide the content. */
-//
-//    return size;
-//}
+static int
+s3_getattr(const char *path, struct stat *stbuf)
+{
+  fprintf(stderr, "getattr path: '%s'\n", path);
+
+  S3ConnectionPtr lCon = getConnection();
+  memset(stbuf, 0, sizeof(struct stat));
+
+  HeadResponsePtr lRes;
+  try {
+    lRes = lCon->head("msb", path);
+    return 0;
+  } catch (HeadException &e) {
+    std::cerr << e.what() << std::endl;
+    S3FS_EXIT(-ENOENT);
+  }
+
+    if (strcmp(path, "/") == 0) { /* The root directory of our file system. */
+        stbuf->st_mode = S_IFDIR | 0755;
+        stbuf->st_nlink = 3;
+    } else if (strcmp(path, "/test1") == 0) { /* The only file we have. */
+        stbuf->st_mode = S_IFREG | 0444;
+        stbuf->st_nlink = 1;
+    } else if (strcmp(path, "/tmp") == 0) {
+        stbuf->st_mode = S_IFDIR | 0777;
+        stbuf->st_nlink = 1;
+    } else { /* We reject everything else. */
+      S3FS_EXIT(-ENOENT);
+    }
+
+    S3FS_EXIT(0);
+}
+
+static bool test123 = false;
+
+static int
+s3_read(const char *path, char *buf, size_t size, off_t offset,
+        struct fuse_file_info *fi)
+{
+  fprintf(stderr, "read path: '%s'\n", path);
+
+  S3ConnectionPtr lCon = getConnection();
+  memcpy(buf, "test\n", 5); /* Provide the content. */
+
+  if (!test123) {
+    GetResponsePtr lRes;
+    try {
+      lRes = lCon->get("msb", path);
+    } catch (GetException &e) {
+      std::cerr << e.what() << std::endl;
+      S3FS_EXIT(-ENOENT);
+    }
+
+    test123 = true;
+    S3FS_EXIT(5);
+  } else {
+    releaseConnection(lCon);
+    S3FS_EXIT(0);
+  }
+}
+
+static int
+s3_release(const char *path, struct fuse_file_info *fi)
+{
+  fprintf(stderr, "release path: '%s'\n", path);
+
+  S3ConnectionPtr lCon = getConnection();
+  S3FS_EXIT(0);
+}
+
+static int
+s3_opendir(const char *path, struct fuse_file_info *fi)
+{
+  fprintf(stderr, "opendir: '%s'\n", path);
+
+  S3ConnectionPtr lCon = getConnection();
+  S3FS_EXIT(0);
+}
+
+
+
 
 static struct fuse_operations s3_filesystem_operations;
-//    .open    = s3_open,    /* To enforce read-only access.       */
-//    .read    = s3_read,    /* To provide file content.           */
-
 
 int
 main(int argc, char **argv)
 {
-  s3_filesystem_operations.readdir = s3_readdir;
-  s3_filesystem_operations.getattr = s3_getattr;
+  // set callback functions
+  s3_filesystem_operations.readdir    = s3_readdir;
+  s3_filesystem_operations.getattr    = s3_getattr;
+  s3_filesystem_operations.open       = s3_open;
+  s3_filesystem_operations.read       = s3_read;
+  s3_filesystem_operations.release    = s3_release;
+  s3_filesystem_operations.getattr    = s3_getattr;
+  s3_filesystem_operations.opendir    = s3_opendir;
 
+
+  // initialization
   theFactory = AWSConnectionFactory::getInstance();
 
   theAccessKeyId = getenv("AWS_ACCESS_KEY");
   theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
 
+  // let's get started
   return fuse_main(argc, argv, &s3_filesystem_operations, NULL);
 }

@@ -65,6 +65,24 @@ put(S3Connection* lS3Rest)
       return 1;
     }
   }
+
+  {
+    try {
+      std::istringstream lStream("This is a meta-data test!");
+      
+      std::map<std::string, std::string> lMetaData;
+      lMetaData.insert(std::pair<std::string, std::string>("name", "value"));
+
+      PutResponsePtr lPut = lS3Rest->put("28msec_s3buckettest", "a/b/c",
+                                         lStream, "text/plain", &lMetaData);
+ 
+      std::cout << "Object sent successfully" << std::endl;
+    } catch (PutException& e) {
+  		std::cerr << "Couldn't put object" << std::endl;
+  		std::cerr << e.what() << std::endl;
+      return 1;
+    }
+  }
   return 0;
 }
 
@@ -73,7 +91,7 @@ listbucket(S3Connection* lS3Rest)
 {
   {
     try {
-      ListBucketResponsePtr lListBucket = lS3Rest->listBucket("28msec_s3buckettest", "", "", 10);
+      ListBucketResponsePtr lListBucket = lS3Rest->listBucket("28msec_s3buckettest");
       std::cout << "Listing Buckets:" << std::endl;
       ListBucketResponse::Object lObject;
       lListBucket->open();
@@ -101,8 +119,10 @@ getobject(S3Connection* lS3Rest)
 
       std::istream& lInStream = lGet->getInputStream();
 
-      char lBuf[20];
-      size_t lRead = lInStream.readsome(lBuf, 20);
+      std::cout << "content length: " << lGet->getContentLength() << std::endl;
+
+      char lBuf[lGet->getContentLength()+1];
+      size_t lRead = lInStream.readsome(lBuf, lGet->getContentLength());
       lBuf[lRead] = 0;
 
       std::cout.write (lBuf, lRead);

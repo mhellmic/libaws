@@ -41,10 +41,6 @@ namespace aws {
 
       ListBucketResponsePtr
       listBucket(const std::string& aBucketName, const std::string& aPrefix, 
-                 const std::string& aMarker, int aMaxKeys);
-
-      ListBucketResponsePtr
-      listBucket(const std::string& aBucketName, const std::string& aPrefix, 
                  const std::string& aMarker, const std::string& aDelimiter, int aMaxKeys);
 
       PutResponsePtr
@@ -52,14 +48,16 @@ namespace aws {
           const std::string& aKey,
           std::istream& aData,
           const std::string& aContentType,
-          long aSize);
+          const std::map<std::string, std::string>* aMetaDataMap = 0,
+          long aSize = -1);
 
       PutResponsePtr
       put(const std::string& aBucketName,
           const std::string& aKey,
           const char* aData,
           const std::string& aContentType,
-          long aSize);
+          long aSize,
+          const std::map<std::string, std::string>* aMetaDataMap = 0);
 
       GetResponsePtr
       get(const std::string& aBucketName, const std::string& aKey);

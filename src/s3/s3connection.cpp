@@ -18,6 +18,7 @@
 #include <memory>
 #include <curl/curl.h>
 #include <openssl/hmac.h>
+#include <cassert>
 
 #include "requestheadermap.h"
 #include "response.h"
@@ -254,6 +255,7 @@ S3Connection::put(const std::string& aBucketName,
                   const std::string& aKey,
                   std::istream& aObject,
                   const std::string& aContentType,
+                  const std::map<std::string, std::string>* aMetaDataMap,
                   long aSize)
 {
   std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
@@ -289,7 +291,17 @@ S3Connection::put(const std::string& aBucketName,
       lObject.theContentLength = aSize;
     }
 
-    makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+    if (aMetaDataMap) {
+      RequestHeaderMap lRequestHeaderMap;
+      for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
+           lIter != aMetaDataMap->end(); ++lIter) {
+        lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+      }
+
+      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+    } else {
+      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+    }
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
@@ -310,6 +322,7 @@ S3Connection::put(const std::string& aBucketName,
                   const std::string& aKey,
                   const char* aObject,
                   const std::string& aContentType,
+                  const std::map<std::string, std::string>* aMetaDataMap,
                   long aSize)
 {
   std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
@@ -676,7 +689,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
           break;
         }
         lBuf[lRead] = 0;
-        //std::cout.write (lBuf, lRead);
+        //std::cerr.write (lBuf, lRead);
         xmlParseChunk(aCallBackWrapper->theParserCtxt, lBuf, lRead, 0);
       }
       xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);      
@@ -708,7 +721,7 @@ S3Connection::getS3Data(void *ptr, size_t size, size_t nmemb, void *data)
 
   char* lChars = static_cast<char*>(ptr);
 
-  std::cout.write(lChars, size*nmemb);
+  std::cerr.write(lChars, size*nmemb);
 
   // this guarantees to read the input in chunks as they come in
   // by libxml; we always read as much as is in the buffer
@@ -741,26 +754,31 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
     lRes->theAmazonId = lTmp.substr(12, lTmp.size());
   } else if (lTmp.find("x-amz-request-id:") != std::string::npos) {
     lRes->theRequestId = lTmp.substr(18, lTmp.size());
-  }
-  else if ((lGetResponse = dynamic_cast<GetResponse*>(lRes)))
-  {
-    if (lTmp.find("Last-Modified:") != std::string::npos)
-    {
-      
+  } else if (lTmp.find("x-amz-meta-") != std::string::npos) {
+    size_t lEndOfName = lTmp.find_first_of(":");
+    assert (lEndOfName != std::string::npos);
+    std::string lName = lTmp.substr(11, lEndOfName);
+    std::string lValue = lTmp.substr(lEndOfName+1, lTmp.length());
+#ifndef NDEBUG
+    std::cout << "Metadata name " << lName << std::endl;
+    std::cout << "Metadata value " << lValue << std::endl;
+#endif
+    lRes->theMetaData.insert(std::pair<std::string, std::string>(lName, lValue));
+  } else if ((lGetResponse = dynamic_cast<GetResponse*>(lRes))) {
+    if (lTmp.find("Last-Modified:") != std::string::npos) {
       // parse a time string of the following format: Fri, 09 Nov 2007 13:05:49 GMT
       Time t(lTmp.c_str()+15);
       lGetResponse->theLastModified = t;
 
-    } else if ( lTmp.find("304") != std::string::npos ) 
-    {
+    } else if ( lTmp.find("304") != std::string::npos ) {
       // not modified (returned when using If-Modified-Since or If-Non-Match)
       lGetResponse->theIsSuccessful = true;
       lGetResponse->theIsModified = false;
+    } else if ( lTmp.find("Content-Length:") != std::string::npos) {
+      lGetResponse->theContentLength = atoll(lTmp.c_str() + 16);
     }
     
-  }
-  else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes)))
-  {
+  } else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes))) {
     if (lTmp.find("Location:") != std::string::npos) {
       lCreateResponse->theLocation = lTmp.substr(10, lTmp.find_last_of('"') - 10);
     }

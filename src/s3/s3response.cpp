@@ -166,7 +166,7 @@ namespace aws { namespace s3 {
     GetResponse::GetResponse ( const std::string& aBucketName, const std::string& aKey )
         : theBucketName ( aBucketName ),
           theKey ( aKey ),
-          theContentSize ( 0 ),
+          theContentLength ( 0 ),
           theStreamBuffer( 0 ),
           theInputStream( 0 ),
           theIsModified(true)

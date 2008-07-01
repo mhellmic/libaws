@@ -49,7 +49,7 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
   try {
     do
     {
-      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker, aDelimiter, aMaxKeys==0?-1:aMaxKeys);
+      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker, aDelimiter, aMaxKeys);
       lListBucket->open();
       while (lListBucket->next(lObject)) {
         std::cout << "   Key: " << lObject.KeyValue << " | Last Modified: " << lObject.LastModified;
@@ -78,7 +78,7 @@ bool deleteAllEntries(S3ConnectionPtr aS3, std::string aBucketName)
   try {
     do
     {
-      lListBucket = aS3->listBucket(aBucketName, "", lMarker, 255);
+      lListBucket = aS3->listBucket(aBucketName, "", lMarker);
       lListBucket->open();
       while (lListBucket->next(lObject)) {
         DeleteResponsePtr lDelete = aS3->del(aBucketName, lObject.KeyValue);
@@ -118,7 +118,7 @@ bool deleteBucket ( S3ConnectionPtr aS3, const std::string& aBucketName) {
   return true;
 }
 
-bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string aFileName )
+bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string aFileName, const std::string aKey )
 {
   try {
     std::ifstream lInStream(aFileName.c_str());
@@ -126,7 +126,7 @@ bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
       std::cerr << "file not found or accessible: " << aFileName << std::endl;
       return false;
     }
-    PutResponsePtr lPut = aS3->put(aBucketName, aFileName, lInStream, "text/plain");
+    PutResponsePtr lPut = aS3->put(aBucketName, aKey.length()==0?aFileName:aKey, lInStream, "text/plain");
   } catch (PutException &e) {
     std::cerr << e.what() << std::endl;
     return false;
@@ -146,18 +146,19 @@ main ( int argc, char** argv )
   char* lAccessKeyId = 0;
   char* lSecretAccessKey = 0;
   char* lFileName = 0;
+  char* lKey = 0;
   int c;
   opterr = 0;
 
   AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
 
-  while ((c = getopt (argc, argv, "hika:n:f:p:mx:d:")) != -1)
+  while ((c = getopt (argc, argv, "hik:a:n:f:p:mx:d:s:")) != -1)
     switch (c)
     {
       case 'i':
         lAccessKeyId = optarg;
         break;
-      case 'k':
+      case 's':
         lSecretAccessKey = optarg;
         break;
       case 'a':
@@ -181,11 +182,14 @@ main ( int argc, char** argv )
       case 'f':
         lFileName = optarg;
         break;
+      case 'k':
+        lKey = optarg;
+        break;
       case 'h': {
         std::cout << "libaws version " << lFactory->getVersion() << std::endl;
         std::cout << "Usage: s3 <options>" << std::endl;
         std::cout << "  -i: AWS Access Key Id"  << std::endl;
-        std::cout << "  -k: AWS Secret Access Key"  << std::endl;
+        std::cout << "  -s: AWS Secret Access Key"  << std::endl;
         std::cout << "  -a action: action to perform" << std::endl;
         std::cout << "             list: list all buckets" << std::endl;
         std::cout << "             create: create a bucket" << std::endl;
@@ -198,6 +202,7 @@ main ( int argc, char** argv )
         std::cout << "  -m marker: marker for entries to list"  << std::endl;
         std::cout << "  -d delimiter: delimiter of keys to list" << std::endl;
         std::cout << "  -x maxkeys: maximum number of keys to list" << std::endl;
+        std::cout << "  -k key: key of the object" << std::endl;
         exit(1);
       }
       case '?':
@@ -225,7 +230,7 @@ main ( int argc, char** argv )
   }
   if (!lSecretAccessKey) {
     std::cerr << "No Secret Access Key given" << std::endl;
-    std::cerr << "Either use -k as a command line argument or set AWS_SECRET_ACCESS_KEY as an environmental variable" << std::endl;
+    std::cerr << "Either use -s as a command line argument or set AWS_SECRET_ACCESS_KEY as an environmental variable" << std::endl;
     exit(1);
   }
 
@@ -262,7 +267,7 @@ main ( int argc, char** argv )
       exit(1);
     }
     listBucket(lS3Rest, lBucketName, lPrefix==0?"":lPrefix, lMarker==0?"":lMarker,  
-               lDelimiter==0?"":lDelimiter, lMaxKeys);
+               lDelimiter==0?"":lDelimiter, lMaxKeys==0?-1:lMaxKeys);
   } else if ( lActionString.compare ( "delete-all-entries" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;
@@ -281,7 +286,7 @@ main ( int argc, char** argv )
       std::cerr << "Use -f as a command line argument" << std::endl;
       exit(1);
     }
-    put(lS3Rest, lBucketName, lFileName);
+    put(lS3Rest, lBucketName, lFileName, lKey==0?"":lKey);
   }
 
 }

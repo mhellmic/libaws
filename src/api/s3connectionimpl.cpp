@@ -41,14 +41,6 @@ namespace aws {
 
   ListBucketResponsePtr
   S3ConnectionImpl::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
-                               const std::string& aMarker, int aMaxKeys)
-  {
-    return new ListBucketResponse(theConnection->listBucket(aBucketName, aPrefix,
-                                                            aMarker, aMaxKeys));
-  }
-
-  ListBucketResponsePtr
-  S3ConnectionImpl::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
                                const std::string& aMarker, const std::string& aDelimiter,
                                int aMaxKeys)
   {
@@ -61,9 +53,10 @@ namespace aws {
                         const std::string& aKey,
                         std::istream& aData,
                         const std::string& aContentType,
+                        const std::map<std::string, std::string>* aMetaDataMap,
                         long aSize)
   {
-    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aSize));
+    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize));
   }
 
   PutResponsePtr
@@ -71,9 +64,10 @@ namespace aws {
                         const std::string& aKey,
                         const char* aData,
                         const std::string& aContentType,
-                        long aSize)
+                        long aSize,
+                        const std::map<std::string, std::string>* aMetaDataMap)
   {
-    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aSize));
+    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize));
   }
 
   GetResponsePtr

@@ -94,12 +94,16 @@ namespace aws { namespace s3  {
     const std::string&
     getAmazonId() const  { return theAmazonId; }
 
+    const std::map<std::string, std::string>&
+    getMetaData() const { return theMetaData; }
+
   protected:
-    S3ResponseError theS3ResponseError;
-    std::string     theRequestId;
-    std::string     theETag;
-    std::string     theDate;
-    std::string     theAmazonId;
+    S3ResponseError                     theS3ResponseError;
+    std::string                         theRequestId;
+    std::string                         theETag;
+    std::string                         theDate;
+    std::string                         theAmazonId;
+    std::map<std::string, std::string>  theMetaData;
   };
 
 class CreateBucketResponse : public S3Response
@@ -277,6 +281,9 @@ public:
     std::istream&
     getInputStream() const {  return *theInputStream; }
 
+    const long long 
+    getContentLength() const {  return theContentLength; }
+
     const Time&
     getLastModified() const { return theLastModified; }
 
@@ -286,7 +293,7 @@ public:
 protected:
     std::string       theBucketName;
     std::string       theKey;
-    size_t            theContentSize;
+    long long         theContentLength;
     CurlStreamBuffer* theStreamBuffer;
     std::istream*     theInputStream;
     Time              theLastModified;
@@ -296,6 +303,7 @@ protected:
 class HeadResponse : public S3Response
 {
     friend class HeadHandler;
+    friend class S3Connection;
 public:
     HeadResponse(const std::string& aBucketName);
     virtual ~HeadResponse();

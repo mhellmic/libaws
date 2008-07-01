@@ -39,6 +39,7 @@ namespace aws {
   
   void Time::setUp(const std::string& aDateTime, const std::string& aFormat) {
     struct tm aTm;
+    memset(&aTm, 0, sizeof(aTm));
     char* lParseResult = strptime(aDateTime.c_str(), aFormat.c_str(), &aTm);
     assert(lParseResult);
     theTime = mktime(&aTm);

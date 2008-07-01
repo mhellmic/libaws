@@ -17,6 +17,7 @@
 #define AWS_S3_S3CONNECTION_API_H
 
 #include <istream>
+#include <map>
 #include <libaws/common.h>
 
 namespace aws {
@@ -64,63 +65,35 @@ namespace aws {
        *          was delete.
        *
        * \throws DeleteBucketException 
+       * \throws aws::AWSConnectionException if a connection error occured.
        */
       virtual DeleteBucketResponsePtr
       deleteBucket(const std::string& aBucketName) = 0;
 
-      /*! \brief Lists touples from a bucket
+      /*! \brief List information about the objects in a given bucket.
        *
-       * This function lists touples from a bucket on S3. The name and some
-       * parameters to configure the query are passed to this function.
-       * Normally, not all queried tuples are returned. Thus, the response contains 
-       * a marker that is the key of the last returned tuple. This mark can be used
-       * to make an additional query for all tuples with are lexically located after
-       * the marker.
+       * For more information see http://docs.amazonwebservices.com/AmazonS3/2006-03-01/ and
+       * http://docs.amazonwebservices.com/AmazonS3/2006-03-01/ListingKeysRequest.html.
        *
        * @param aBucketName The name of the bucket.
-       * @param aPrefix Only tuples that have a key with this prefix are returned.
-       * @param aMarker key of the last returned tuple, empty string is equivalent
-       *                to no marker
-       * @param aMaxKeys Maxium amount of returned tuples
+       * @param aPrefix Limits the response to keys which begin with the indicated prefix.
+       * @param aMarker Indicates where in the bucket to begin listing. 
+       *                The list will only include keys that occur lexicographically after marker.
+       * @param aMaxKeys The maximum number of keys you'd like to see in the response body.
+       * @param aDelimiter Causes keys that contain the same string between the prefix and the first occurrence 
+       *                   of the delimiter to be rolled up the CommonPrefixes set in the Response.
        *
        * @returns aws::s3::ListBucketRespose
        *
        * \throws ListBucketException
+       * \throws aws::AWSConnectionException if a connection error occured.
        */
       virtual ListBucketResponsePtr
       listBucket(const std::string& aBucketName, 
-                 const std::string& aPrefix, 
-                 const std::string& aMarker, 
-                 int aMaxKeys) = 0;
-
-      /*! \brief Lists touples from a bucket
-       *
-       * This function lists touples from a bucket on S3. The name and some
-       * parameters to configure the query are passed to this function.
-       * Normally, not all queried tuples are returned. Thus, the response contains 
-       * a marker that is the key of the last returned tuple. This mark can be used
-       * to make an additional query for all tuples with are lexically located after
-       * the marker.
-       *
-       * @param aBucketName The name of the bucket.
-       * @param aPrefix Only tuples that have a key with this prefix are returned.
-       * @param aMarker key of the last returned tuple, empty string is equivalent
-       *                to no marker
-       * @param aDelimiter Causes keys that contain the same string between the prefix 
-       *                   and the first occurrence of the delimiter to be rolled up into
-       *                   a single result element in the CommonPrefixes collection. 
-       * @param aMaxKeys Maxium amount of returned tuples
-       *
-       * @returns aws::s3::ListBucketRespose
-       *
-       * \throws ListBucketException
-       */
-      virtual ListBucketResponsePtr
-      listBucket(const std::string& aBucketName, 
-                 const std::string& aPrefix, 
-                 const std::string& aMarker, 
-                 const std::string& aDelimiter,
-                 int aMaxKeys) = 0;
+                 const std::string& aPrefix ="", 
+                 const std::string& aMarker ="", 
+                 const std::string& aDelimiter = "",
+                 int aMaxKeys = -1) = 0;
 
       /*! \brief Put an object on S3.
        *
@@ -142,6 +115,7 @@ namespace aws {
           const std::string& aKey,
           std::istream& aData,
           const std::string& aContentType,
+          const std::map<std::string, std::string>* aMetaDataMap = 0,
           long aSize = -1) = 0;
 
 
@@ -163,7 +137,8 @@ namespace aws {
            const std::string& aKey,
            const char* aData,
            const std::string& aContentType,
-           long aSize) = 0;
+           long aSize,
+           const std::map<std::string, std::string>* aMetaDataMap = 0) = 0;
 
       /*! \brief Receive an object from S3.
        *
