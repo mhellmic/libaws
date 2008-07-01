@@ -1,0 +1,15 @@
+libaws - A Amazon Web Services C++ Library
+Copyright 2008 28msec, Inc.
+
+   See LICENSE.txt for license information.
+
+   This product includes software developed at
+   28msec, Inc. (http://www.28msec.com/).
+
+This software depends / makes use of:
+
+     * LIBXML2 (http://xmlsoft.org/ ) 
+
+     * CURL (http://curl.haxx.se/)
+
+     * OpenSSL (http://www.openssl.org/)
