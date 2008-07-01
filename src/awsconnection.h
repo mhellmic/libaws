@@ -32,7 +32,6 @@ class AWSConnection {
 
 protected:   
     friend class RequestHeaderMap;
-    static std::string METADATA_PREFIX;
     static std::string AMAZON_HEADER_PREFIX;
     static std::string ALTERNATIVE_DATE_HEADER;
     static uint8_t  MAX_REQUESTS;

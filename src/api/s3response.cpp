@@ -247,6 +247,12 @@ namespace aws {
     return theS3Response->getContentLength();
   }
 
+  const std::map<std::string, std::string>&
+  GetResponse::getMetaData() const
+  {
+    return theS3Response->getMetaData();
+  }
+
   const std::string&
   GetResponse::getContentType() const
   {

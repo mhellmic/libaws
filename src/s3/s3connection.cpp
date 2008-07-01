@@ -300,7 +300,7 @@ S3Connection::put(const std::string& aBucketName,
         lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
       }
 
-      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+      makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject); 
     } else {
       makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
     }
@@ -666,7 +666,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, lSList);
 
-  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+//  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
 
   if (++theNumberOfRequests >= MAX_REQUESTS) {
     curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");      
@@ -723,7 +723,7 @@ S3Connection::getS3Data(void *ptr, size_t size, size_t nmemb, void *data)
 
   char* lChars = static_cast<char*>(ptr);
 
-  std::cerr.write(lChars, size*nmemb);
+//  std::cerr.write(lChars, size*nmemb);
 
   // this guarantees to read the input in chunks as they come in
   // by libxml; we always read as much as is in the buffer
@@ -757,14 +757,10 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
   } else if (lTmp.find("x-amz-request-id:") != std::string::npos) {
     lRes->theRequestId = lTmp.substr(18, lTmp.size());
   } else if (lTmp.find("x-amz-meta-") != std::string::npos) {
-    size_t lEndOfName = lTmp.find_first_of(":");
+    size_t lEndOfName = lTmp.find_first_of(":")+1;
     assert (lEndOfName != std::string::npos);
-    std::string lName = lTmp.substr(11, lEndOfName);
+    std::string lName = lTmp.substr(11, lTmp.length() - lEndOfName-3);
     std::string lValue = lTmp.substr(lEndOfName+1, lTmp.length());
-#ifndef NDEBUG
-    std::cout << "Metadata name " << lName << std::endl;
-    std::cout << "Metadata value " << lValue << std::endl;
-#endif
     lRes->theMetaData.insert(std::pair<std::string, std::string>(lName, lValue));
   } else if ((lGetResponse = dynamic_cast<GetResponse*>(lRes))) {
     if (lTmp.find("Last-Modified:") != std::string::npos) {

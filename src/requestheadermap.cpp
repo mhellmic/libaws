@@ -73,8 +73,8 @@ RequestHeaderMap::getHeaderStringToSign(std::stringstream* aStringToSign)
 {
     requestmap_t lInterestMap;
  
-    for (requestmapiter_t lIter = theMap.begin(); lIter != theMap.end(); ++lIter)
-    {
+    for (requestmapiter_t lIter = theMap.begin(); lIter != theMap.end(); ++lIter) {
+
         std::string lHashKey = (*lIter).first;
         std::transform(lHashKey.begin(), lHashKey.end(), lHashKey.begin(), (int(*)(int)) std::tolower);
         
@@ -135,15 +135,14 @@ RequestHeaderMap::getHeaderStringToSign(std::stringstream* aStringToSign)
 void
 RequestHeaderMap::trim(std::string& aStr)
 {
-    std::string::size_type lPos = aStr.find_last_not_of(' ');
-    if(lPos != std::string::npos)
-    {
-        aStr.erase(lPos + 1);
-        lPos = aStr.find_first_not_of(' ');
-        if(lPos != std::string::npos) aStr.erase(0, lPos);
-    }
-    else
-        aStr.erase(aStr.begin(), aStr.end());
+ std::string::size_type lPos = aStr.find_last_not_of(' ');
+ if(lPos != std::string::npos) {
+   aStr.erase(lPos + 1);
+   lPos = aStr.find_first_not_of(' ');
+   if(lPos != std::string::npos) aStr.erase(0, lPos);
+ }
+ else
+   aStr.erase(aStr.begin(), aStr.end());
 }
 
 
@@ -152,17 +151,15 @@ RequestHeaderMap::replaceString(const std::string& aSearchString,
                                 const std::string& aReplaceString, 
                                 std::string& aStringToReplace)
 {
-        std::string::size_type lPos = aStringToReplace.find(aSearchString, 0);
-        int intLengthSearch = aSearchString.length();
-
-        while(std::string::npos != lPos)
-        {
-                aStringToReplace.replace(lPos, intLengthSearch, aReplaceString);
-                lPos = aStringToReplace.find(aSearchString, lPos + intLengthSearch);
-        }
+  std::string::size_type lPos = aStringToReplace.find(aSearchString, 0);
+  int intLengthSearch = aSearchString.length();
+  
+  while(std::string::npos != lPos) {
+    aStringToReplace.replace(lPos, intLengthSearch, aReplaceString);
+    lPos = aStringToReplace.find(aSearchString, lPos + intLengthSearch);
+  }
 }
 
-// TODO should not know anything about curl; export iterator?
 void
 RequestHeaderMap::addHeadersToCurlSList(struct curl_slist*& aSList)
 {

@@ -121,16 +121,21 @@ getobject(S3Connection* lS3Rest)
 
       std::cout << "content-length: " << lGet->getContentLength() << std::endl;
       std::cout << "content-type: " << lGet->getContentType() << std::endl;
+      std::cout << "ETag " << lGet->getETag() << std::endl;
 
       char lBuf[lGet->getContentLength()+1];
       size_t lRead = lInStream.readsome(lBuf, lGet->getContentLength());
       lBuf[lRead] = 0;
 
       std::cout.write (lBuf, lRead);
-
       std::cout << std::endl << "Object retrieved successfully" << std::endl;
 
-      std::cout << "ETag " << lGet->getETag() << std::endl;
+      std::map<std::string, std::string> lMap = lGet->getMetaData();
+      for (std::map<std::string, std::string>::const_iterator lIter = lMap.begin();
+           lIter != lMap.end(); ++lIter) {
+        std::cout << "Meta-data name: " << (*lIter).first << " value: " << (*lIter).second << std::endl;
+      }
+
     
     } catch (GetException& e) {
       std::cerr << "Could get object" << std::endl;
