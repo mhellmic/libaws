@@ -25,7 +25,6 @@ CREATE_TEST_SOURCELIST(s3tests
 ADD_EXECUTABLE(s3tests ${s3tests})
 TARGET_LINK_LIBRARIES(s3tests aws ${requiredlibs})
 
-
 # remove the test driver source file
 SET (TestsToRun ${s3tests})
 REMOVE (TestsToRun s3tests.cpp)
@@ -34,5 +33,5 @@ REMOVE (TestsToRun s3tests.cpp)
 FOREACH (test ${TestsToRun})
   GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
   MESSAGE(STATUS ${TName})
-  ADD_TEST(${TName} UnitTests ${TName})
+  ADD_TEST(${TName} s3tests ${TName})
 ENDFOREACH(test)

@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 PROJECT(libaws)
+ENABLE_TESTING()
+INCLUDE(CTest)
 
 SET(requiredlibs)
 
@@ -56,9 +58,9 @@ INCLUDE_DIRECTORIES(AFTER ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 
 # Tell CMake to process the sub-directories
-add_subdirectory(include)
-add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(bin)
-add_subdirectory(fuse)
-add_subdirectory(doc)
+ADD_SUBDIRECTORY(include)
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(bin)
+ADD_SUBDIRECTORY(fuse)
+ADD_SUBDIRECTORY(doc)
