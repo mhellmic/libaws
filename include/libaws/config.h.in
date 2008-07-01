@@ -1,0 +1,21 @@
+// platform options
+#cmakedefine WIN32
+
+#cmakedefine UNIX
+
+// unset WIN32 for cygwin environment
+#cmakedefine CYGWIN
+#ifdef CYGWIN
+#  undef WIN32
+#endif
+
+#cmakedefine APPLE
+
+// installed libraries
+#cmakedefine HAVE_INTTYPES_H 
+#cmakedefine HAVE_STDINT_H   
+#cmakedefine HAVE_STDLIB_H   
+#cmakedefine HAVE_LIMITS_H   
+#cmakedefine HAVE_SYS_TYPES_H
+#cmakedefine HAVE_STRTOIMAX_F
+#cmakedefine HAVE_STRPTIME_F 

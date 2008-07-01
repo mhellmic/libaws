@@ -1,0 +1,84 @@
+#include "common.h"
+
+// for initialization and destruction
+#include <libxml/parser.h>
+#include <libxml/xmlversion.h>
+#include <curl/curl.h>
+
+#include <libaws/exception.h>
+#include <libaws/awsversion.h>
+  
+#include "api/awsconnectionfactoryimpl.h"
+#include "api/s3connectionimpl.h"
+
+
+
+namespace aws { 
+
+AWSConnectionFactoryImpl::AWSConnectionFactoryImpl()
+  : theIsInitialized(false),
+    theInitializationFailed(false)
+{ }
+
+
+S3ConnectionPtr
+AWSConnectionFactoryImpl::createS3Connection(const std::string& aAccessKeyId, 
+                                             const std::string& aSecretAccessKey)
+{
+  if ( theInitializationFailed )
+    throw AWSInitializationException(theInitializationErrorMessage);
+
+  if ( aAccessKeyId.size() == 0 )
+    throw AWSAccessKeyIdMissingException();
+
+  if ( aSecretAccessKey.size() == 0 ) 
+    throw AWSSecretAccessKeyMissingException();
+      
+  return new S3ConnectionImpl(aAccessKeyId, aSecretAccessKey);
+}
+
+AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()
+{
+  if ( theIsInitialized )
+    shutdown();
+}
+
+void
+AWSConnectionFactoryImpl::shutdown()
+{
+  theIsInitialized = false;
+  if ( ! theInitializationFailed ) {
+    xmlCleanupParser();
+    curl_global_cleanup();
+  }
+}
+
+std::string
+AWSConnectionFactoryImpl::getVersion()
+{
+  return AWSVersion::getAWSVersion();
+}
+
+void
+AWSConnectionFactoryImpl::init()
+{
+  // initialize the curl library
+  // this call is not thread safe
+  // fortunately, we call it only once when initializing
+  // libaws statically.
+  CURLcode lCurlCode = curl_global_init(CURL_GLOBAL_ALL);
+
+  if ( lCurlCode ) {
+    const char* lCurlError = curl_easy_strerror( lCurlCode );
+    const std::string lCurlErrorStr(lCurlError);
+    throw AWSConnectionException ( lCurlErrorStr );
+  } 
+
+  // initialize the libxml2 library and perform version check
+  LIBXML_TEST_VERSION
+
+  theIsInitialized = true;
+}
+
+
+} /* namespace aws */

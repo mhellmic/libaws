@@ -1,0 +1,827 @@
+#include "common.h"
+
+#include <memory>
+#include <curl/curl.h>
+#include <openssl/hmac.h>
+
+#include "requestheadermap.h"
+#include "response.h"
+#include "canonizer.h"
+#include "callingformat.h"
+#include "util.h"
+#include "curlstreambuf.h"
+
+
+#include "s3/s3connection.h"
+#include "s3/s3object.h"
+#include "s3/s3handler.h"
+#include "s3/s3response.h"
+#include "s3/s3callbackwrapper.h"
+
+using namespace aws;
+
+namespace aws { namespace s3 {
+
+#define REQUEST_PROLOG(REQUESTNAME)                                                 	\
+  REQUESTNAME ## Handler  lHandler;                                                		\
+  S3CallBackWrapper       lWrapper;                                                   \
+                                                                                      \
+  lWrapper.theResponse  = lRes.get();                                                 \
+  lWrapper.theHandler   = &lHandler;                                                  \
+                                                                                      \
+  lWrapper.theSAXHandler.startElementNs = &REQUESTNAME ## Handler::startElementNs;    \
+  lWrapper.theSAXHandler.characters     = &REQUESTNAME ## Handler::charactersSAXFunc; \
+  lWrapper.theSAXHandler.endElementNs   = &REQUESTNAME ## Handler::endElementNs;      \
+                                                                                      \
+  lWrapper.createParser();																														\
+																																											\
+	try {
+
+#define REQUEST_EPILOG(REQUESTNAME)																\
+  } catch (AWSException& e) {																			\
+    lWrapper.destroyParser();																			\
+    throw e;																											\
+  }																																\
+  lWrapper.destroyParser();																				\
+  																																\
+  if ( ! lRes->isSuccessful() )																		\
+    throw REQUESTNAME ## Exception( lRes->theS3ResponseError );
+
+
+
+std::string S3Connection::DEFAULT_HOST = "s3.amazonaws.com";
+    
+S3Connection::S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey)
+	: AWSConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST),
+	  theEncryptedResultSize(0),
+	  theBase64EncodedString(0)
+{
+  // set callbacks for retrieving all http header information
+  curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, S3Connection::getHeaderData);
+  
+  curl_easy_setopt(theCurl, CURLOPT_ERRORBUFFER, theCurlErrorBuffer);
+  
+  // we enforce http 1.0 here in order to not use transfer-encoding: chunked
+  // amazon doesn't understand that
+  curl_easy_setopt(theCurl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+
+}
+
+S3Connection::~S3Connection() {  }
+
+// Bucket handling functions
+CreateBucketResponse*
+S3Connection::createBucket(const std::string& aBucketName)
+{
+  std::auto_ptr<CreateBucketResponse> lRes(new CreateBucketResponse(aBucketName));
+
+  REQUEST_PROLOG(CreateBucket);
+
+  makeRequest(aBucketName, CREATE_BUCKET, &lWrapper, 0, 0);
+
+	REQUEST_EPILOG(CreateBucket);
+  
+  return lRes.release();
+}
+
+ListAllBucketsResponse*
+S3Connection::listAllBuckets()
+{
+  std::auto_ptr<ListAllBucketsResponse> lRes(new ListAllBucketsResponse());
+
+	REQUEST_PROLOG(ListAllBuckets);
+
+  makeRequest("", LIST_ALL_BUCKETS, &lWrapper, 0, 0);
+
+	REQUEST_EPILOG(ListAllBuckets);
+
+  return lRes.release();
+}
+
+ListBucketResponse*
+S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
+                         const std::string& aMarker, int aMaxKeys)
+{
+  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix, 
+                                                                aMarker, aMaxKeys));
+  
+  ListBucketHandler     lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &ListBucketHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &ListBucketHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &ListBucketHandler::endElementNs;
+  
+  PathArgs_t lPathArgsMap;
+
+  char* lEscapedPrefixChar = curl_escape(aPrefix.c_str(), aPrefix.size());
+  char* lEscapedMarkerChar = curl_escape(aMarker.c_str(), aMarker.size());
+
+  std::string lEscapedPrefix(lEscapedPrefixChar);
+  std::string lEscapedMarker(lEscapedMarkerChar);
+ 
+  if (lEscapedPrefix.size() != 0)
+      lPathArgsMap.insert(stringpair_t("prefix", lEscapedPrefix));
+
+  if (lEscapedMarker.size() != 0)
+      lPathArgsMap.insert(stringpair_t("marker", lEscapedMarker));
+
+  if (aMaxKeys != -1) {
+      std::stringstream s;
+      s << aMaxKeys;
+      lPathArgsMap.insert(stringpair_t("max-keys", s.str()));
+  }
+
+  lWrapper.createParser();
+
+  try {
+    makeRequest(aBucketName, LIST_BUCKET, &lWrapper, &lPathArgsMap, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedPrefixChar);
+    curl_free(lEscapedMarkerChar);
+    throw e;
+  }
+  lWrapper.destroyParser();
+  curl_free(lEscapedPrefixChar);
+  curl_free(lEscapedMarkerChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw ListBucketException( lRes->theS3ResponseError );
+  
+  return lRes.release();
+}
+
+ListBucketResponse*
+S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
+                         const std::string& aMarker, const std::string& aDelimiter, int aMaxKeys)
+{
+  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix, 
+                                                                aMarker, aMaxKeys));
+  
+  ListBucketHandler     lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &ListBucketHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &ListBucketHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &ListBucketHandler::endElementNs;
+  
+  PathArgs_t lPathArgsMap;
+
+  char* lEscapedPrefixChar = curl_escape(aPrefix.c_str(), aPrefix.size());
+  char* lEscapedMarkerChar = curl_escape(aMarker.c_str(), aMarker.size());
+  char* lEscapedDelimiterChar = curl_escape(aDelimiter.c_str(), aDelimiter.size());
+
+  std::string lEscapedPrefix(lEscapedPrefixChar);
+  std::string lEscapedMarker(lEscapedMarkerChar);
+  std::string lEscapedDelimiter(lEscapedDelimiterChar);
+ 
+  if (lEscapedPrefix.size() != 0)
+      lPathArgsMap.insert(stringpair_t("prefix", lEscapedPrefix));
+
+  if (lEscapedMarker.size() != 0)
+      lPathArgsMap.insert(stringpair_t("marker", lEscapedMarker));
+
+  if (lEscapedDelimiter.size() != 0)
+      lPathArgsMap.insert(stringpair_t("delimiter", lEscapedDelimiterChar));
+
+  if (aMaxKeys != -1) {
+      std::stringstream s;
+      s << aMaxKeys;
+      lPathArgsMap.insert(stringpair_t("max-keys", s.str()));
+  }
+
+  lWrapper.createParser();
+
+  try {
+    makeRequest(aBucketName, LIST_BUCKET, &lWrapper, &lPathArgsMap, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedPrefixChar);
+    curl_free(lEscapedMarkerChar);
+    throw e;
+  }
+  lWrapper.destroyParser();
+  curl_free(lEscapedPrefixChar);
+  curl_free(lEscapedMarkerChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw ListBucketException( lRes->theS3ResponseError );
+  
+  return lRes.release();
+}
+
+DeleteBucketResponse*
+S3Connection::deleteBucket(const std::string& aBucketName, RequestHeaderMap* aHeaderMap)
+{
+  std::auto_ptr<DeleteBucketResponse> lRes(new DeleteBucketResponse(aBucketName));
+
+	REQUEST_PROLOG(DeleteBucket);
+  
+  makeRequest(aBucketName, DELETE_BUCKET, &lWrapper, 0, aHeaderMap);
+
+	REQUEST_EPILOG(DeleteBucket);
+
+  if ( ! lRes->isSuccessful() )
+    throw DeleteBucketException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+PutResponse*
+S3Connection::put(const std::string& aBucketName,
+                  const std::string& aKey,
+                  std::istream& aObject,
+                  const std::string& aContentType,
+                  long aSize)
+{
+  std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
+
+  PutHandler             lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &PutHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &PutHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &PutHandler::endElementNs;
+
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  lWrapper.createParser();
+
+  try {
+    S3Object lObject;
+    lObject.theIstream = &aObject;
+    lObject.theContentType = aContentType;
+
+    if (aSize == -1) {
+      // determine object size
+      aObject.seekg(0, std::ios_base::beg);
+      std::istream::pos_type begin_pos = aObject.tellg();
+      aObject.seekg(0, std::ios_base::end);
+      lObject.theContentLength = aObject.tellg() - begin_pos;
+      lObject.theIstream->seekg(0, std::ios_base::beg);
+    } else {
+      lObject.theContentLength = aSize;
+    }
+
+    makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+    throw e;
+  }
+  
+  lWrapper.destroyParser();    
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw PutException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+PutResponse*
+S3Connection::put(const std::string& aBucketName,
+                  const std::string& aKey,
+                  const char* aObject,
+                  const std::string& aContentType,
+                  long aSize)
+{
+  std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
+
+  PutHandler             lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &PutHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &PutHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &PutHandler::endElementNs;
+
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  lWrapper.createParser();
+
+  try {
+    S3Object lObject;
+    lObject.theDataPointer = aObject;
+    lObject.theContentType = aContentType;
+		lObject.theContentLength = aSize;
+
+    makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+    throw e;
+  }
+  
+  lWrapper.destroyParser();    
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw PutException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+GetResponse*
+S3Connection::get(const std::string& aBucketName, const std::string& aKey)
+{
+  std::auto_ptr<GetResponse> lRes(new GetResponse(aBucketName, aKey));
+
+  GetHandler             lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &GetHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &GetHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &GetHandler::endElementNs;
+
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  lWrapper.createParser();
+
+  try {
+    makeRequest(aBucketName, GET, &lWrapper, 0, 0, lEscapedKey, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+  }
+
+  lWrapper.destroyParser();
+
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw GetException( lRes->theS3ResponseError );
+  
+  return lRes.release();
+}
+
+
+GetResponse*
+S3Connection::get(const std::string& aBucketName, const std::string& aKey, 
+                  const std::string& aOldEtag)
+{
+  std::auto_ptr<GetResponse> lRes(new GetResponse(aBucketName, aKey));
+
+  GetHandler             lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &GetHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &GetHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &GetHandler::endElementNs;
+
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  RequestHeaderMap lRequestHeaderMap;
+  lRequestHeaderMap.addHeader("If-None-Match",aOldEtag);
+  
+  lWrapper.createParser();
+  
+  try {
+    makeRequest(aBucketName, GET, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+  }
+  
+  lWrapper.destroyParser();  
+    
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw GetException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+DeleteResponse*
+S3Connection::del(const std::string& aBucketName, const std::string& aKey)
+{
+  std::auto_ptr<DeleteResponse> lRes(new DeleteResponse(aBucketName, aKey));
+  
+  DeleteHandler           lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &DeleteHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &DeleteHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &DeleteHandler::endElementNs;
+
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  lWrapper.createParser();
+
+  try {
+    makeRequest(aBucketName, DELETE, &lWrapper, 0, 0, lEscapedKey, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+  }
+
+  lWrapper.destroyParser();
+  
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw DeleteException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+HeadResponse*
+S3Connection::head(const std::string& aBucketName, const std::string& aKey)
+{
+  std::auto_ptr<HeadResponse> lRes(new HeadResponse(aBucketName));
+
+  HeadHandler             lHandler;
+
+  S3CallBackWrapper       lWrapper;
+  lWrapper.theResponse  = lRes.get();
+  lWrapper.theHandler   = &lHandler;
+
+  lWrapper.theSAXHandler.startElementNs = &HeadHandler::startElementNs;
+  lWrapper.theSAXHandler.characters     = &HeadHandler::charactersSAXFunc;
+  lWrapper.theSAXHandler.endElementNs   = &HeadHandler::endElementNs;
+  
+  char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
+  std::string lEscapedKey(lEscapedKeyChar);
+
+  lWrapper.createParser();
+  
+  try {
+    makeRequest(aBucketName, HEAD, &lWrapper, 0, 0, lEscapedKey, 0);
+  } catch (AWSException& e) {
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+  }
+
+  lWrapper.destroyParser();
+  
+  curl_free(lEscapedKeyChar);
+
+  if ( ! lRes->isSuccessful() )
+    throw HeadException( lRes->theS3ResponseError );
+
+  return lRes.release();
+}
+
+void
+S3Connection::setRequestMethod(ActionType aActionType)
+{
+  curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, setCreateBucketData);
+  // this is overriden in the curlstreambuf
+  curl_easy_setopt(theCurl, CURLOPT_WRITEFUNCTION,  S3Connection::getS3Data);
+  curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "FALSE");      
+  switch (aActionType) {
+      case CREATE_BUCKET: {
+          curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, S3Connection::setCreateBucketData);
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          break;
+      }
+      case LIST_ALL_BUCKETS: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          break;
+      }
+      case LIST_BUCKET: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          break;
+      }
+      case DELETE_BUCKET: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          break;
+      }
+      case PUT: {
+          curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, S3Connection::setPutData);
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1); 
+          break;
+      }
+      case GET: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          break;
+      }
+      case HEAD: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "HEAD"); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          break;
+      }
+      case DELETE: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          break;
+      }
+      default: {
+          assert(false);
+      }
+  }
+}
+
+void 
+S3Connection::makeRequest(const std::string& aBucketName, 
+                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper, 
+                          PathArgs_t* aPathArgsMap, RequestHeaderMap* aHeaderMap)
+{
+  makeRequest(aBucketName, aActionType, aCallBackWrapper, aPathArgsMap, aHeaderMap, "", 0);
+}
+
+void 
+S3Connection::makeRequest(const std::string& aBucketName, 
+                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper,  
+                          PathArgs_t* aPathArgsMap, RequestHeaderMap* aHeaderMap, 
+                          const std::string& aKey, S3Object* aObject)
+{ 
+  S3Response* lResponse = aCallBackWrapper->theResponse;
+
+  //  make it a template parameter and class member
+  aws::CallingFormat* lCallingFormat = aws::CallingFormat::getRegularCallingFormat();
+
+  std::string lUrl = lCallingFormat->getUrl(theIsSecure, DEFAULT_HOST, thePort,
+                                            aBucketName, aKey, aPathArgsMap);
+
+  // set the request url
+  curl_easy_setopt(theCurl, CURLOPT_URL, lUrl.c_str());
+
+  // set the request method (i.e. get, put) and the according callback functions
+  setRequestMethod(aActionType);
+  
+  // set the data object received in the callback function
+  curl_easy_setopt(theCurl, CURLOPT_WRITEDATA, (void*)(aCallBackWrapper));
+  curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, (void*)(aCallBackWrapper));
+  
+  // if we didn't get an existing header map as input, we have to create one
+  bool lHeaderMapCreated = false;
+  if (!aHeaderMap) {
+      aHeaderMap = new RequestHeaderMap();
+      lHeaderMapCreated = true;
+  }
+  
+  // add the date header according to the S3 REST spec
+  aHeaderMap->addDateHeader();
+  
+  if (aObject) {
+    curl_easy_setopt(theCurl, CURLOPT_READDATA, (void*) aObject);
+    aHeaderMap->addMetadataHeaders(aObject);
+    aHeaderMap->addHeader("Content-Type", aObject->theContentType);
+    curl_easy_setopt(theCurl, CURLOPT_INFILESIZE, aObject->theContentLength);
+    aHeaderMap->addHeader("Transfer-Encoding", "");
+    aHeaderMap->addHeader("Expect", "");      
+  } else {
+    curl_easy_setopt(theCurl, CURLOPT_READDATA, 0);
+    curl_easy_setopt(theCurl, CURLOPT_INFILESIZE, 0);
+  }
+
+
+  // authorization
+  std::string lStringToSign = Canonizer::canonicalize(aActionType, aBucketName, aKey, aHeaderMap);
+  
+  std::stringstream lAuthData;
+
+  {
+    // compute signature
+    HMAC(EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(), 
+        (const unsigned char*) lStringToSign.c_str(), lStringToSign.size(), 
+        theEncryptedResult, &theEncryptedResultSize);
+        
+    long lBase64EncodedStringLength;
+    lAuthData << " AWS " << theAccessKeyId << ":" << 
+        base64Encode(theEncryptedResult, theEncryptedResultSize, lBase64EncodedStringLength);
+  }
+  
+  
+  // avoid temporary objects
+  std::string lAuthDataString = lAuthData.str();
+  aHeaderMap->addHeader("Authorization", lAuthDataString.c_str());
+      
+  struct curl_slist* lSList = 0;
+  
+  // add headers to curl
+  aHeaderMap->addHeadersToCurlSList(lSList);
+
+  curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, lSList);
+
+  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+
+  if (++theNumberOfRequests >= MAX_REQUESTS) {
+    curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");      
+    theNumberOfRequests = 0;
+  }
+
+  CURLcode lResCode = (CURLcode) 0;
+  GetResponse* lGetResponse = dynamic_cast<GetResponse*>(lResponse);
+  if (lGetResponse) {
+    lGetResponse->theStreamBuffer = new CurlStreamBuffer(theCurl);
+    lGetResponse->theInputStream = new std::istream(lGetResponse->theStreamBuffer);
+    lResCode = (CURLcode) lGetResponse->theStreamBuffer->multi_perform();
+
+    // parse the error in case we had one
+    if ( ! lResponse->isSuccessful() ) {
+      char lBuf[1024];
+      size_t lRead;
+      while ( true ) {
+        lGetResponse->theInputStream->read(lBuf, 1024);
+        lRead = lGetResponse->theInputStream->gcount();
+        if (lRead == 0) {
+          break;
+        }
+        lBuf[lRead] = 0;
+        //std::cout.write (lBuf, lRead);
+        xmlParseChunk(aCallBackWrapper->theParserCtxt, lBuf, lRead, 0);
+      }
+      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);      
+    }
+  } else {
+    lResCode = curl_easy_perform(theCurl);
+    if (! (lResponse->isSuccessful()) ) {
+      // tell the parser that parsing is finished
+      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);      
+    }
+  }
+
+  curl_slist_free_all(lSList);
+
+  if (lHeaderMapCreated) {
+    delete aHeaderMap; aHeaderMap = 0;
+  }
+  
+  if (lResCode != 0) {
+    throw AWSConnectionException(theCurlErrorBuffer);
+  }
+    
+}
+
+size_t
+S3Connection::getS3Data(void *ptr, size_t size, size_t nmemb, void *data)
+{
+  S3CallBackWrapper* lWrapper = static_cast<S3CallBackWrapper*>(data);
+
+  char* lChars = static_cast<char*>(ptr);
+
+  std::cout.write(lChars, size*nmemb);
+
+  // this guarantees to read the input in chunks as they come in
+  // by libxml; we always read as much as is in the buffer
+  // because we stream internally.
+  xmlParseChunk(lWrapper->theParserCtxt, lChars, size * nmemb, 0);
+
+  return size * nmemb;  
+}
+
+size_t
+S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+  S3CallBackWrapper* lWrapper = static_cast<S3CallBackWrapper*>(stream);
+  S3Response* lRes = lWrapper->theResponse;
+  GetResponse* lGetResponse = 0;
+  CreateBucketResponse* lCreateResponse = 0;
+
+  std::string lTmp(static_cast<char*>(ptr), size*nmemb);
+  trim(lTmp);
+
+  if (lTmp.find("200 OK") != std::string::npos || 
+      lTmp.find("204 No Content") != std::string::npos) {
+    // if we got a 20x header, the request was successful
+    lRes->theIsSuccessful = true;
+  } else if (lTmp.find("ETag:") != std::string::npos) {
+    lRes->theETag = lTmp.substr(7, lTmp.find_last_of('"') - 7);
+  } else if (lTmp.find("Date:") != std::string::npos) {
+    lRes->theDate = lTmp.substr(6, lTmp.size()); 
+  } else if (lTmp.find("x-amz-id-2:") != std::string::npos) {
+    lRes->theAmazonId = lTmp.substr(12, lTmp.size());
+  } else if (lTmp.find("x-amz-request-id:") != std::string::npos) {
+    lRes->theRequestId = lTmp.substr(18, lTmp.size());
+  }
+  else if ((lGetResponse = dynamic_cast<GetResponse*>(lRes)))
+  {
+    if (lTmp.find("Last-Modified:") != std::string::npos)
+    {
+      
+      // parse a time string of the following format: Fri, 09 Nov 2007 13:05:49 GMT
+      Time t(lTmp.c_str()+15);
+      lGetResponse->theLastModified = t;
+
+    } else if ( lTmp.find("304") != std::string::npos ) 
+    {
+      // not modified (returned when using If-Modified-Since or If-Non-Match)
+      lGetResponse->theIsSuccessful = true;
+      lGetResponse->theIsModified = false;
+    }
+    
+  }
+  else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes)))
+  {
+    if (lTmp.find("Location:") != std::string::npos) {
+      lCreateResponse->theLocation = lTmp.substr(10, lTmp.find_last_of('"') - 10);
+    }
+  }
+
+  return size * nmemb;    
+}
+
+
+size_t
+S3Connection::setCreateBucketData(void *aBuffer, size_t aSize, size_t nmemb, void *stream)
+{
+  return 0; // signal EOF
+}
+
+size_t 
+S3Connection::setPutData(void *aBuffer, size_t aSize, size_t nmemb, void* data)
+{
+  S3Object* lObject = static_cast<S3Object*>(data);
+  size_t maxsize = aSize * nmemb;
+ 	char* charptr = static_cast<char*>(aBuffer);
+  if (lObject->theIstream) { // serve data from an input steram
+    std::istream* in = lObject->theIstream;
+    in->read(charptr, maxsize);
+    return in->gcount();
+  } else if (lObject->theDataPointer) { // serve data from a char pointer
+		if (lObject->theDataRead == lObject->theContentLength) {
+			return 0;	
+		}
+		if ( maxsize > lObject->theContentLength - lObject->theDataRead ) {
+			charptr = const_cast<char*>(lObject->theDataPointer + lObject->theDataRead);
+			lObject->theDataRead += maxsize;
+		  return maxsize;
+		} else {
+			charptr = const_cast<char*>(lObject->theDataPointer + lObject->theDataRead);
+			lObject->theDataRead += lObject->theContentLength - lObject->theDataRead;
+			return lObject->theContentLength - lObject->theDataRead;
+		}
+  } else {
+    assert(false);  // either of the two (theIstream or theDataPointer) must be set 
+  }
+}
+
+std::string
+S3Connection::requestTypeForAction(ActionType aType)
+{
+  switch (aType) {
+     case LIST_ALL_BUCKETS: {
+         return "GET";
+      }
+      case LIST_BUCKET: {
+          return "GET";
+      }
+      case CREATE_BUCKET: {
+          return "PUT";
+      }
+      case DELETE_BUCKET: {
+          return "DELETE";
+      }
+      case PUT: {
+          return "PUT";
+      }
+      case GET: {
+          return "GET";
+      }
+      case DELETE: {
+          return "DELETE";
+      }
+      case HEAD: {
+          return "HEAD";
+      }
+      default: {
+          assert(false);
+      }
+  }
+}
+
+} } // namespaces	
+

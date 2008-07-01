@@ -1,0 +1,30 @@
+#include <libaws/awsversion.h>
+
+#include <string>
+#include <sstream>
+
+namespace aws {
+
+  int AWSVersion::theMajorVersion = @LIBAWS_MAJOR_VERSION@;
+  int AWSVersion::theMinorVersion = @LIBAWS_MINOR_VERSION@;
+  int AWSVersion::thePatchVersion = @LIBAWS_PATCH_VERSION@;
+
+  int
+  AWSVersion::getAWSMajorVersion() { return theMajorVersion; }
+
+  int
+  AWSVersion::getAWSMinorVersion() { return theMinorVersion; }
+
+  int
+  AWSVersion::getAWSPatchVersion() { return thePatchVersion; }
+
+  std::string
+  AWSVersion::getAWSVersion()
+  {
+    std::ostringstream lStream;
+    lStream << getAWSMajorVersion() << "." << getAWSMinorVersion() << "." << getAWSPatchVersion();
+    return lStream.str();
+  }
+
+} /* end namespace aws */
+
