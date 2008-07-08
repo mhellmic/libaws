@@ -27,6 +27,7 @@ namespace aws {
     return new CreateQueueResponse(theConnection->createQueue(aQueueName, aDefaultVisibilityTimeout));
   }
 
+#if 0
   DeleteQueueResponsePtr
   SQSConnectionImpl::deleteQueue(const std::string &aQueueUrl, bool aForceDeletion)
   {
@@ -72,6 +73,8 @@ namespace aws {
     return new theConnection->deleteMessage(aQueueName, aMessageId);
   }
 
+#endif
+  
   SQSConnectionImpl::SQSConnectionImpl(const std::string& aAccessKeyId, 
                                        const std::string& aSecretAccessKey)
   {

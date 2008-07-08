@@ -30,6 +30,7 @@ namespace aws {
       CreateQueueResponsePtr
       createQueue(const std::string &aQueueName, int aDefaultVisibilityTimeout = -1) = 0;
 
+#if 0
       DeleteQueueResponsePtr
       deleteQueue(const std::string &aQueueUrl, bool aForceDeletion = false) = 0;
 
@@ -37,7 +38,7 @@ namespace aws {
       listQueues(const std::string &aQueueNamePrefix = "") = 0;
 
       SendMessageResponsePtr
-      sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize) = 0
+      sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize) = 0;
 
       SendMessageResponsePtr
       sendMessage(const std::string &aQueueName, const std::string &aContent) = 0;
@@ -52,6 +53,8 @@ namespace aws {
 
       DeleteMessageResponsePtr
       deleteMessage(const std::string &aQueueName, const std::string &aMessageId) = 0;
+                                                           
+#endif
 
   }; /* class SQSConnection */
 

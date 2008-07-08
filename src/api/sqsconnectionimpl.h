@@ -33,6 +33,7 @@ namespace aws {
       CreateQueueResponsePtr
       createQueue(const std::string &aQueueName, int aDefaultVisibilityTimeout = -1);
 
+#if 0
       DeleteQueueResponsePtr
       deleteQueue(const std::string &aQueueUrl, bool aForceDeletion = false);
 
@@ -55,13 +56,15 @@ namespace aws {
 
       DeleteMessageResponsePtr
       deleteMessage(const std::string &aQueueName, const std::string &aMessageId);
-
+#endif
     protected:
       // only the factory can create us
       friend class AWSConnectionFactoryImpl;
       SQSConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
 
       sqs::SQSConnection* theConnection;
+
   }; /* class S3ConnectionImpl */
+
 } /* namespace aws */
 #endif

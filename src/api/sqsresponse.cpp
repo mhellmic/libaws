@@ -49,6 +49,8 @@ namespace aws {
   {
     return theSQSResponse->getQueueUrl();
   }
+  
+#if 0
 
   /**
    * DeleteQueueResponse
@@ -175,5 +177,6 @@ namespace aws {
   {
     return theSQSResponse->getMessageId();
   }
+#endif
 } /* namespace aws */
 

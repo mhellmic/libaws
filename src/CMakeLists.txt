@@ -39,6 +39,11 @@ FOREACH (SRCS ${S3_SRCS})
    LIST(APPEND AWS_SRCS s3/${SRCS})
 ENDFOREACH (SRCS)
 
+INCLUDE(sqs/CMakeLists.txt)
+FOREACH (SRCS ${SQS_SRCS})
+   LIST(APPEND AWS_SRCS sqs/${SRCS})
+ENDFOREACH (SRCS)
+
 # which libraries should be installed
 SET(AWS_INSTALL_LIST)
 

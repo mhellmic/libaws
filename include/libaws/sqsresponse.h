@@ -64,6 +64,8 @@ namespace aws {
       CreateQueueResponse(sqs::CreateQueueResponse*);
   };
   
+#if 0
+  
   class DeleteQueueResponse : public SQSResponse<sqs::DeleteQueueResponse>
   {
     public:
@@ -168,6 +170,7 @@ namespace aws {
       friend class SQSConnectionImpl;
       DeleteMessageResponse(sqs::DeleteMessageResponse*);
   };
+#endif
 
 } /* namespace aws */
 #endif
