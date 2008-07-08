@@ -222,6 +222,12 @@ namespace aws {
       virtual const std::map<std::string, std::string>&
       getMetaData() const;
 
+      virtual const long long
+      getContentLength() const;
+
+      virtual const std::string&
+      getContentType() const;
+
     private:
       friend class S3ConnectionImpl;
       HeadResponse(s3::HeadResponse*);

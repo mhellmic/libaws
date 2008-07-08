@@ -315,8 +315,20 @@ public:
     const std::string&
     getBucketName() const { return theBucketName; }
 
+    const long long 
+    getContentLength() const {  return theContentLength; }
+
+    const std::string&
+    getContentType() const { return theContentType; }
+
+    const Time&
+    getLastModified() const { return theLastModified; }
+
 protected:
     std::string theBucketName;
+    long long         theContentLength;
+    std::string       theContentType;
+    Time              theLastModified;
 };
 
 class DeleteResponse : public S3Response

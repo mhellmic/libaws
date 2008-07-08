@@ -29,6 +29,9 @@ namespace aws {
 
       S3ConnectionPtr
       createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey); 
+      
+      SQSConnectionPtr
+      createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
 
       void 
       shutdown();
@@ -52,7 +55,5 @@ namespace aws {
   }; /* class AWSConnectionFactoryImpl */
 
 } /* namespace aws */
-
-
 
 #endif

@@ -165,8 +165,7 @@ RequestHeaderMap::addHeadersToCurlSList(struct curl_slist*& aSList)
 {
     theMap.insert(std::pair<std::string, std::string>("Accept", ""));
     theMap.insert(std::pair<std::string, std::string>("Pragma", ""));
-    for (RequestHeaderMap::requestmapiter_t lIter = theMap.begin(); lIter != theMap.end(); ++lIter)
-    {
+    for (RequestHeaderMap::requestmapiter_t lIter = theMap.begin(); lIter != theMap.end(); ++lIter) {
         std::stringstream s;
         s << (*lIter).first +": " +(*lIter).second;
         aSList = curl_slist_append(aSList, s.str().c_str());

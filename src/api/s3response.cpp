@@ -277,6 +277,18 @@ namespace aws {
     return theS3Response->getMetaData();
   }
 
+  const long long
+  HeadResponse::getContentLength() const
+  {
+    return theS3Response->getContentLength();
+  }
+
+  const std::string&
+  HeadResponse::getContentType() const
+  {
+    return theS3Response->getContentType();
+  }
+
   /**
    * DeleteResponse
    */

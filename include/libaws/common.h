@@ -21,6 +21,9 @@
 
 namespace aws {
 
+  /**
+   * S3 stuff
+   */
   class S3Connection;
   typedef SmartPtr<S3Connection> S3ConnectionPtr;
 
@@ -50,6 +53,15 @@ namespace aws {
 
   class HeadResponse;
   typedef SmartPtr<HeadResponse> HeadResponsePtr;
+
+  /**
+   * SQS stuff
+   */
+  class SQSConnection;
+  typedef SmartPtr<SQSConnection> SQSConnectionPtr;
+
+  template <class T> class SQSResponse;
+  typedef SmartPtr<SQSResponse<class T> > SQSResponsePtr;
 
 } /* namespace aws */
 

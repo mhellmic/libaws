@@ -25,8 +25,7 @@
   
 #include "api/awsconnectionfactoryimpl.h"
 #include "api/s3connectionimpl.h"
-
-
+#include "api/sqsconnectionimpl.h"
 
 namespace aws { 
 
@@ -50,6 +49,26 @@ AWSConnectionFactoryImpl::createS3Connection(const std::string& aAccessKeyId,
     throw AWSSecretAccessKeyMissingException();
       
   return new S3ConnectionImpl(aAccessKeyId, aSecretAccessKey);
+}
+
+SQSConnectionPtr
+AWSConnectionFactoryImpl::createSQSConnection(const std::string &aAccessKeyId, 
+                                              const std::string &aSecretAccessKey)
+{
+  if ( theInitializationFailed )
+    throw AWSInitializationException(theInitializationErrorMessage);
+
+  if (aAccessKeyId.size() == 0)
+  {
+    throw AWSSecretAccessKeyMissingException();
+  }
+
+  if (aSecretAccessKey.size() == 0)
+  {
+    throw AWSSecretAccessKeyMissingException();
+  }
+
+  return SQSConnectionPtr(new SQSConnection(aAccessKeyId, aSecretAccessKey));
 }
 
 AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()
