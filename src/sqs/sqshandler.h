@@ -25,7 +25,7 @@ namespace aws {
 
     class CreateQueueHandler : public SimpleQueryCallBack
     {
-      private:
+      protected:
         friend class SQSConnection;
         CreateQueueResponse* theCreateQueueResponse;
         

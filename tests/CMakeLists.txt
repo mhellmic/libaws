@@ -19,6 +19,7 @@ CREATE_TEST_SOURCELIST(s3tests
     s3tests.cpp
     s3buckettest.cpp  
     s3objecttest.cpp  
+    sqstest.cpp
   )
 
 # add the executable

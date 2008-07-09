@@ -27,7 +27,9 @@ namespace aws {
     void
     CreateQueueHandler::startElement ( const xmlChar * localname, int nb_attributes, const xmlChar ** attributes )
     {
-      if (xmlStrEqual(localname, BAD_CAST "RequestId") ) {
+      if (xmlStrEqual(localname, BAD_CAST "CreateQueueResponse") ) {
+        theCreateQueueResponse = new CreateQueueResponse();
+      } else if (xmlStrEqual(localname, BAD_CAST "RequestId") ) {
         setState(RequestId);
       } else if (xmlStrEqual(localname, BAD_CAST "QueueUrl")) {
         setState(QueueUrl);

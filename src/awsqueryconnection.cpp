@@ -9,6 +9,7 @@
 #include <sstream>
 #include "awsqueryresponse.h"
 #include <cassert>
+#include <iostream>
 
 
 namespace aws {
@@ -40,6 +41,7 @@ namespace aws {
   void AWSQueryConnection::setCommonParamaters ( ParameterMap* aParameterMap, const std::string& aAction ) {
     aParameterMap->insert ( ParameterPair ( "AWSAccessKeyId", theAccessKeyId ) );
     aParameterMap->insert ( ParameterPair ( "Version", theVersion ) );
+    aParameterMap->insert ( ParameterPair ( "SignatureVersion", "1" ) );
     aParameterMap->insert ( ParameterPair ( "Timestamp", getQueryTimestamp() ) );
     aParameterMap->insert ( ParameterPair ( "Action", aAction ) );
   }
@@ -76,21 +78,20 @@ namespace aws {
     }
     
     
-
-    {
-      unsigned int  theEncryptedResultSize;
-      unsigned char theEncryptedResult[1024];
-      char*         theBase64EncodedString;
+ 
+    { 
+      unsigned int  lEncryptedResultSize;
+      unsigned char lEncryptedResult[1024];
 
       // compute signature
       HMAC ( EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(),
              ( const unsigned char* ) lStringToSign.str().c_str(), lStringToSign.str().size(),
-             theEncryptedResult, &theEncryptedResultSize );
+               lEncryptedResult, &lEncryptedResultSize );
 
       // append the url and base64 encoded signature
       long lBase64EncodedStringLength;
       lUrl << "&Signature=" <<
-      urlencode ( base64Encode ( theEncryptedResult, theEncryptedResultSize,
+          urlencode ( base64Encode ( lEncryptedResult, lEncryptedResultSize,
                                  lBase64EncodedStringLength ) );
     }
 
@@ -99,7 +100,7 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    //std::cout << "Send request:" << lUrlString << std::endl;
+    std::cout << "Send request:" << lUrlString << std::endl;
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );

@@ -32,7 +32,7 @@ namespace aws { namespace sqs {
   
   SQSConnection::SQSConnection(const std::string& aAccessKeyId, 
                                const std::string& aSecretAccessKey) 
-  : AWSQueryConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_VERSION, DEFAULT_HOST)
+  : AWSQueryConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, DEFAULT_VERSION)
   {
     
   }
@@ -49,13 +49,12 @@ namespace aws { namespace sqs {
       lMap.insert ( ParameterPair ( "DefaultVisibilityTimeout", s.str() ) );
     }
  
-    std::auto_ptr<CreateQueueResponse> lResponse(new CreateQueueResponse());
+   
     CreateQueueHandler lHandler;
-    lHandler.theCreateQueueResponse = lResponse.get();
     
     makeQueryRequest ( "CreateQueue", &lMap, &lHandler );
 
-    return lResponse.release();
+    return lHandler.theCreateQueueResponse;
   }
   
 }}//namespaces

@@ -21,5 +21,7 @@
 #include <libaws/s3connection.h>
 #include <libaws/s3response.h>
 #include <libaws/s3exception.h>
+#include <libaws/sqsconnection.h>
+#include <libaws/sqsresponse.h>
 
 #endif
