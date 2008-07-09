@@ -20,6 +20,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 # add files to compile
 SET(AWS_SRCS awsconnection.cpp 
+             awsquerycallback.cpp             
+             awsqueryconnection.cpp
              response.cpp
              requestheadermap.cpp 
              callingformat.cpp 
@@ -28,8 +30,7 @@ SET(AWS_SRCS awsconnection.cpp
              exception.cpp
              curlstreambuf.cpp
              ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp
-             awsqueryconnection.cpp
-             awsquerycallback.cpp)
+             )
 
 INCLUDE(api/CMakeLists.txt)
 FOREACH (SRCS ${API_SRCS})

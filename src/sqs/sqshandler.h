@@ -28,7 +28,7 @@ namespace aws {
       private:
         friend class SQSConnection;
         CreateQueueResponse* theCreateQueueResponse;
-
+        
         enum States {
           Code        = 1,
           Message     = 2,
@@ -38,14 +38,9 @@ namespace aws {
         };
 
       public:
-        virtual void
-        startElement ( const std::string& localname, int nb_attributes, const xmlChar ** attributes ) ;
-        
-        virtual void
-        characters ( const std::string& value );
-        
-        virtual void
-        endElement ( const std::string& localname );
+        virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void characters ( const xmlChar *  value, int len );
+        virtual void endElement ( const xmlChar *  localname );
 
     };
 

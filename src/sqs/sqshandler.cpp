@@ -25,31 +25,31 @@ namespace aws {
   namespace sqs {
     
     void
-    CreateQueueHandler::startElement ( const std::string& localname, int nb_attributes, const xmlChar ** attributes )
+    CreateQueueHandler::startElement ( const xmlChar * localname, int nb_attributes, const xmlChar ** attributes )
     {
-      if (localname.compare("RequestId") == 0) {
+      if (xmlStrEqual(localname, BAD_CAST "RequestId") ) {
         setState(RequestId);
-      } else if (localname.compare("QueueUrl") == 0) {
+      } else if (xmlStrEqual(localname, BAD_CAST "QueueUrl")) {
         setState(QueueUrl);
       }
     }
         
     void
-    CreateQueueHandler::characters ( const std::string& value )
+    CreateQueueHandler::characters ( const xmlChar *  value, int len )
     {
       if (isSet(RequestId)) {
-        theCreateQueueResponse->theRequestId = value;
+        theCreateQueueResponse->theRequestId.append((const char*)value, len);
       } else if (isSet(QueueUrl)) {
-        theCreateQueueResponse->theQueueURL = value;
+        theCreateQueueResponse->theQueueURL.append((const char*)value, len);
       }
     }
         
     void
-    CreateQueueHandler::endElement ( const std::string& localname )
+    CreateQueueHandler::endElement ( const xmlChar * localname )
     {
-      if (localname.compare("RequestId") == 0) {
+      if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
         unsetState(RequestId);
-      } else if (localname.compare("QueueUrl") == 0) {
+      } else if (xmlStrEqual(localname, BAD_CAST "QueueUrl")) {
         unsetState(QueueUrl);
       }
     }

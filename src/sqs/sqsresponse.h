@@ -20,30 +20,19 @@
 #include <map>
 #include <string>
 #include <libaws/common.h>
+#include <awsqueryresponse.h>
 
 namespace aws {
 
   // forward declaration of internal response classes
   namespace sqs {
 
-    class SQSResponse
-    {
-      public:
-        const std::string&
-        getRequestId();
 
-      protected:
-        friend class CreateQueueHandler;
-        std::string theRequestId;
-
-    };
-
-    class CreateQueueResponse : public SQSResponse
+    class CreateQueueResponse : public QueryResponse
     {
       public:
 
-        const std::string&
-        getQueueUrl();
+        const std::string&  getQueueUrl();
 
       protected:
         friend class CreateQueueHandler;

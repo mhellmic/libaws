@@ -51,7 +51,7 @@ namespace aws {
   class CreateQueueResponse : public SQSResponse<sqs::CreateQueueResponse>
   {
     public:
-      virtual ~CreateQueueResponse();
+      virtual ~CreateQueueResponse(){};
     
       const std::string&
       getQueueUrl() const;

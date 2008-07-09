@@ -7,7 +7,8 @@
 #include <openssl/hmac.h>
 #include <curl/curl.h>
 #include <sstream>
-
+#include "awsqueryresponse.h"
+#include <cassert>
 
 
 namespace aws {
@@ -18,7 +19,7 @@ namespace aws {
       const std::string &aSecretAccessKey,
       const std::string& aHost,
       const std::string& aVersion ) :
-      theVersion ( aVersion ), AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost )  {
+      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost ), theVersion ( aVersion )  {
     // always use a content-type text/plain as required by amazon
     theSList = curl_slist_append ( theSList, "Content-Type: text/plain" );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPHEADER, theSList );
@@ -48,6 +49,12 @@ namespace aws {
   {
     setCommonParamaters(aParameterMap, action);
     
+    aCallBack->theSAXHandler.startElementNs = &QueryCallBack::SAX_StartElementNs;
+    aCallBack->theSAXHandler.characters     = &QueryCallBack::SAX_CharactersSAXFunc;
+    aCallBack->theSAXHandler.endElementNs   = &QueryCallBack::SAX_EndElementNs;
+       
+    aCallBack->createParser();
+    
     std::stringstream lStringToSign;
     std::stringstream lUrl;
 
@@ -67,6 +74,8 @@ namespace aws {
       // concatenate parameter name and value for the string to sign
       lStringToSign << ( *lIter ).first << ( *lIter ).second;
     }
+    
+    
 
     {
       unsigned int  theEncryptedResultSize;
@@ -121,15 +130,16 @@ namespace aws {
 
     if ( lCurlCode != 0 )
     {
-      SQSResponseError::Error lError;
-      lError.theErrorCode = SQSResponseError::CurlError;
-      lError.theErrorMessage = std::string ( theCurlErrorBuffer );
-      lResponse->theSQSResponseError.theErrors.push_back ( lError );
-      lResponse->theIsSuccessful = false;
+      std::stringstream lCurlError;
+      lCurlError << "CurlError:" << lCurlCode;
+      aCallBack->theIsSuccessful = false;
+      if(!aCallBack->theQueryErrorResponse) //if there was an error before, we should not overwrite it
+        aCallBack->theQueryErrorResponse = new QueryErrorResponse(lCurlError.str(), "", "", lUrl.str());
     }
 
     // signal the parse that this is the end
-    xmlParseChunk ( aCallBackWrapper->theParserCtxt, 0, 0, 1 );
+    xmlParseChunk ( aCallBack->theParserCtxt, 0, 0, 1 );
+    aCallBack->destroyParser();
 
   }
 
@@ -139,6 +149,7 @@ namespace aws {
     time_t lRawTime; tm*    lPtm;
     time ( &lRawTime );
     lPtm = gmtime ( &lRawTime );
+    char   theDateString[31];
 
     size_t lTest = strftime ( theDateString, 31, QUERY_DATE_FORMAT.c_str(), lPtm );
     assert ( lTest < 31 );
@@ -155,7 +166,7 @@ namespace aws {
     // this guarantees to read the input in chunks as they come in
     // by libxml; we always read as much as is in the buffer
     // because we stream internally.
-    xmlParseChunk ( lQueryCallBack, lChars, size * nmemb, 0 );
+    xmlParseChunk ( lQueryCallBack->theParserCtxt, lChars, size * nmemb, 0 );
 
     return size * nmemb;
   }

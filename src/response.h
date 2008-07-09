@@ -32,7 +32,6 @@ namespace aws {
 	
   class Response 
   {
-
     friend class aws::s3::S3Connection;
     friend class aws::s3::CreateBucketHandler;
     friend class aws::s3::ListAllBucketsHandler;

@@ -19,27 +19,44 @@
 #include <libxml/parser.h>
 
 
+
 namespace aws
 {
+  class QueryResponse;
+  class QueryErrorResponse;
+
   class QueryCallBack{
-
-    public:
-      enum Status {
-        Unknown,
-        Error,
-        Successful
-      };
-
+      friend class AWSQueryConnection;
     protected:
       //std::vector<Error> theErrors;
-      Status theStatus;
+      QueryErrorResponse* theQueryErrorResponse;
+      bool theIsSuccessful;
+      xmlParserCtxtPtr theParserCtxt;
+      xmlSAXHandler theSAXHandler;
+      bool theParserCreated;
 
     public:
 
-      QueryCallBack() :theStatus ( Unknown ) {};
-      virtual ~QueryCallBack();
+      QueryCallBack() :theQueryErrorResponse ( 0 ), theIsSuccessful ( false ), theParserCreated ( false ) {}
+      virtual ~QueryCallBack(){}
 
+      QueryErrorResponse* getQueryErrorResponse() {return theQueryErrorResponse;}
 
+      bool isSuccessful() { return theIsSuccessful; }
+
+      void createParser()
+      {
+        theParserCtxt = xmlCreatePushParserCtxt ( &theSAXHandler, this, NULL, 0, 0 );
+        theParserCreated = true;
+      }
+
+      void destroyParser()
+      {
+        if ( theParserCreated ) {
+          xmlFreeParserCtxt ( theParserCtxt );
+          theParserCreated=false;
+        }
+      }
 
       virtual void startElementNs ( const xmlChar * localname,
                                     const xmlChar * prefix,
@@ -82,35 +99,37 @@ namespace aws
   class SimpleQueryCallBack : public QueryCallBack {
 
     protected:
-      void setState(uint64_t s)   { theCurrentState |= s; }
-      bool isSet(uint64_t s)      { return theCurrentState & s; }
-      void unsetState(uint64_t s) { theCurrentState ^= s; }
-    
-      uint64_t theCurrentState;
-    
-    protected:
       SimpleQueryCallBack() : QueryCallBack() {};
+      virtual ~SimpleQueryCallBack(){}
+      
+      uint64_t theCurrentState;
 
     public:
+      void setState ( uint64_t s )   { theCurrentState |= s; }
+      bool isSet ( uint64_t s )      { return theCurrentState & s; }
+      void unsetState ( uint64_t s ) { theCurrentState ^= s; }
+
+      
+
       void startElementNs ( const xmlChar * localname,
-                          const xmlChar * prefix,
-                          const xmlChar * URI,
-                          int nb_namespaces,
-                          const xmlChar ** namespaces,
-                          int nb_attributes,
-                          int nb_defaulted,
-                          const xmlChar ** attributes );
+                            const xmlChar * prefix,
+                            const xmlChar * URI,
+                            int nb_namespaces,
+                            const xmlChar ** namespaces,
+                            int nb_attributes,
+                            int nb_defaulted,
+                            const xmlChar ** attributes );
 
       void charactersSAXFunc ( const xmlChar * value,
-                             int len );
+                               int len );
 
       void endElementNs ( const xmlChar * localname,
-                        const xmlChar * prefix,
-                        const xmlChar * URI );
+                          const xmlChar * prefix,
+                          const xmlChar * URI );
 
-      virtual void startElement ( const std::string& localname, int nb_attributes, const xmlChar ** attributes ) =0;
-      virtual void characters ( const std::string& value ) =0;
-      virtual void endElement ( const std::string& localname ) =0;
+      virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes ) =0;
+      virtual void characters ( const xmlChar *  value, int len ) =0;
+      virtual void endElement ( const xmlChar *  localname ) =0;
 
   };
 
