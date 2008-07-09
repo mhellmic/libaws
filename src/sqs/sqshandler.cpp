@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 #include "common.h"
+#include "sqs/sqshandler.h"
+#include "sqs/sqsresponse.h"
+
+#include <string>
 
 using namespace aws;
 
@@ -52,5 +56,3 @@ namespace aws {
 
   } /* namespace sqs  */
 } /* namespace aws */
-
-#endif        /* !AWS_SQS_SQSCONNECTION_H */

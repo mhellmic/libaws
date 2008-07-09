@@ -63,6 +63,9 @@ namespace aws {
   template <class T> class SQSResponse;
   typedef SmartPtr<SQSResponse<class T> > SQSResponsePtr;
 
+  class CreateQueueResponse;
+  typedef SmartPtr<CreateQueueResponse> CreateQueueResponsePtr;
+
 } /* namespace aws */
 
 #endif

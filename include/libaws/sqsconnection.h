@@ -27,31 +27,31 @@ namespace aws {
     public:
       virtual ~SQSConnection() {}
 
-      CreateQueueResponsePtr
+      virtual CreateQueueResponsePtr
       createQueue(const std::string &aQueueName, int aDefaultVisibilityTimeout = -1) = 0;
 
 #if 0
-      DeleteQueueResponsePtr
+      virtual DeleteQueueResponsePtr
       deleteQueue(const std::string &aQueueUrl, bool aForceDeletion = false) = 0;
 
-      ListQueuesResponsePtr
+      virtual ListQueuesResponsePtr
       listQueues(const std::string &aQueueNamePrefix = "") = 0;
 
-      SendMessageResponsePtr
+      virtual SendMessageResponsePtr
       sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize) = 0;
 
-      SendMessageResponsePtr
+      virtual SendMessageResponsePtr
       sendMessage(const std::string &aQueueName, const std::string &aContent) = 0;
 
-      PeekMessageResponsePtr
+      virtual PeekMessageResponsePtr
       peekMessage(const std::string &aQueueName, const std::string &aMessageId) = 0;
 
-      ReceiveMessageResponsePtr
+      virtual ReceiveMessageResponsePtr
       receiveMessage(const std::string &aQueueName,
                     int aNumberOfMessages = -1,
                     int aVisibilityTimeout = -1) = 0;
 
-      DeleteMessageResponsePtr
+      virtual DeleteMessageResponsePtr
       deleteMessage(const std::string &aQueueName, const std::string &aMessageId) = 0;
                                                            
 #endif

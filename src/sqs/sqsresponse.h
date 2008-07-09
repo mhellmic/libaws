@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef AWS_SQSRESPONSE_API_H
-#define AWS_SQSRESPONSE_API_H
+#ifndef AWS_SQS_SQSRESPONSE_H
+#define AWS_SQS_SQSRESPONSE_H
 
 #include <vector>
 #include <map>
@@ -53,3 +53,4 @@ namespace aws {
   }
 }//namespaces
 
+#endif

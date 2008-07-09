@@ -15,6 +15,12 @@
  */
 #include "common.h"
 
+#include "sqs/sqsconnection.h"
+#include "sqs/sqsresponse.h"
+#include "sqs/sqshandler.h"
+
+#include <sstream>
+#include <memory>
 
 
 using namespace aws;
@@ -31,17 +37,25 @@ namespace aws { namespace sqs {
     
   }
   
-  CreateQueueResponsePtr
+  CreateQueueResponse*
   SQSConnection::createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout ){
+
     ParameterMap lMap;
-    lMap.insert ( ParameterPair_t ( "QueueName", aQueueName ) );
+    lMap.insert ( ParameterPair ( "QueueName", aQueueName ) );
  
-    if (aDefaultVisibilityTimeout > -1 )
-      lMap.insert ( ParameterPair_t ( "DefaultVisibilityTimeout", aDefaultVisibilityTimeout ) );
+    if (aDefaultVisibilityTimeout > -1 ) {
+      std::stringstream s;
+      s << aDefaultVisibilityTimeout;
+      lMap.insert ( ParameterPair ( "DefaultVisibilityTimeout", s.str() ) );
+    }
+ 
+    std::auto_ptr<CreateQueueResponse> lResponse(new CreateQueueResponse());
+    CreateQueueHandler lHandler;
+    lHandler.theCreateQueueResponse = lResponse.get();
     
-    
-    
-    makeQueryRequest ( "CreateQueue", &lMap, CallBackWrapper* aCallBackWrapper );
+    makeQueryRequest ( "CreateQueue", &lMap, &lHandler );
+
+    return lResponse.release();
   }
   
 }}//namespaces

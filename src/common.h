@@ -18,7 +18,7 @@
 
 #include <libaws/common.h>
 #include <map>
-#include <string.h>
+#include <string>
 
 
 #ifdef HAVE_INTTYPES_H

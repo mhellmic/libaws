@@ -19,14 +19,25 @@
 #include "common.h"
 #include "awsconnection.h"
 
+#include <map>
+
+struct curl_slist;
 
 namespace aws {
+
+  class QueryCallBack;
 
   class AWSQueryConnection : public AWSConnection {
     protected:
       std::string theDefaultHost;
       std::string theVersion;
       std::string theUrl;
+
+      curl_slist* theSList;
+
+      typedef std::map<std::string, std::string> ParameterMap;
+      typedef std::pair<std::string, std::string> ParameterPair;
+      typedef ParameterMap::iterator ParameterMapIter;
       
     public:
       static std::string QUERY_DATE_FORMAT;
@@ -36,17 +47,21 @@ namespace aws {
                            const std::string& aSecretAccessKey, 
                            const std::string& aHost,
                            const std::string& aVersion);
+      virtual ~AWSQueryConnection();
 
       virtual void makeQueryRequest ( const std::string& action,  
-                                      ParameterMap_t* aParameterMap, 
-                                      CallBackWrapper* aCallBackWrapper );
+                                      ParameterMap* aParameterMap, 
+                                      QueryCallBack* aCallBackWrapper );
 
-      virtual void setCommonParamaters ( ParameterMap_t* aParameterMap );
+      virtual void setCommonParamaters ( ParameterMap* aParameterMap, const std::string& );
       
+      // TODO make it const std::string
       std::string getQueryTimestamp();
-      
+
+      static size_t
+      dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data );
       
   };
 
 } /* namespace aws */
-#endif /* !AWS_AWSCONNECTION_H */
+#endif /* !AWS_AWSQUERYCONNECTION_H */

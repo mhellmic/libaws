@@ -68,7 +68,7 @@ AWSConnectionFactoryImpl::createSQSConnection(const std::string &aAccessKeyId,
     throw AWSSecretAccessKeyMissingException();
   }
 
-  return SQSConnectionPtr(new SQSConnection(aAccessKeyId, aSecretAccessKey));
+  return new SQSConnectionImpl(aAccessKeyId, aSecretAccessKey);
 }
 
 AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()

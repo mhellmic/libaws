@@ -18,44 +18,9 @@
 
 #include <libxml/parser.h>
 
+
 namespace aws
 {
-
-  class SimpleQueryCallBack : QueryCallBack {
-
-    protected:
-      void setState(uint64_t s)   { theCurrentState |= s; }
-      bool isSet(uint64_t s)      { return theCurrentState & s; }
-      void unsetState(uint64_t s) { theCurrentState ^= s; }
-    
-      uint64_t theCurrentState;
-    
-    protected:
-      SimpleQueryCallBack() : QueryCallBack() {};
-
-    public:
-      void startElementNs ( const xmlChar * localname,
-                          const xmlChar * prefix,
-                          const xmlChar * URI,
-                          int nb_namespaces,
-                          const xmlChar ** namespaces,
-                          int nb_attributes,
-                          int nb_defaulted,
-                          const xmlChar ** attributes );
-
-      void charactersSAXFunc ( const xmlChar * value,
-                             int len );
-
-      void endElementNs ( const xmlChar * localname,
-                        const xmlChar * prefix,
-                        const xmlChar * URI );
-
-      virtual void startElement ( const std::string& localname, int nb_attributes, const xmlChar ** attributes ) =0;
-      virtual void characters ( const std::string& value ) =0;
-      virtual void endElement ( const std::string& localname ) =0;
-
-  };
-
   class QueryCallBack{
 
     public:
@@ -66,12 +31,13 @@ namespace aws
       };
 
     protected:
-      std::vector<Error> theErrors;
+      //std::vector<Error> theErrors;
       Status theStatus;
 
     public:
 
-      QueryCallBack() :theStatus ( Status.Unknown ) {};
+      QueryCallBack() :theStatus ( Unknown ) {};
+      virtual ~QueryCallBack();
 
 
 
@@ -111,6 +77,43 @@ namespace aws
                                      const xmlChar * prefix,
                                      const xmlChar * URI );
   };
+
+
+  class SimpleQueryCallBack : public QueryCallBack {
+
+    protected:
+      void setState(uint64_t s)   { theCurrentState |= s; }
+      bool isSet(uint64_t s)      { return theCurrentState & s; }
+      void unsetState(uint64_t s) { theCurrentState ^= s; }
+    
+      uint64_t theCurrentState;
+    
+    protected:
+      SimpleQueryCallBack() : QueryCallBack() {};
+
+    public:
+      void startElementNs ( const xmlChar * localname,
+                          const xmlChar * prefix,
+                          const xmlChar * URI,
+                          int nb_namespaces,
+                          const xmlChar ** namespaces,
+                          int nb_attributes,
+                          int nb_defaulted,
+                          const xmlChar ** attributes );
+
+      void charactersSAXFunc ( const xmlChar * value,
+                             int len );
+
+      void endElementNs ( const xmlChar * localname,
+                        const xmlChar * prefix,
+                        const xmlChar * URI );
+
+      virtual void startElement ( const std::string& localname, int nb_attributes, const xmlChar ** attributes ) =0;
+      virtual void characters ( const std::string& value ) =0;
+      virtual void endElement ( const std::string& localname ) =0;
+
+  };
+
 
 
 }//namespace

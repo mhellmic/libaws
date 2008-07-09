@@ -1,12 +1,12 @@
+#include "common.h"
 
+#include "awsqueryconnection.h"
 
-#include "aws/common.h"
-
-#include "aws/awsqueryconnection.h"
-
-#include "aws/awsquerycallback.h"
+#include "awsquerycallback.h"
 
 #include <openssl/hmac.h>
+#include <curl/curl.h>
+#include <sstream>
 
 
 
@@ -17,13 +17,14 @@ namespace aws {
   AWSQueryConnection::AWSQueryConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,
       const std::string& aHost,
-      std::string& aVersion ) :
+      const std::string& aVersion ) :
       theVersion ( aVersion ), AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost )  {
     // always use a content-type text/plain as required by amazon
     theSList = curl_slist_append ( theSList, "Content-Type: text/plain" );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPHEADER, theSList );
     curl_easy_setopt ( theCurl, CURLOPT_WRITEFUNCTION,  AWSQueryConnection::dataReceiver );
     curl_easy_setopt ( theCurl, CURLOPT_ERRORBUFFER, theCurlErrorBuffer );
+    curl_easy_setopt ( theCurl, CURLOPT_HTTPGET, 1); 
 
     std::stringstream lUrl;
     lUrl << ( theIsSecure ? "https://": "http://" ) << aHost << ":" << thePort;
@@ -35,26 +36,27 @@ namespace aws {
     curl_slist_free_all ( theSList );
   }
 
-  void AWSQueryConnection::setCommonParamaters ( ParameterMap* aParameterMap ) {
-    aParameterMap->insert ( ParameterPair_t ( "AWSAccessKeyId", theAccessKeyId ) );
-    aParameterMap->insert ( ParameterPair_t ( "Version", theVersion ) );
-    aParameterMap->insert ( ParameterPair_t ( "Timestamp", getQueryTimestamp() ) );
+  void AWSQueryConnection::setCommonParamaters ( ParameterMap* aParameterMap, const std::string& aAction ) {
+    aParameterMap->insert ( ParameterPair ( "AWSAccessKeyId", theAccessKeyId ) );
+    aParameterMap->insert ( ParameterPair ( "Version", theVersion ) );
+    aParameterMap->insert ( ParameterPair ( "Timestamp", getQueryTimestamp() ) );
+    aParameterMap->insert ( ParameterPair ( "Action", aAction ) );
   }
 
   void
-  SQSConnection::makeQueryRequest ( const std::string &action,  ParameterMap* aParameterMap, QueryCallBack* aCallBack )
+  AWSQueryConnection::makeQueryRequest ( const std::string &action,  ParameterMap* aParameterMap, QueryCallBack* aCallBack )
   {
-    setCommonParamaters(aParameterMap);
+    setCommonParamaters(aParameterMap, action);
     
     std::stringstream lStringToSign;
     std::stringstream lUrl;
 
     // begin with the url
-    lUrl << aUrl;
+    lUrl << theUrl;
 
     // build query url and the string to sign
     bool lFirst = true;
-    for ( ParameterMapIter_t lIter = aParameterMap->begin();
+    for ( ParameterMapIter lIter = aParameterMap->begin();
           lIter != aParameterMap->end(); ++lIter )
     {
       lUrl << ( lFirst?lFirst=false,"/?":"&" );
@@ -67,6 +69,10 @@ namespace aws {
     }
 
     {
+      unsigned int  theEncryptedResultSize;
+      unsigned char theEncryptedResult[1024];
+      char*         theBase64EncodedString;
+
       // compute signature
       HMAC ( EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(),
              ( const unsigned char* ) lStringToSign.str().c_str(), lStringToSign.str().size(),
@@ -84,19 +90,19 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    std::cout << "Send request:" << lUrlString << std::endl;
+    //std::cout << "Send request:" << lUrlString << std::endl;
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );
 
     // set the request method (i.e. get, post) and the according callback functions
-    setRequestMethod ( aActionType );
+    //setRequestMethod ( aActionType );
 
     // set the data object received in the callback function
     curl_easy_setopt ( theCurl, CURLOPT_WRITEDATA, ( void* ) ( aCallBack ) );
 
     // set a callback for retrieving all http header information
-    curl_easy_setopt ( theCurl, CURLOPT_HEADERFUNCTION, SQSConnection::getHeaderData );
+//    curl_easy_setopt ( theCurl, CURLOPT_HEADERFUNCTION, AWSQueryConnection::getHeaderData );
 
 #if 0
     curl_easy_setopt ( theCurl, CURLOPT_VERBOSE, 1 );
@@ -140,7 +146,7 @@ namespace aws {
   }
 
   size_t
-  SQSConnection::dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data )
+  AWSQueryConnection::dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data )
   {
     QueryCallBack* lQueryCallBack = static_cast<QueryCallBack*> ( data );
 

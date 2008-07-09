@@ -21,9 +21,12 @@
 namespace aws {
   namespace sqs  {
 
+    class CreateQueueResponse;
+
     class CreateQueueHandler : public SimpleQueryCallBack
     {
       private:
+        friend class SQSConnection;
         CreateQueueResponse* theCreateQueueResponse;
 
         enum States {

@@ -41,7 +41,7 @@ namespace aws {
     	virtual ~SQSResponse();
     	
       virtual const std::string&
-      getRequestId();
+      getRequestId() const;
     
     protected:
       T* theSQSResponse;
@@ -53,11 +53,8 @@ namespace aws {
     public:
       virtual ~CreateQueueResponse();
     
-    	const std::string& 
-      getQueueName();
-
       const std::string&
-      getQueueUrl();
+      getQueueUrl() const;
     
     protected:
       friend class SQSConnectionImpl;

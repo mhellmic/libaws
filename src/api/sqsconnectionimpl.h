@@ -21,7 +21,7 @@
 
 namespace aws {
 
-  namespace s3 {
+  namespace sqs {
     class SQSConnection;
   }
 
@@ -30,7 +30,7 @@ namespace aws {
     public:
       virtual ~SQSConnectionImpl();
 
-      CreateQueueResponsePtr
+      virtual CreateQueueResponsePtr
       createQueue(const std::string &aQueueName, int aDefaultVisibilityTimeout = -1);
 
 #if 0

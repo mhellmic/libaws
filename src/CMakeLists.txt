@@ -27,7 +27,9 @@ SET(AWS_SRCS awsconnection.cpp
              awstime.cpp
              exception.cpp
              curlstreambuf.cpp
-             ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp)
+             ${CMAKE_CURRENT_BINARY_DIR}/awsversion.cpp
+             awsqueryconnection.cpp
+             awsquerycallback.cpp)
 
 INCLUDE(api/CMakeLists.txt)
 FOREACH (SRCS ${API_SRCS})

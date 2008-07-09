@@ -21,12 +21,13 @@
 #include <map>
 #include <iostream>
 
-#include "awsconnection.h"
+#include "awsqueryconnection.h"
 
 namespace aws {
 
-
   namespace sqs {
+
+    class CreateQueueResponse;
 
     class SQSConnection : public AWSQueryConnection
     {
@@ -39,31 +40,31 @@ namespace aws {
         SQSConnection(const std::string& aAccessKeyId, 
                       const std::string& aSecretAccessKey);
       
-        CreateQueueResponsePtr
+        CreateQueueResponse*
         createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout );
 
         /*
-        DeleteQueueResponsePtr
+        DeleteQueueResponse*
         deleteQueue ( const std::string &aQueueUrl, bool aForceDeletion = false );
 
-        ListQueuesResponsePtr
+        ListQueuesResponse*
         listQueues ( const std::string &aQueueNamePrefix = "" );
 
-        SendMessageResponsePtr
+        SendMessageResponse*
         sendMessage ( const std::string &aQueueName, const char* aContent, size_t aContentSize );
 
-        SendMessageResponsePtr
+        SendMessageResponse*
         sendMessage ( const std::string &aQueueName, const std::string &aContent );
 
-        PeekMessageResponsePtr
+        PeekMessageResponse*
         peekMessage ( const std::string &aQueueName, const std::string &aMessageId );
 
-        ReceiveMessageResponsePtr
+        ReceiveMessageResponse*
         receiveMessage ( const std::string &aQueueName,
                          int aNumberOfMessages = -1,
                          int aVisibilityTimeout = -1 );
 
-        DeleteMessageResponsePtr
+        DeleteMessageResponse*
         deleteMessage ( const std::string &aQueueName, const std::string &aMessageId );*/
 
     };
