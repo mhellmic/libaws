@@ -23,6 +23,10 @@ namespace aws {
 
   class AWSConnectionFactoryImpl : public AWSConnectionFactory {
 
+    private:
+      
+      void checkParameters(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey);
+    
     public:
       AWSConnectionFactoryImpl();
       ~AWSConnectionFactoryImpl();
@@ -32,6 +36,9 @@ namespace aws {
       
       SQSConnectionPtr
       createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      
+      SDBConnectionPtr
+      createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
 
       void 
       shutdown();

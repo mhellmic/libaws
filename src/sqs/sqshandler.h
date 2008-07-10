@@ -22,25 +22,39 @@ namespace aws {
   namespace sqs  {
 
     class CreateQueueResponse;
-
-    class CreateQueueHandler : public SimpleQueryCallBack
-    {
-      protected:
-        friend class SQSConnection;
-        CreateQueueResponse* theCreateQueueResponse;
-        
+    
+    class QueueErrorHandler : public SimpleQueryCallBack{
+               
+      public:
+                
         enum States {
-          Code        = 1,
-          Message     = 2,
+          ERROR_Code        = 1,
+          ERROR_Message     = 2,
           RequestId   = 4,
           HostId      = 8,
           QueueUrl    = 16
         };
-
-      public:
+        
         virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
         virtual void characters ( const xmlChar *  value, int len );
         virtual void endElement ( const xmlChar *  localname );
+        
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes ) = 0;
+        virtual void responseCharacters ( const xmlChar *  value, int len ) = 0;
+        virtual void responseEndElement ( const xmlChar *  localname ) = 0; 
+      
+    };
+
+    class CreateQueueHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        CreateQueueResponse* theCreateQueueResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
 
     };
 

@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,97 +22,102 @@
 
 #include <libaws/exception.h>
 #include <libaws/awsversion.h>
-  
+
 #include "api/awsconnectionfactoryimpl.h"
 #include "api/s3connectionimpl.h"
 #include "api/sqsconnectionimpl.h"
+#include "api/sdbconnectionimpl.h"
 
-namespace aws { 
+namespace aws {
 
-AWSConnectionFactoryImpl::AWSConnectionFactoryImpl()
-  : theIsInitialized(false),
-    theInitializationFailed(false)
-{ }
+  AWSConnectionFactoryImpl::AWSConnectionFactoryImpl()
+      : theIsInitialized ( false ),
+      theInitializationFailed ( false )
+  { }
 
-
-S3ConnectionPtr
-AWSConnectionFactoryImpl::createS3Connection(const std::string& aAccessKeyId, 
-                                             const std::string& aSecretAccessKey)
-{
-  if ( theInitializationFailed )
-    throw AWSInitializationException(theInitializationErrorMessage);
-
-  if ( aAccessKeyId.size() == 0 )
-    throw AWSAccessKeyIdMissingException();
-
-  if ( aSecretAccessKey.size() == 0 ) 
-    throw AWSSecretAccessKeyMissingException();
-      
-  return new S3ConnectionImpl(aAccessKeyId, aSecretAccessKey);
-}
-
-SQSConnectionPtr
-AWSConnectionFactoryImpl::createSQSConnection(const std::string &aAccessKeyId, 
-                                              const std::string &aSecretAccessKey)
-{
-  if ( theInitializationFailed )
-    throw AWSInitializationException(theInitializationErrorMessage);
-
-  if (aAccessKeyId.size() == 0)
+  void
+  AWSConnectionFactoryImpl::checkParameters ( const std::string& aAccessKeyId,  const std::string& aSecretAccessKey )
   {
-    throw AWSSecretAccessKeyMissingException();
+    if ( theInitializationFailed )
+      throw AWSInitializationException ( theInitializationErrorMessage );
+
+    if ( aAccessKeyId.size() == 0 )
+      throw AWSAccessKeyIdMissingException();
+
+    if ( aSecretAccessKey.size() == 0 )
+      throw AWSSecretAccessKeyMissingException();
   }
 
-  if (aSecretAccessKey.size() == 0)
+  S3ConnectionPtr
+  AWSConnectionFactoryImpl::createS3Connection ( const std::string& aAccessKeyId,
+      const std::string& aSecretAccessKey )
   {
-    throw AWSSecretAccessKeyMissingException();
+
+    checkParameters ( aAccessKeyId, aSecretAccessKey );
+
+    return new S3ConnectionImpl ( aAccessKeyId, aSecretAccessKey );
   }
 
-  return new SQSConnectionImpl(aAccessKeyId, aSecretAccessKey);
-}
+  SQSConnectionPtr
+  AWSConnectionFactoryImpl::createSQSConnection ( const std::string &aAccessKeyId,
+      const std::string &aSecretAccessKey )
+  {
+    checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()
-{
-  if ( theIsInitialized )
-    shutdown();
-}
-
-void
-AWSConnectionFactoryImpl::shutdown()
-{
-  if ( ! theInitializationFailed ) {
-    xmlCleanupParser();
-    curl_global_cleanup();
+    return new SQSConnectionImpl ( aAccessKeyId, aSecretAccessKey );
   }
-  theIsInitialized = false;
-}
 
-std::string
-AWSConnectionFactoryImpl::getVersion()
-{
-  return AWSVersion::getAWSVersion();
-}
+  SDBConnectionPtr
+  AWSConnectionFactoryImpl::createSDBConnection ( const std::string &aAccessKeyId,
+      const std::string &aSecretAccessKey )
+  {
+    checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-void
-AWSConnectionFactoryImpl::init()
-{
-  // initialize the curl library
-  // this call is not thread safe
-  // fortunately, we call it only once when initializing
-  // libaws statically.
-  CURLcode lCurlCode = curl_global_init(CURL_GLOBAL_ALL);
+    return new SDBConnectionImpl ( aAccessKeyId, aSecretAccessKey );
+  }
 
-  if ( lCurlCode ) {
-    const char* lCurlError = curl_easy_strerror( lCurlCode );
-    const std::string lCurlErrorStr(lCurlError);
-    throw AWSConnectionException ( lCurlErrorStr );
-  } 
+  AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()
+  {
+    if ( theIsInitialized )
+      shutdown();
+  }
 
-  // initialize the libxml2 library and perform version check
-  LIBXML_TEST_VERSION
+  void
+  AWSConnectionFactoryImpl::shutdown()
+  {
+    if ( ! theInitializationFailed ) {
+      xmlCleanupParser();
+      curl_global_cleanup();
+    }
+    theIsInitialized = false;
+  }
 
-  theIsInitialized = true;
-}
+  std::string
+  AWSConnectionFactoryImpl::getVersion()
+  {
+    return AWSVersion::getAWSVersion();
+  }
+
+  void
+  AWSConnectionFactoryImpl::init()
+  {
+    // initialize the curl library
+    // this call is not thread safe
+    // fortunately, we call it only once when initializing
+    // libaws statically.
+    CURLcode lCurlCode = curl_global_init ( CURL_GLOBAL_ALL );
+
+    if ( lCurlCode ) {
+      const char* lCurlError = curl_easy_strerror ( lCurlCode );
+      const std::string lCurlErrorStr ( lCurlError );
+      throw AWSConnectionException ( lCurlErrorStr );
+    }
+
+    // initialize the libxml2 library and perform version check
+    LIBXML_TEST_VERSION
+
+    theIsInitialized = true;
+  }
 
 
 } /* namespace aws */

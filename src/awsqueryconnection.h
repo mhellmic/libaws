@@ -31,11 +31,21 @@ namespace aws {
     protected:
       std::string theDefaultHost;
       std::string theVersion;
-      std::string theUrl;
 
       curl_slist* theSList;
 
-      typedef std::map<std::string, std::string> ParameterMap;
+      struct ltstr
+      {
+        bool operator()(std::string s1, std::string s2) const
+        {
+          std::transform(s1.begin(), s1.end(), s1.begin(), tolower);
+          std::transform(s2.begin(), s2.end(), s2.begin(), tolower);
+
+          return s1.compare(s2) < 0;
+        }
+      };
+    
+      typedef std::map<std::string, std::string, ltstr> ParameterMap;
       typedef std::pair<std::string, std::string> ParameterPair;
       typedef ParameterMap::iterator ParameterMapIter;
       
@@ -49,7 +59,17 @@ namespace aws {
                            const std::string& aVersion);
       virtual ~AWSQueryConnection();
 
-      virtual void makeQueryRequest ( const std::string& action,  
+      virtual void makeQueryRequest ( const std::string& aUrl,
+                                      const std::string& aAction,  
+                                      ParameterMap* aParameterMap, 
+                                      QueryCallBack* aCallBackWrapper );
+      
+      virtual void makeQueryRequest ( const std::string& aAction,  
+                                      ParameterMap* aParameterMap, 
+                                      QueryCallBack* aCallBackWrapper );
+      
+      virtual void makeQueryRequestOnResource ( const std::string& aResource,
+                                      const std::string& aAction,  
                                       ParameterMap* aParameterMap, 
                                       QueryCallBack* aCallBackWrapper );
 

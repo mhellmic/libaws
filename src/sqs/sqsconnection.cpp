@@ -21,6 +21,7 @@
 
 #include <sstream>
 #include <memory>
+#include <cassert>
 
 
 using namespace aws;
@@ -49,12 +50,13 @@ namespace aws { namespace sqs {
       lMap.insert ( ParameterPair ( "DefaultVisibilityTimeout", s.str() ) );
     }
  
-   
     CreateQueueHandler lHandler;
-    
     makeQueryRequest ( "CreateQueue", &lMap, &lHandler );
-
-    return lHandler.theCreateQueueResponse;
+    if(lHandler.isSuccessful()){
+      return lHandler.theCreateQueueResponse;
+    }else{
+      assert(false); //Matthias you need to throw the exception here! Get the ErrorResponse from lHandler.getQueryErrorResponse() 
+    }
   }
   
 }}//namespaces

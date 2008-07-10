@@ -25,7 +25,7 @@ createQueue(SQSConnection* lSQSCon)
   {
     try {
       CreateQueueResponsePtr lCreateQueue = lSQSCon->createQueue("testQueue");
-      std::cout << "Bucket created successfully" << " RequestId" << lCreateQueue->getRequestId() << std::endl;
+      std::cout << "Bucket created successfully. RequestId: " << lCreateQueue->getRequestId() << std::endl;
     } catch (CreateBucketException& e) {
       std::cerr << "Couldn't create bucket" << std::endl;
       std::cerr << e.what() << std::endl;

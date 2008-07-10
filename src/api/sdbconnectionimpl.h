@@ -13,17 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef LIBAWS_AWS_API_H
-#define LIBAWS_AWS_API_H
+#ifndef AWS_SDB_SDBCONNECTIONIMPL_H
+#define AWS_SDB_SDBCONNECTIONIMPL_H
 
-#include <libaws/awsconnectionfactory.h>
-
-#include <libaws/s3connection.h>
-#include <libaws/s3response.h>
-#include <libaws/s3exception.h>
-#include <libaws/sqsconnection.h>
-#include <libaws/sqsresponse.h>
+#include "common.h"
 #include <libaws/sdbconnection.h>
-#include <libaws/sdbresponse.h>
 
+namespace aws {
+
+  namespace sdb {
+    class SDBConnection;
+  }
+  
+  class SDBConnectionImpl : public SDBConnection
+  {
+    protected:
+      // only the factory can create us
+      friend class AWSConnectionFactoryImpl;
+      SDBConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+
+      sdb::SDBConnection* theConnection;
+    
+    public:
+      virtual ~SDBConnectionImpl();
+
+      virtual CreateDomainResponsePtr
+          createDomain(const std::string &aDomainName);
+  };
+} /* namespace aws */
 #endif

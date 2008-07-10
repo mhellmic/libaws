@@ -37,7 +37,10 @@ namespace aws
 
     public:
 
-      QueryCallBack() :theQueryErrorResponse ( 0 ), theIsSuccessful ( false ), theParserCreated ( false ) {}
+      QueryCallBack() :theQueryErrorResponse ( 0 ), theIsSuccessful ( true ), theParserCreated ( false ) {
+        memset ( &theSAXHandler, 0, sizeof ( theSAXHandler ) );
+        theSAXHandler.initialized    = XML_SAX2_MAGIC;
+      }
       virtual ~QueryCallBack(){}
 
       QueryErrorResponse* getQueryErrorResponse() {return theQueryErrorResponse;}
@@ -99,7 +102,7 @@ namespace aws
   class SimpleQueryCallBack : public QueryCallBack {
 
     protected:
-      SimpleQueryCallBack() : QueryCallBack() {};
+      SimpleQueryCallBack() : QueryCallBack(), theCurrentState(0) {};
       virtual ~SimpleQueryCallBack(){}
       
       uint64_t theCurrentState;

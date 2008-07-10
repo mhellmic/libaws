@@ -65,6 +65,18 @@ namespace aws {
 
   class CreateQueueResponse;
   typedef SmartPtr<CreateQueueResponse> CreateQueueResponsePtr;
+  
+  /**
+   * SDB stuff
+   */
+  class SDBConnection;
+  typedef SmartPtr<SDBConnection> SDBConnectionPtr;
+
+  template <class T> class SDBResponse;
+  typedef SmartPtr<SDBResponse<class T> > SDBResponsePtr;
+
+  class CreateDomainResponse;
+  typedef SmartPtr<CreateDomainResponse> CreateDomainResponsePtr;
 
 } /* namespace aws */
 

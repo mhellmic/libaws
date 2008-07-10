@@ -107,6 +107,33 @@ namespace aws {
     virtual SQSConnectionPtr
     createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey) = 0;
 
+    
+    /*! \brief Retrieve a smart pointer to a aws::sqs::SQSConnection instance.
+     *
+     * The createSDBConnection function creates an instance of the aws::sqs::SDBConnection class.
+     * Such an instance provides operations on the AWS SDB service (e.g. creating a domain or
+     * querying). See the documentation of aws::sdb::SDBConnection 
+     * for a complete reference of the operations provided by this class.
+     *
+     * Note that the use of such an object is restricted to one thread only.
+     * However, multiple instance can be created and every instance can be used in a
+     * different thread.
+     *
+     * \throws aws::AWSInitializationException if the initialization of libcurl fails
+     *         during the first call of getInstance (or any directly following getInstance call 
+     *         after shutdown has been called). In this case, libaws cannot be
+     *         used. See <a href="http://curl.haxx.se">libcurl</a> for more information
+     *         about the error that is reported.
+     * \throws aws::AWSAccessKeyIdMissingException if the AWS Access Key Id provided as parameter
+     *         is empty.
+     * \throws aws::AWSSecretAccessKeyMissingException if the AWS Secret Access Key provided 
+     *         as parameter is empty.
+     *
+     * @return A smart pointer to a aws::sdb::SDBConnection instance.
+     */
+    virtual SDBConnectionPtr
+    createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey) = 0;
+    
     /*! \brief Release all resources that have been allocated by libaws or any library it uses.
      *
      * This function releases all resources that have been allocated by libaws

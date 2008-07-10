@@ -18,4 +18,6 @@ SET(API_SRCS
     s3connectionimpl.cpp
     sqsconnectionimpl.cpp
     s3response.cpp
-    sqsresponse.cpp)
+    sqsresponse.cpp
+    sdbconnectionimpl.cpp
+    sdbresponse.cpp)

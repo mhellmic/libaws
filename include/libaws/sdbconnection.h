@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef LIBAWS_AWS_API_H
-#define LIBAWS_AWS_API_H
+#ifndef AWS_SDB_SDBCONNECTION_API_H
+#define AWS_SDB_SDBCONNECTION_API_H
 
-#include <libaws/awsconnectionfactory.h>
+#include <istream>
+#include <map>
+#include <libaws/common.h>
 
-#include <libaws/s3connection.h>
-#include <libaws/s3response.h>
-#include <libaws/s3exception.h>
-#include <libaws/sqsconnection.h>
-#include <libaws/sqsresponse.h>
-#include <libaws/sdbconnection.h>
-#include <libaws/sdbresponse.h>
+namespace aws {
+  
+  class SDBConnection : public SmartObject
+  {
+    public:
+      virtual ~SDBConnection() {}
 
+      virtual CreateDomainResponsePtr
+          createDomain(const std::string &aDomainName) = 0;
+  
+  }; /* class SDBConnection */
+
+} /* namespace aws */
 #endif

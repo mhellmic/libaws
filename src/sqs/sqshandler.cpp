@@ -16,6 +16,7 @@
 #include "common.h"
 #include "sqs/sqshandler.h"
 #include "sqs/sqsresponse.h"
+#include <iostream>
 
 #include <string>
 
@@ -23,36 +24,80 @@ using namespace aws;
 
 namespace aws {
   namespace sqs {
+
+    void 
+    QueueErrorHandler::startElement ( const xmlChar *  localname, 
+                                      int nb_attributes, 
+                                      const xmlChar ** attributes ) {
+      if (xmlStrEqual ( localname, BAD_CAST "ErrorResponse" ) ) {
+        theIsSuccessful = false;
+        theQueryErrorResponse = new QueryErrorResponse();
+      }else if (theIsSuccessful ) {
+        responseStartElement ( localname, nb_attributes, attributes );
+      }else if(xmlStrEqual ( localname, BAD_CAST "Code" )) {
+        setState ( ERROR_Code );
+      }else if(xmlStrEqual ( localname, BAD_CAST "Message" )) {
+        setState ( ERROR_Message );
+      }else if(xmlStrEqual ( localname, BAD_CAST "RequestID" )) {
+        setState ( RequestId );
+      }
+
+    }
     
+    void QueueErrorHandler::characters ( const xmlChar *  value,         
+                                         int len ) {
+                                           
+      if (theIsSuccessful ) {
+        responseCharacters ( value, len );
+      } else {
+        std::string lStrValue(( const char* ) value, len);
+        
+        if(isSet ( ERROR_Code)) {
+          theQueryErrorResponse->setErrorCode(lStrValue);
+        }else if(isSet ( ERROR_Message)) {
+          theQueryErrorResponse->setErrorMessage(lStrValue);
+        }else if(isSet ( RequestId)) {
+          theQueryErrorResponse->setRequestId(lStrValue);
+        }  
+      }
+    }
+    
+    void 
+    QueueErrorHandler::endElement ( const xmlChar *  localname ) {
+      responseEndElement ( localname );
+    }
+
     void
-    CreateQueueHandler::startElement ( const xmlChar * localname, int nb_attributes, const xmlChar ** attributes )
+    CreateQueueHandler::responseStartElement ( const xmlChar * localname, int nb_attributes, const xmlChar ** attributes )
     {
-      if (xmlStrEqual(localname, BAD_CAST "CreateQueueResponse") ) {
+      if ( xmlStrEqual ( localname, BAD_CAST "CreateQueueResponse" ) ) {
         theCreateQueueResponse = new CreateQueueResponse();
-      } else if (xmlStrEqual(localname, BAD_CAST "RequestId") ) {
-        setState(RequestId);
-      } else if (xmlStrEqual(localname, BAD_CAST "QueueUrl")) {
-        setState(QueueUrl);
+      } else if ( xmlStrEqual ( localname, BAD_CAST "RequestId" ) ) {
+        setState ( RequestId );
+      } else if ( xmlStrEqual ( localname, BAD_CAST "QueueUrl" ) ) {
+        setState ( QueueUrl );
       }
     }
-        
+
     void
-    CreateQueueHandler::characters ( const xmlChar *  value, int len )
+    CreateQueueHandler::responseCharacters ( const xmlChar *  value, int len )
     {
-      if (isSet(RequestId)) {
-        theCreateQueueResponse->theRequestId.append((const char*)value, len);
-      } else if (isSet(QueueUrl)) {
-        theCreateQueueResponse->theQueueURL.append((const char*)value, len);
+      //std::string test((const char*)value, len);
+      //std::cout << "value:" << test << std::endl;
+      if ( isSet ( RequestId ) ) {
+        theCreateQueueResponse->theRequestId.append ( ( const char* ) value, len );
+      } else if ( isSet ( QueueUrl ) ) {
+        theCreateQueueResponse->theQueueURL.append ( ( const char* ) value, len );
       }
     }
-        
+
     void
-    CreateQueueHandler::endElement ( const xmlChar * localname )
+    CreateQueueHandler::responseEndElement ( const xmlChar * localname )
     {
-      if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
-        unsetState(RequestId);
-      } else if (xmlStrEqual(localname, BAD_CAST "QueueUrl")) {
-        unsetState(QueueUrl);
+      if ( xmlStrEqual ( localname, BAD_CAST "RequestId" ) ) {
+        unsetState ( RequestId );
+      } else if ( xmlStrEqual ( localname, BAD_CAST "QueueUrl" ) ) {
+        unsetState ( QueueUrl );
       }
     }
 

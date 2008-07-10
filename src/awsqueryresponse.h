@@ -43,6 +43,7 @@ namespace aws
       std::string theUrl;
       
     public:
+      QueryErrorResponse(){};
       QueryErrorResponse(std::string aErrorCode, 
                          std::string aErrorMessage, 
                          std::string aRequestId,
@@ -52,10 +53,14 @@ namespace aws
         theRequestId(aRequestId),
         theUrl(aUrl){} 
              
-      const std::string& getErrorCode() const {return theErrorCode;}
-      const std::string& getErrorMessage() const {return theErrorMessage;}
-      const std::string& getRequestId() const {return theRequestId;}
-      const std::string& getUrl() const {return theUrl;}
+        const std::string& getErrorCode() const {return theErrorCode;}
+        const void setErrorCode(std::string& value){theErrorCode = value;};
+        const std::string& getErrorMessage() const {return theErrorMessage;}
+        const void setErrorMessage(std::string& value){theErrorMessage = value;};
+        const std::string& getRequestId() const {return theRequestId;}
+        const void setRequestId(std::string& value){theRequestId = value;};
+        const std::string& getUrl() const {return theUrl;}
+        const void setUrl(std::string& value){theUrl = value;};
   };
   
 }//namespace aws
