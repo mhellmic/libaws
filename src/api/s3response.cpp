@@ -84,13 +84,13 @@ namespace aws {
     : S3Response<s3::ListAllBucketsResponse>(r) {}
 
   void
-  ListAllBucketsResponse::open() const
+  ListAllBucketsResponse::open()
   {
     theS3Response->open();
   }
 
   bool
-  ListAllBucketsResponse::next(Bucket& aBucket) const
+  ListAllBucketsResponse::next(Bucket& aBucket)
   {
     s3::ListAllBucketsResponse::Bucket lBucket;
     if (theS3Response->next(lBucket)) {
@@ -102,7 +102,7 @@ namespace aws {
   }
 
   void
-  ListAllBucketsResponse::close() const
+  ListAllBucketsResponse::close() 
   {
     theS3Response->close();
   }
@@ -138,13 +138,13 @@ namespace aws {
     : S3Response<s3::ListBucketResponse>(r) {}
 
   void
-  ListBucketResponse::open() const
+  ListBucketResponse::open()
   {
     theS3Response->open();
   }
 
   bool
-  ListBucketResponse::next(Object& aObject) const
+  ListBucketResponse::next(Object& aObject)
   {
     s3::ListBucketResponse::Key lKey;
     if (theS3Response->next(lKey)) {
@@ -158,7 +158,7 @@ namespace aws {
   }
 
   void
-  ListBucketResponse::close() const
+  ListBucketResponse::close() 
   {
     theS3Response->close();
   }

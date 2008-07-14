@@ -71,13 +71,13 @@ namespace aws { namespace s3 {
     }
 
     void
-    ListAllBucketsResponse::open() const
+    ListAllBucketsResponse::open() 
     {
       theIterator = theBuckets.begin();
     }
 
     bool
-    ListAllBucketsResponse::next(Bucket& aBucket) const
+    ListAllBucketsResponse::next(Bucket& aBucket)
     {
       if (theIterator != theBuckets.end()) {
         aBucket.BucketName = (*theIterator).BucketName;
@@ -89,7 +89,7 @@ namespace aws { namespace s3 {
     }
 
     void
-    ListAllBucketsResponse::close() const
+    ListAllBucketsResponse::close()
     {
       theIterator = theBuckets.end();
     }
@@ -117,13 +117,13 @@ namespace aws { namespace s3 {
     }
 
     void
-    ListBucketResponse::open() const
+    ListBucketResponse::open()
     {
       theIterator = theKeys.begin();
     }
 
     bool
-    ListBucketResponse::next(Key& aKey) const
+    ListBucketResponse::next(Key& aKey)
     {
       if (theIterator != theKeys.end()) {
         aKey.KeyValue     = (*theIterator).KeyValue;
@@ -137,7 +137,7 @@ namespace aws { namespace s3 {
     }
 
     void
-    ListBucketResponse::close() const
+    ListBucketResponse::close()
     {
       theIterator = theKeys.end();
     }

@@ -65,7 +65,22 @@ namespace aws {
 
   class CreateQueueResponse;
   typedef SmartPtr<CreateQueueResponse> CreateQueueResponsePtr;
+
+  class DeleteQueueResponse;
+  typedef SmartPtr<DeleteQueueResponse> DeleteQueueResponsePtr;
+
+  class ListQueuesResponse;
+  typedef SmartPtr<ListQueuesResponse> ListQueuesResponsePtr;
+
+  class SendMessageResponse;
+  typedef SmartPtr<SendMessageResponse> SendMessageResponsePtr;
+
+  class ReceiveMessageResponse;
+  typedef SmartPtr<ReceiveMessageResponse> ReceiveMessageResponsePtr;
   
+  class DeleteMessageResponse;
+  typedef SmartPtr<DeleteMessageResponse> DeleteMessageResponsePtr;
+
   /**
    * SDB stuff
    */

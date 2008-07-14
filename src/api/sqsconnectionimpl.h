@@ -33,30 +33,23 @@ namespace aws {
       virtual CreateQueueResponsePtr
       createQueue(const std::string &aQueueName, int aDefaultVisibilityTimeout = -1);
 
-#if 0
-      DeleteQueueResponsePtr
+      virtual DeleteQueueResponsePtr
       deleteQueue(const std::string &aQueueUrl, bool aForceDeletion = false);
 
-      ListQueuesResponsePtr
+      virtual ListQueuesResponsePtr
       listQueues(const std::string &aQueueNamePrefix = "");
 
-      SendMessageResponsePtr
+      virtual SendMessageResponsePtr
       sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize);
 
-      SendMessageResponsePtr
-      sendMessage(const std::string &aQueueName, const std::string &aContent);
-
-      PeekMessageResponsePtr
-      peekMessage(const std::string &aQueueName, const std::string &aMessageId);
-
-      ReceiveMessageResponsePtr
+      virtual ReceiveMessageResponsePtr
       receiveMessage(const std::string &aQueueName,
                     int aNumberOfMessages = -1,
                     int aVisibilityTimeout = -1);
 
-      DeleteMessageResponsePtr
-      deleteMessage(const std::string &aQueueName, const std::string &aMessageId);
-#endif
+      virtual DeleteMessageResponsePtr
+      deleteMessage(const std::string &aReceiptHandle);
+
     protected:
       // only the factory can create us
       friend class AWSConnectionFactoryImpl;

@@ -28,6 +28,11 @@ namespace aws {
   namespace sqs {
 
     class CreateQueueResponse;
+    class DeleteQueueResponse;
+    class ListQueuesResponse;
+    class SendMessageResponse;
+    class ReceiveMessageResponse;
+    class DeleteMessageResponse;
 
     class SQSConnection : public AWSQueryConnection
     {
@@ -43,7 +48,6 @@ namespace aws {
         CreateQueueResponse*
         createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout );
 
-        /*
         DeleteQueueResponse*
         deleteQueue ( const std::string &aQueueUrl, bool aForceDeletion = false );
 
@@ -53,19 +57,13 @@ namespace aws {
         SendMessageResponse*
         sendMessage ( const std::string &aQueueName, const char* aContent, size_t aContentSize );
 
-        SendMessageResponse*
-        sendMessage ( const std::string &aQueueName, const std::string &aContent );
-
-        PeekMessageResponse*
-        peekMessage ( const std::string &aQueueName, const std::string &aMessageId );
-
         ReceiveMessageResponse*
         receiveMessage ( const std::string &aQueueName,
                          int aNumberOfMessages = -1,
                          int aVisibilityTimeout = -1 );
 
         DeleteMessageResponse*
-        deleteMessage ( const std::string &aQueueName, const std::string &aMessageId );*/
+        deleteMessage ( const std::string &aReceiptHandle);
 
     };
 

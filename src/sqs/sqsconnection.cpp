@@ -39,8 +39,8 @@ namespace aws { namespace sqs {
   }
   
   CreateQueueResponse*
-  SQSConnection::createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout ){
-
+  SQSConnection::createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout)
+  {
     ParameterMap lMap;
     lMap.insert ( ParameterPair ( "QueueName", aQueueName ) );
  
@@ -59,5 +59,32 @@ namespace aws { namespace sqs {
     }
   }
   
+  DeleteQueueResponse*
+  SQSConnection::deleteQueue(const std::string &aQueueUrl, bool aForceDeletion)
+  {
+  }
+
+  ListQueuesResponse*
+  SQSConnection::listQueues(const std::string &aQueueNamePrefix)
+  {
+  }
+
+  SendMessageResponse*
+  SQSConnection::sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize)
+  {
+  }
+
+  ReceiveMessageResponse*
+  SQSConnection::receiveMessage(const std::string &aQueueName,
+                                int aNumberOfMessages,
+                                int aVisibilityTimeout)
+  {
+  }
+
+  DeleteMessageResponse*
+  SQSConnection::deleteMessage(const std::string &aReceiptHandle)
+  {
+  }
+
 }}//namespaces
 

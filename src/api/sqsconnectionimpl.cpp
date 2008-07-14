@@ -27,7 +27,6 @@ namespace aws {
     return new CreateQueueResponse(theConnection->createQueue(aQueueName, aDefaultVisibilityTimeout));
   }
 
-#if 0
   DeleteQueueResponsePtr
   SQSConnectionImpl::deleteQueue(const std::string &aQueueUrl, bool aForceDeletion)
   {
@@ -37,26 +36,14 @@ namespace aws {
   ListQueuesResponsePtr
   SQSConnectionImpl::listQueues(const std::string &aQueueNamePrefix)
   {
-    return new theConnection->listQueues(aQueueNamePrefix);
+    return new ListQueuesResponse(theConnection->listQueues(aQueueNamePrefix));
   }
 
   // Message handling functions    
   SendMessageResponsePtr
   SQSConnectionImpl::sendMessage(const std::string &aQueueName, const char* aContent, size_t aContentSize)
   {
-    return new theConnection->sendMessage(aQueueName, aContent, aContentSize);
-  }
-
-  SendMessageResponsePtr
-  SQSConnectionImpl::sendMessage(const std::string &aQueueName, const std::string &aContent)
-  {
-    return new theConnection->sendMessage(aQueueName, aContent);
-  }
-
-  PeekMessageResponsePtr
-  SQSConnectionImpl::peekMessage(const std::string &aQueueName, const std::string &aMessageId)
-  {
-    return new theConnection->peekMessage(aQueueName, aMessageId);
+    return new SendMessageResponse(theConnection->sendMessage(aQueueName, aContent, aContentSize));
   }
 
   ReceiveMessageResponsePtr
@@ -64,17 +51,17 @@ namespace aws {
                 int aNumberOfMessages,
                 int aVisibilityTimeout)
   {
-    return new theConnection->receiveMessage(aQueueName, aNumberOfMessages, aVisibilityTimeout);
+    return new ReceiveMessageResponse(theConnection->receiveMessage(aQueueName, 
+                                                                    aNumberOfMessages, 
+                                                                    aVisibilityTimeout));
   }
 
   DeleteMessageResponsePtr
-  SQSConnectionImpl::deleteMessage(const std::string &aQueueName, const std::string &aMessageId)
+  SQSConnectionImpl::deleteMessage(const std::string &aReceiptHandle)
   {
-    return new theConnection->deleteMessage(aQueueName, aMessageId);
+    return new DeleteMessageResponse(theConnection->deleteMessage(aReceiptHandle));
   }
 
-#endif
-  
   SQSConnectionImpl::SQSConnectionImpl(const std::string& aAccessKeyId, 
                                        const std::string& aSecretAccessKey)
   {

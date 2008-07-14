@@ -99,6 +99,8 @@ namespace aws {
       // concatenate parameter name and value for the string to sign
       lStringToSign << ( *lIter ).first << ( *lIter ).second;
     }
+
+    std::cout << "String to sign "  << lStringToSign.str() << std::endl;
     
     
  
@@ -137,9 +139,7 @@ namespace aws {
     // set a callback for retrieving all http header information
 //    curl_easy_setopt ( theCurl, CURLOPT_HEADERFUNCTION, AWSQueryConnection::getHeaderData );
 
-#if 0
     curl_easy_setopt ( theCurl, CURLOPT_VERBOSE, 1 );
-#endif
 
 
     if ( ++theNumberOfRequests >= MAX_REQUESTS )

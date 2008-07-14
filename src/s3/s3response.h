@@ -146,13 +146,13 @@ public:
   virtual ~ListAllBucketsResponse();
 
   void
-  open() const;
+  open();
 
   bool
-  next(Bucket&) const;
+  next(Bucket&);
 
   void
-  close() const;
+  close();
 
   const std::string&
   getOwnerId() const;
@@ -164,7 +164,7 @@ protected:
 	std::string theOwnerId;
 	std::string theOwnerDisplayName;
 	std::vector<Bucket> theBuckets;
-  mutable std::vector<Bucket>::const_iterator theIterator;
+  std::vector<Bucket>::const_iterator theIterator;
 };
 
 class ListBucketResponse : public S3Response
@@ -186,13 +186,13 @@ public:
     virtual ~ListBucketResponse();
     
     virtual void
-    open() const;
+    open();
 
     virtual bool
-    next(Key& aKey) const;
+    next(Key& aKey);
 
     virtual void
-    close() const;
+    close();
     
     const std::string&
     getBucketName() { return theBucketName; }
@@ -224,7 +224,7 @@ protected:
     bool                                     theIsTruncated;
     std::vector<Key>                         theKeys;
     std::vector<std::string>                 theCommonPrefixes;
-    mutable std::vector<Key>::const_iterator theIterator;
+    std::vector<Key>::const_iterator theIterator;
 };
 
 

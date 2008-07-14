@@ -91,13 +91,13 @@ namespace aws {
       virtual ~ListAllBucketsResponse() {}
 
       virtual void
-      open() const;
+      open();
 
       virtual bool
-      next(Bucket&) const;
+      next(Bucket&);
 
       virtual void
-      close() const;
+      close();
 
       virtual const std::string& 
       getOwnerId() const;
@@ -137,13 +137,13 @@ namespace aws {
       virtual ~ListBucketResponse() {}
 
       virtual void
-      open() const;
+      open();
 
       virtual bool
-      next(Object&) const;
+      next(Object&);
 
       virtual void
-      close() const;
+      close();
 
       virtual const std::string&
       getBucketName() const;

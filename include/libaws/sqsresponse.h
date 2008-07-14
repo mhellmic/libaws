@@ -29,7 +29,6 @@ namespace aws {
       class DeleteQueueResponse;
       class ListQueuesResponse;
       class SendMessageResponse;
-      class PeekMessageResponse;
       class ReceiveMessageResponse;
       class DeleteMessageResponse;
   } /* namespace sqs */
@@ -61,15 +60,13 @@ namespace aws {
       CreateQueueResponse(sqs::CreateQueueResponse*);
   };
   
-#if 0
-  
   class DeleteQueueResponse : public SQSResponse<sqs::DeleteQueueResponse>
   {
     public:
-      virtual ~DeleteQueueResponse();
+      virtual ~DeleteQueueResponse() {}
       
       const std::string&
-      getQueueUrl();
+      getQueueUrl() const;
   
     protected:
       friend class SQSConnectionImpl;
@@ -79,10 +76,16 @@ namespace aws {
   class ListQueuesResponse : public SQSResponse<sqs::ListQueuesResponse>
   {    
     public:
-      virtual ~ListQueuesResponse();
+      virtual ~ListQueuesResponse() {}
       
-      const std::string&
-      getQueuePrefix();
+      void
+      open();
+
+      bool
+      next(std::string& aQueueUrl);
+
+      void
+      close();
         
     protected:
       friend class SQSConnectionImpl;
@@ -92,82 +95,74 @@ namespace aws {
   class SendMessageResponse : public SQSResponse<sqs::SendMessageResponse>
   {
     public:
-      virtual ~SendMessageResponse();
+      virtual ~SendMessageResponse() {}
       
       const std::string&
-      getMessageId();
+      getMessageId() const;
 
       const std::string&
-      getQueueName();
+      getQueueName() const;
+
+      const std::string&
+      getMD5OfMessageBody() const;
             
     protected:
       friend class SQSConnectionImpl;
       SendMessageResponse(sqs::SendMessageResponse*);
   };
   
-  class PeekMessageResponse : public SQSResponse<sqs::PeekMessageResponse>
-  {
-    public:
-      ~PeekMessageResponse();
-      
-      const std::string&
-      getMessageId();
-
-      const std::string&
-      getQueueName();
-
-      const char*
-      getContent();
-
-      int
-      getSize();
-        
-    protected:
-      friend class SQSConnectionImpl;
-      PeekMessageResponse(sqs::PeekMessageResponse8r*);
-  };
-  
   class ReceiveMessageResponse : public SQSResponse<sqs::ReceiveMessageResponse>
   {
     public:
-      ~ReceiveMessageResponse();
-      
-      const std::string&
-      getQueueName();
+      ~ReceiveMessageResponse() {}
 
-      int
-      getNumberOfMessages();
+      struct Message 
+      {
+        const char* message_body;
+        size_t      message_size;
+        std::string message_md5;
+        std::string message_id;
+        std::string receipt_handle;
+      };
 
-      int
-      getVisibilityTimeout();
-
-      int
-      getNumberOfRetrievedMessages();
+      void
+      open();
 
       bool
-      isEmpty();
+      next(Message& aMessage);
+
+      void
+      close();
       
+      const std::string&
+      getQueueName() const;
+
+      int
+      getNumberOfMessages() const;
+
+      int
+      getVisibilityTimeout() const;
+
+      int
+      getNumberOfRetrievedMessages() const;
+
     protected:
       friend class SQSConnectionImpl;
       ReceiveMessageResponse(sqs::ReceiveMessageResponse*);
   };
   
-  class DeleteMessageResponse : public SQSResponse
+  class DeleteMessageResponse : public SQSResponse<sqs::DeleteMessageResponse>
   {
     public:
-      ~DeleteMessageResponse();
+      ~DeleteMessageResponse() {}
       
       const std::string&
-      getQueueName();
-
-      const std::string&
-      getMessageId();
+      getReceiptHandle() const;
   
     protected:
       friend class SQSConnectionImpl;
       DeleteMessageResponse(sqs::DeleteMessageResponse*);
   };
-#endif
 
 } /* namespace aws */
 #endif
