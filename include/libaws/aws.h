@@ -23,6 +23,7 @@
 #include <libaws/s3exception.h>
 #include <libaws/sqsconnection.h>
 #include <libaws/sqsresponse.h>
+#include <libaws/sqsexception.h>
 #include <libaws/sdbconnection.h>
 #include <libaws/sdbresponse.h>
 

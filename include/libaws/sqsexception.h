@@ -92,13 +92,13 @@ namespace aws {
     
     };
 
-		const std::string& getErrorMessage() { return theErrorMessage; }
+		virtual const std::string& getErrorMessage() { return theErrorMessage; }
     
-    const ErrorCode getErrorCode() { return theErrorCode; }
+    virtual const ErrorCode getErrorCode() { return theErrorCode; }
     
-    const std::string& getOrigErrorCode() { return theOrigErrorCode; }
+    virtual const std::string& getOrigErrorCode() { return theOrigErrorCode; }
     
-    const std::string& getRequestId() { return theRequestId; }
+    virtual const std::string& getRequestId() { return theRequestId; }
     
     static ErrorCode parseError ( const std::string& aString );
 
