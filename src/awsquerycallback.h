@@ -17,19 +17,18 @@
 #define AWS_AWSQUERYCALLBACK_H
 
 #include <libxml/parser.h>
-
+#include "awsqueryresponse.h"
 
 
 namespace aws
 {
   class QueryResponse;
-  class QueryErrorResponse;
 
   class QueryCallBack{
       friend class AWSQueryConnection;
     protected:
       //std::vector<Error> theErrors;
-      QueryErrorResponse* theQueryErrorResponse;
+      QueryErrorResponse theQueryErrorResponse;
       bool theIsSuccessful;
       xmlParserCtxtPtr theParserCtxt;
       xmlSAXHandler theSAXHandler;
@@ -37,13 +36,13 @@ namespace aws
 
     public:
 
-      QueryCallBack() :theQueryErrorResponse ( 0 ), theIsSuccessful ( true ), theParserCreated ( false ) {
+      QueryCallBack() : theIsSuccessful ( true ), theParserCreated ( false ) {
         memset ( &theSAXHandler, 0, sizeof ( theSAXHandler ) );
         theSAXHandler.initialized    = XML_SAX2_MAGIC;
       }
       virtual ~QueryCallBack(){}
 
-      QueryErrorResponse* getQueryErrorResponse() {return theQueryErrorResponse;}
+      QueryErrorResponse& getQueryErrorResponse() {return theQueryErrorResponse;}
 
       bool isSuccessful() { return theIsSuccessful; }
 
@@ -104,7 +103,7 @@ namespace aws
     protected:
       SimpleQueryCallBack() : QueryCallBack(), theCurrentState(0) {};
       virtual ~SimpleQueryCallBack(){}
-      
+
       uint64_t theCurrentState;
 
     public:
@@ -112,7 +111,7 @@ namespace aws
       bool isSet ( uint64_t s )      { return theCurrentState & s; }
       void unsetState ( uint64_t s ) { theCurrentState ^= s; }
 
-      
+
 
       void startElementNs ( const xmlChar * localname,
                             const xmlChar * prefix,

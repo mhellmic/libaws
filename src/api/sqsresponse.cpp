@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@
 #include "sqs/sqsresponse.h"
 
 namespace aws {
-  
+
   template <class T>
   SQSResponse<T>::SQSResponse(T* aSQSResponse)
     : theSQSResponse(aSQSResponse) {}
@@ -33,11 +33,11 @@ namespace aws {
 
   template <class T>
   const std::string&
-  SQSResponse<T>::getRequestId() const 
-  { 
+  SQSResponse<T>::getRequestId() const
+  {
     return theSQSResponse->getRequestId();
   }
-  
+
   /**
    * CreateQueueResponse
    */
@@ -49,18 +49,12 @@ namespace aws {
   {
     return theSQSResponse->getQueueUrl();
   }
-  
+
   /**
    * DeleteQueueResponse
    */
   DeleteQueueResponse::DeleteQueueResponse(sqs::DeleteQueueResponse* r)
     : SQSResponse<sqs::DeleteQueueResponse>(r) {}
-
-  const std::string&
-  DeleteQueueResponse::getQueueUrl() const
-  {
-    return theSQSResponse->getQueueUrl();
-  }
 
   /**
    * ListQueuesResponse
@@ -96,12 +90,6 @@ namespace aws {
   SendMessageResponse::getMessageId() const
   {
     return theSQSResponse->getMessageId();
-  }
-
-  const std::string&
-  SendMessageResponse::getQueueName() const
-  {
-    return theSQSResponse->getQueueName();
   }
 
   const std::string&
@@ -144,24 +132,6 @@ namespace aws {
     theSQSResponse->close();
   }
 
-  const std::string&
-  ReceiveMessageResponse::getQueueName() const
-  {
-    return theSQSResponse->getQueueName();
-  }
-
-  int
-  ReceiveMessageResponse::getNumberOfMessages() const
-  {
-    return theSQSResponse->getNumberOfMessages();
-  }
-
-  int
-  ReceiveMessageResponse::getVisibilityTimeout() const
-  {
-    return theSQSResponse->getVisibilityTimeout();
-  }
-
   int
   ReceiveMessageResponse::getNumberOfRetrievedMessages() const
   {
@@ -173,12 +143,6 @@ namespace aws {
    */
   DeleteMessageResponse::DeleteMessageResponse(sqs::DeleteMessageResponse* r)
     : SQSResponse<sqs::DeleteMessageResponse>(r) {}
-
-  const std::string&
-  DeleteMessageResponse::getReceiptHandle() const
-  {
-    return theSQSResponse->getReceiptHandle();
-  }
 
 } /* namespace aws */
 

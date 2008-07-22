@@ -22,27 +22,36 @@ namespace aws {
   namespace sqs  {
 
     class CreateQueueResponse;
-    
+    class DeleteQueueResponse;
+    class ListQueuesResponse;
+    class SendMessageResponse;
+    class ReceiveMessageResponse;
+    class DeleteMessageResponse;
+
     class QueueErrorHandler : public SimpleQueryCallBack{
-               
+
       public:
-                
+
         enum States {
           ERROR_Code        = 1,
           ERROR_Message     = 2,
-          RequestId   = 4,
-          HostId      = 8,
-          QueueUrl    = 16
+          RequestId   			= 4,
+          HostId      			= 8,
+          QueueUrl    			= 16,
+          MessageId   			= 32,
+          MD5OfMessageBody 	= 64,
+          ReceiptHandle			= 128,
+          Body							= 256
         };
-        
+
         virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
         virtual void characters ( const xmlChar *  value, int len );
         virtual void endElement ( const xmlChar *  localname );
-        
+
         virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes ) = 0;
         virtual void responseCharacters ( const xmlChar *  value, int len ) = 0;
-        virtual void responseEndElement ( const xmlChar *  localname ) = 0; 
-      
+        virtual void responseEndElement ( const xmlChar *  localname ) = 0;
+
     };
 
     class CreateQueueHandler : public QueueErrorHandler
@@ -50,6 +59,71 @@ namespace aws {
       protected:
         friend class SQSConnection;
         CreateQueueResponse* theCreateQueueResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
+
+    };
+
+    class DeleteQueueHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        DeleteQueueResponse* theDeleteQueueResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
+
+    };
+
+    class ListQueuesHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        ListQueuesResponse* theListQueuesResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
+
+    };
+
+    class SendMessageHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        SendMessageResponse* theSendMessageResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
+
+    };
+
+    class ReceiveMessageHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        ReceiveMessageResponse* theReceiveMessageResponse;
+
+      public:
+        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
+        virtual void responseCharacters ( const xmlChar *  value, int len );
+        virtual void responseEndElement ( const xmlChar *  localname );
+
+    };
+
+    class DeleteMessageHandler : public QueueErrorHandler
+    {
+      protected:
+        friend class SQSConnection;
+        DeleteMessageResponse* theDeleteMessageResponse;
 
       public:
         virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );

@@ -29,12 +29,6 @@ namespace aws {
       return theQueueURL;
     }
 
-    const std::string&
-    DeleteQueueResponse::getQueueUrl() const
-    {
-      return theQueueURL;
-    }
-
     void
     ListQueuesResponse::open()
     {
@@ -66,15 +60,18 @@ namespace aws {
     }
 
     const std::string&
-    SendMessageResponse::getQueueName() const
-    {
-      return theQueueName;
-    }
-
-    const std::string&
     SendMessageResponse::getMD5OfMessageBody() const
     {
       return theMD5OfMessageBody;
+    }
+
+    ReceiveMessageResponse::~ReceiveMessageResponse()
+    {
+    	for (std::vector<Message>::iterator lIter = theMessages.begin();
+					 lIter != theMessages.end(); ++lIter)
+    	{
+    		delete[] (*lIter).message_body;
+    	}
     }
 
     void
@@ -101,34 +98,10 @@ namespace aws {
       theIterator = theMessages.end();
     }
 
-    const std::string&
-    ReceiveMessageResponse::getQueueName() const
-    {
-      return theQueueName;
-    }
-
     int
-    ReceiveMessageResponse::getNumberOfMessages() const
+    ReceiveMessageResponse::getNumberOfRetrievedMessages() const
     {
-      return theNumberOfMessages;
-    }
-
-    int
-    ReceiveMessageResponse::getVisibilityTimeout() const
-    {
-      return theVisibilityTimeout;
-    }
-
-    int
-    ReceiveMessageResponse::getNumberOfRetrievedMessages() const 
-    { 
-      return theMessages.size(); 
-    }
-
-    const std::string&
-    DeleteMessageResponse::getReceiptHandle() const
-    {
-      return theReceiptHandle;
+      return theMessages.size();
     }
 
   } /* namespace sqs */

@@ -39,31 +39,31 @@ namespace aws {
       public:
         static const std::string DEFAULT_VERSION;
         static const std::string DEFAULT_HOST;
-        
-      
+
+
       public:
-        SQSConnection(const std::string& aAccessKeyId, 
+        SQSConnection(const std::string& aAccessKeyId,
                       const std::string& aSecretAccessKey);
-      
+
         CreateQueueResponse*
         createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout );
 
         DeleteQueueResponse*
-        deleteQueue ( const std::string &aQueueUrl, bool aForceDeletion = false );
+        deleteQueue ( const std::string &aQueueUrl );
 
         ListQueuesResponse*
         listQueues ( const std::string &aQueueNamePrefix = "" );
 
         SendMessageResponse*
-        sendMessage ( const std::string &aQueueName, const char* aContent, size_t aContentSize );
+        sendMessage ( const std::string &aQueueUrl, const std::string &aMessageBody );
 
         ReceiveMessageResponse*
-        receiveMessage ( const std::string &aQueueName,
-                         int aNumberOfMessages = -1,
-                         int aVisibilityTimeout = -1 );
+        receiveMessage( const std::string &aQueueUrl,
+                        int aNumberOfMessages = -1,
+                        int aVisibilityTimeout = -1);
 
         DeleteMessageResponse*
-        deleteMessage ( const std::string &aReceiptHandle);
+        deleteMessage( const std::string &aQueueUrl, const std::string &aReceiptHandle);
 
     };
 

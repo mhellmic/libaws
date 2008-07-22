@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,15 +24,15 @@
 
 #include "awsconnection.h"
 
-namespace aws { 
+namespace aws {
 
 std::string AWSConnection::AMAZON_HEADER_PREFIX 	  = "x-amz-";
 std::string AWSConnection::ALTERNATIVE_DATE_HEADER  = "x-amz-date";
-    
-uint8_t AWSConnection::MAX_REQUESTS = 30;    
 
-AWSConnection::AWSConnection(const std::string& aAccessKeyId, 
-                             const std::string& aSecretAccessKey, 
+uint8_t AWSConnection::MAX_REQUESTS = 30;
+
+AWSConnection::AWSConnection(const std::string& aAccessKeyId,
+                             const std::string& aSecretAccessKey,
                              const std::string& aHost)
     : theAccessKeyId(aAccessKeyId),
       theSecretAccessKey(aSecretAccessKey),
@@ -40,95 +40,110 @@ AWSConnection::AWSConnection(const std::string& aAccessKeyId,
       theCurlErrorBuffer(0),
       theIsSecure(false),
       theNumberOfRequests(0),
-      theCurl(0),
-      theBio(0),
-      theB64(0)
+      theCurl(0)
 {
   // Initialize SHA1 encryption
   HMAC_CTX_init(&theHctx);
   HMAC_Init(&theHctx, theSecretAccessKey.c_str(), theSecretAccessKey.size(), EVP_sha1());
-   
-  // initialization for base64 encoding stuff
-  // done globally in order to cache all the stuff
-  // however, the connection is not thread safe anymore
-  theBio = BIO_new(BIO_s_mem());
-  theB64 = BIO_new(BIO_f_base64());
-  BIO_set_flags(theB64, BIO_FLAGS_BASE64_NO_NL);
-  theBio = BIO_push(theB64, theBio);
-  
+
   // curl initialization (check on every call if everything went ok
   curl_version_info_data* lVersionInfo = curl_version_info(CURLVERSION_NOW);
   int lFeatures = lVersionInfo->features;
   theIsSecure = lFeatures & CURL_VERSION_SSL;
   thePort = theIsSecure?443:80;
-  
+
   theCurlErrorBuffer = new char[CURLOPT_ERRORBUFFER];
 
   theCurl = curl_easy_init();
 }
 
 AWSConnection::~AWSConnection()
-{    
+{
   curl_easy_cleanup(theCurl);
 
   delete[] theCurlErrorBuffer; theCurlErrorBuffer = 0;
-
-  BIO_free_all(theBio);    
 
   HMAC_CTX_cleanup(&theHctx);
 }
 
 std::string
-AWSConnection::base64Encode(const char* aContent, size_t aContentSize, 
+AWSConnection::base64Encode(const char* aContent, size_t aContentSize,
                             long& aBase64EncodedStringLength)
 {
   char* lEncodedString;
 
-  BIO_write(theBio, aContent, aContentSize);
-  BIO_flush(theBio);
-  aBase64EncodedStringLength = BIO_get_mem_data(theBio, &lEncodedString);
+  // initialization for base64 encoding stuff
+  BIO* lBio = BIO_new(BIO_s_mem());
+  BIO* lB64 = BIO_new(BIO_f_base64());
+  BIO_set_flags(lB64, BIO_FLAGS_BASE64_NO_NL);
+  lBio = BIO_push(lB64, lBio);
+
+  BIO_write(lBio, aContent, aContentSize);
+  BIO_flush(lBio);
+  aBase64EncodedStringLength = BIO_get_mem_data(lBio, &lEncodedString);
 
   // ensures null termination
   std::stringstream lTmp;
   lTmp.write(lEncodedString, aBase64EncodedStringLength);
-  
-  BIO_reset(theBio);
-  BIO_reset(theB64);
-  
+
+  BIO_free_all(lBio);
+
   return lTmp.str(); // copy
 }
 
 std::string
-AWSConnection::base64Encode(const unsigned char* aContent, size_t aContentSize, 
+AWSConnection::base64Encode(const unsigned char* aContent, size_t aContentSize,
                             long& aBase64EncodedStringLength)
 {
   char* lEncodedString;
-  
-  BIO_write(theBio, aContent, aContentSize);
-  BIO_flush(theBio);
-  aBase64EncodedStringLength = BIO_get_mem_data(theBio, &lEncodedString);
+
+  // initialization for base64 encoding stuff
+  BIO* lBio = BIO_new(BIO_s_mem());
+  BIO* lB64 = BIO_new(BIO_f_base64());
+  BIO_set_flags(lB64, BIO_FLAGS_BASE64_NO_NL);
+  lBio = BIO_push(lB64, lBio);
+
+  BIO_write(lBio, aContent, aContentSize);
+  BIO_flush(lBio);
+  aBase64EncodedStringLength = BIO_get_mem_data(lBio, &lEncodedString);
 
   // ensures null termination
   std::stringstream lTmp;
   lTmp.write(lEncodedString, aBase64EncodedStringLength);
-  
-  BIO_reset(theBio);
-  BIO_reset(theB64);
-  
+
+  BIO_free_all(lBio);
   return lTmp.str(); // copy
+}
+
+const char*
+AWSConnection::base64Decode(const char* a64Content, size_t a64ContentSize, size_t &aDecodedStringLength) {
+
+  // initialization for base64 decoding stuff
+  BIO* lBio = BIO_new_mem_buf((char*) a64Content, a64ContentSize);
+	BIO* lB64 = BIO_new(BIO_f_base64());
+	BIO_set_flags(lB64, BIO_FLAGS_BASE64_NO_NL);
+	lBio = BIO_push(lB64, lBio);
+
+	// decode into an NSMutableData
+	char* lStr = new char[8192];
+	aDecodedStringLength = BIO_read(lBio, lStr, 8192);
+
+	// clean up and go home
+	BIO_free_all(lBio);
+  return lStr;
 }
 
 std::string
 aws::AWSConnection::urlencode(const std::string &aStringToEncode)
 {
-  char* lUrlEncodedValue = 
-      curl_escape(const_cast<char*>(aStringToEncode.c_str()), 
+  char* lUrlEncodedValue =
+      curl_escape(const_cast<char*>(aStringToEncode.c_str()),
                                     aStringToEncode.size());
-  // copy the string    
+  // copy the string
   std::string lRes(lUrlEncodedValue);
-  
+
   curl_free(lUrlEncodedValue);
-  
+
   return lRes; // unfortunately, copy again
 }
 

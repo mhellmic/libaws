@@ -22,18 +22,18 @@
 namespace aws
 {
 
-  class QueryResponse 
-  {   
+  class QueryResponse
+  {
     protected:
       std::string theRequestId;
-      
-    public: 
-      const std::string& getRequestId() const 
+
+    public:
+      const std::string& getRequestId() const
       {
         return theRequestId;
       }
   };
-  
+
   class QueryErrorResponse
   {
     protected:
@@ -41,18 +41,18 @@ namespace aws
       std::string theErrorMessage;
       std::string theRequestId;
       std::string theUrl;
-      
+
     public:
       QueryErrorResponse(){};
-      QueryErrorResponse(std::string aErrorCode, 
-                         std::string aErrorMessage, 
+      QueryErrorResponse(std::string aErrorCode,
+                         std::string aErrorMessage,
                          std::string aRequestId,
-                         std::string aUrl) : 
-        theErrorCode(aErrorCode), 
-        theErrorMessage(aErrorMessage), 
+                         std::string aUrl) :
+        theErrorCode(aErrorCode),
+        theErrorMessage(aErrorMessage),
         theRequestId(aRequestId),
-        theUrl(aUrl){} 
-             
+        theUrl(aUrl){}
+
         const std::string& getErrorCode() const {return theErrorCode;}
         const void setErrorCode(std::string& value){theErrorCode = value;};
         const std::string& getErrorMessage() const {return theErrorMessage;}
@@ -62,6 +62,6 @@ namespace aws
         const std::string& getUrl() const {return theUrl;}
         const void setUrl(std::string& value){theUrl = value;};
   };
-  
+
 }//namespace aws
 #endif

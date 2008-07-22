@@ -32,7 +32,7 @@ namespace aws {
                                   const xmlChar ** attributes ) {
       if ( xmlStrEqual ( localname, BAD_CAST "ErrorResponse" ) ) {
         theIsSuccessful = false;
-        theQueryErrorResponse = new QueryErrorResponse();
+        theQueryErrorResponse = QueryErrorResponse();
       }else if ( theIsSuccessful && xmlStrEqual ( localname, BAD_CAST "BoxUsage" ) ) {
         setState ( BoxUsage );
       }else if ( theIsSuccessful ) {
@@ -62,11 +62,11 @@ namespace aws {
       } else {
         std::string lStrValue ( ( const char* ) value, len );
         if ( isSet ( ERROR_Code ) ) {
-          theQueryErrorResponse->setErrorCode ( lStrValue );
+          theQueryErrorResponse.setErrorCode ( lStrValue );
         }else if ( isSet ( ERROR_Message ) ) {
-          theQueryErrorResponse->setErrorMessage ( lStrValue );
+          theQueryErrorResponse.setErrorMessage ( lStrValue );
         }else if ( isSet ( RequestId ) ) {
-          theQueryErrorResponse->setRequestId ( lStrValue );
+          theQueryErrorResponse.setRequestId ( lStrValue );
         }
       }
     }

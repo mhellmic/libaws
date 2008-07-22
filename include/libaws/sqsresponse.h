@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,46 +38,46 @@ namespace aws {
   {
     public:
     	virtual ~SQSResponse();
-    	
+
       virtual const std::string&
       getRequestId() const;
-    
+
     protected:
       T* theSQSResponse;
       SQSResponse(T*);
   };
-  
+
   class CreateQueueResponse : public SQSResponse<sqs::CreateQueueResponse>
   {
     public:
       virtual ~CreateQueueResponse(){};
-    
+
       const std::string&
       getQueueUrl() const;
-    
+
     protected:
       friend class SQSConnectionImpl;
       CreateQueueResponse(sqs::CreateQueueResponse*);
   };
-  
+
   class DeleteQueueResponse : public SQSResponse<sqs::DeleteQueueResponse>
   {
     public:
       virtual ~DeleteQueueResponse() {}
-      
+
       const std::string&
       getQueueUrl() const;
-  
+
     protected:
       friend class SQSConnectionImpl;
       DeleteQueueResponse(sqs::DeleteQueueResponse*);
   };
-  
+
   class ListQueuesResponse : public SQSResponse<sqs::ListQueuesResponse>
-  {    
+  {
     public:
       virtual ~ListQueuesResponse() {}
-      
+
       void
       open();
 
@@ -86,37 +86,34 @@ namespace aws {
 
       void
       close();
-        
+
     protected:
       friend class SQSConnectionImpl;
       ListQueuesResponse(sqs::ListQueuesResponse*);
   };
-  
+
   class SendMessageResponse : public SQSResponse<sqs::SendMessageResponse>
   {
     public:
       virtual ~SendMessageResponse() {}
-      
+
       const std::string&
       getMessageId() const;
 
       const std::string&
-      getQueueName() const;
-
-      const std::string&
       getMD5OfMessageBody() const;
-            
+
     protected:
       friend class SQSConnectionImpl;
       SendMessageResponse(sqs::SendMessageResponse*);
   };
-  
+
   class ReceiveMessageResponse : public SQSResponse<sqs::ReceiveMessageResponse>
   {
     public:
       ~ReceiveMessageResponse() {}
 
-      struct Message 
+      struct Message
       {
         const char* message_body;
         size_t      message_size;
@@ -133,15 +130,6 @@ namespace aws {
 
       void
       close();
-      
-      const std::string&
-      getQueueName() const;
-
-      int
-      getNumberOfMessages() const;
-
-      int
-      getVisibilityTimeout() const;
 
       int
       getNumberOfRetrievedMessages() const;
@@ -150,15 +138,12 @@ namespace aws {
       friend class SQSConnectionImpl;
       ReceiveMessageResponse(sqs::ReceiveMessageResponse*);
   };
-  
+
   class DeleteMessageResponse : public SQSResponse<sqs::DeleteMessageResponse>
   {
     public:
       ~DeleteMessageResponse() {}
-      
-      const std::string&
-      getReceiptHandle() const;
-  
+
     protected:
       friend class SQSConnectionImpl;
       DeleteMessageResponse(sqs::DeleteMessageResponse*);

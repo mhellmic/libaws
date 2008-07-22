@@ -34,7 +34,7 @@ namespace aws {
     curl_slist_free_all ( theSList );
   }
 
-  void 
+  void
   AWSQueryConnection::setCommonParamaters ( ParameterMap* aParameterMap, const std::string& aAction ) {
     aParameterMap->insert ( ParameterPair ( "AWSAccessKeyId", theAccessKeyId ) );
     aParameterMap->insert ( ParameterPair ( "Version", theVersion ) );
@@ -42,11 +42,11 @@ namespace aws {
     aParameterMap->insert ( ParameterPair ( "Timestamp", getQueryTimestamp() ) );
     aParameterMap->insert ( ParameterPair ( "Action", aAction ) );
   }
-  
+
   void
-  AWSQueryConnection::makeQueryRequestOnResource ( const std::string &aResource, 
-                                         const std::string &action, 
-                                          ParameterMap* aParameterMap, 
+  AWSQueryConnection::makeQueryRequestOnResource ( const std::string &aResource,
+                                         const std::string &action,
+                                          ParameterMap* aParameterMap,
                                           QueryCallBack* aCallBack )
   {
     std::stringstream lUrlStream;
@@ -54,10 +54,10 @@ namespace aws {
     std::string lUrl = lUrlStream.str();
     return makeQueryRequest(lUrl, action, aParameterMap, aCallBack);
   }
-  
+
   void
-  AWSQueryConnection::makeQueryRequest( const std::string &action,       
-                                        ParameterMap* aParameterMap,       
+  AWSQueryConnection::makeQueryRequest( const std::string &action,
+                                        ParameterMap* aParameterMap,
                                         QueryCallBack* aCallBack )
       {
         std::stringstream lUrlStream;
@@ -65,21 +65,21 @@ namespace aws {
         std::string lUrl = lUrlStream.str();
         return makeQueryRequest(lUrl, action, aParameterMap, aCallBack);
       }
-  
+
   void
-  AWSQueryConnection::makeQueryRequest ( const std::string& aURL, 
-                                         const std::string &action,  
-                                         ParameterMap* aParameterMap, 
+  AWSQueryConnection::makeQueryRequest ( const std::string& aURL,
+                                         const std::string &action,
+                                         ParameterMap* aParameterMap,
                                          QueryCallBack* aCallBack )
   {
     setCommonParamaters(aParameterMap, action);
-    
+
     aCallBack->theSAXHandler.startElementNs = &QueryCallBack::SAX_StartElementNs;
     aCallBack->theSAXHandler.characters     = &QueryCallBack::SAX_CharactersSAXFunc;
     aCallBack->theSAXHandler.endElementNs   = &QueryCallBack::SAX_EndElementNs;
-       
+
     aCallBack->createParser();
-    
+
     std::stringstream lStringToSign;
     std::stringstream lUrl;
 
@@ -101,10 +101,10 @@ namespace aws {
     }
 
     std::cout << "String to sign "  << lStringToSign.str() << std::endl;
-    
-    
- 
-    { 
+
+
+
+    {
       unsigned int  lEncryptedResultSize;
       unsigned char lEncryptedResult[1024];
 
@@ -155,8 +155,10 @@ namespace aws {
     if ( lCurlCode != 0 )
     {
       aCallBack->theIsSuccessful = false;
-      if(!aCallBack->theQueryErrorResponse) //if there was an error before, we should not overwrite it
-        aCallBack->theQueryErrorResponse = new QueryErrorResponse(theCurlErrorBuffer, "", "", lUrl.str());
+      std::stringstream lTmp;
+      lTmp << theCurlErrorBuffer;
+      QueryErrorResponse lQER = QueryErrorResponse(lTmp.str(), "", "", lUrlString);
+      aCallBack->theQueryErrorResponse = lQER;
     }
 
     // signal the parse that this is the end
@@ -184,8 +186,8 @@ namespace aws {
     QueryCallBack* lQueryCallBack = static_cast<QueryCallBack*> ( data );
 
     char* lChars = static_cast<char*> ( ptr );
- 
-    //std::cout << lChars << std::endl;
+
+    std::cout << lChars << std::endl;
 
     // this guarantees to read the input in chunks as they come in
     // by libxml; we always read as much as is in the buffer

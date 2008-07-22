@@ -15,4 +15,5 @@
 SET(SQS_SRCS
     sqsconnection.cpp
     sqsresponse.cpp
-    sqshandler.cpp)
+    sqshandler.cpp
+    sqsexception.cpp)
