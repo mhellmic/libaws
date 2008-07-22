@@ -154,11 +154,24 @@ namespace aws {
 
     if ( lCurlCode != 0 )
     {
-      aCallBack->theIsSuccessful = false;
       std::stringstream lTmp;
       lTmp << theCurlErrorBuffer;
-      QueryErrorResponse lQER = QueryErrorResponse(lTmp.str(), "", "", lUrlString);
+      QueryErrorResponse lQER = QueryErrorResponse(lTmp.str(), lTmp.str(), "", lUrlString);
+      aCallBack->theIsSuccessful = false;
       aCallBack->theQueryErrorResponse = lQER;
+    }
+    else {
+    	// check HTTP response code
+    	long lResponseCode = 0;
+    	curl_easy_getinfo( theCurl, CURLINFO_RESPONSE_CODE, &lResponseCode );
+    	if (lResponseCode >= 300) { // http response codes >= 300 are errors
+    		// tested the normal case, the response was lResponseCode = 200
+        std::stringstream lTmp;
+        lTmp << "Errorneous HTTP status code " << lResponseCode;
+        QueryErrorResponse lQER = QueryErrorResponse(lTmp.str(), lTmp.str(), "", lUrlString);
+        aCallBack->theIsSuccessful = false;
+        aCallBack->theQueryErrorResponse = lQER;
+    	}
     }
 
     // signal the parse that this is the end
