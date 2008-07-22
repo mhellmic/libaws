@@ -20,47 +20,59 @@
 
 namespace aws {
 
-  SQSException::SQSException(const QueryErrorResponse& aError)
-  {
-    theErrorMessage = aError.getErrorMessage();
-  }
+    SQSException::SQSException (const QueryErrorResponse& aError) {
+      theErrorMessage = aError.getErrorMessage();
+      theOrigErrorCode = aError.getErrorCode();
+      theErrorCode = parseError(theOrigErrorCode);
+      theRequestId  = aError.getRequestId();
+    }
 
-  SQSException::~SQSException() throw() {}
+    SQSException::~SQSException() throw() {}
 
-  const char*
-  SQSException::what() const throw()
-  {
-   return theErrorMessage.c_str();
-  }
+    const char*
+    SQSException::what() const throw() {
+      return theErrorMessage.c_str();
+    }
 
-  CreateQueueException::CreateQueueException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    SQSException::ErrorCode
+    SQSException::parseError (const std::string& aString) {
+      if (aString.compare ("InvalidAccessKeyId")) {
+        return SQSException::InvalidAccessKeyId;
+      }else if (aString.compare ("ReadCountOutOfRange")) {
+        return SQSException::ReadCountOutOfRange;
+      } else {
+        return SQSException::Unknown;
+      }
+    }
 
-  CreateQueueException::~CreateQueueException() throw() {}
+    CreateQueueException::CreateQueueException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-  ListQueuesException::ListQueuesException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    CreateQueueException::~CreateQueueException() throw() {}
 
-  ListQueuesException::~ListQueuesException() throw() {}
+    ListQueuesException::ListQueuesException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-  DeleteQueueException::DeleteQueueException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    ListQueuesException::~ListQueuesException() throw() {}
 
-  DeleteQueueException::~DeleteQueueException() throw() {}
+    DeleteQueueException::DeleteQueueException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-  SendMessageException::SendMessageException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    DeleteQueueException::~DeleteQueueException() throw() {}
 
-  SendMessageException::~SendMessageException() throw() {}
+    SendMessageException::SendMessageException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-  ReceiveMessageException::ReceiveMessageException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    SendMessageException::~SendMessageException() throw() {}
 
-  ReceiveMessageException::~ReceiveMessageException() throw() {}
+    ReceiveMessageException::ReceiveMessageException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-  DeleteMessageException::DeleteMessageException(const QueryErrorResponse& aError)
-  : SQSException(aError) {}
+    ReceiveMessageException::~ReceiveMessageException() throw() {}
 
-  DeleteMessageException::~DeleteMessageException() throw() {}
+    DeleteMessageException::DeleteMessageException (const QueryErrorResponse& aError)
+        : SQSException (aError) {}
 
-} /* namespace aws */
+    DeleteMessageException::~DeleteMessageException() throw() {}
+
+  } /* namespace aws */

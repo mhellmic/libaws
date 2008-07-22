@@ -30,8 +30,77 @@ namespace aws {
 	class SQSException : public AWSException
 	{
 	public:
+    
+    enum ErrorCode{
+      //Begin Header errors
+      AccessDenied,
+      AuthFailure,
+      AWS_SimpleQueueService_InternalError,
+      AWS_SimpleQueueService_NonExistentQueue,
+      ConflictingQueryParameter,
+      ElementNotSigned,
+      InternalError,
+      InvalidAccessKeyId,
+      InvalidAction,
+      InvalidAddress,
+      InvalidHttpRequest,
+      InvalidParameterCombination,
+      InvalidParameterValue,
+      InvalidQueryParameter,
+      InvalidRequest,
+      InvalidSecurity,
+      InvalidSecurityToken,
+      MalformedSOAPSignature,
+      MalformedVersion,
+      MissingClientTokenId,
+      MissingCredentials,
+      MissingParameter,
+      NoSuchVersion,
+      NotAuthorizedToUseVersion,
+      RequestExpired,
+      RequestThrottled,
+      ServiceUnavailable,
+      SOAP11IncorrectDateFormat,
+      SOAP11MissingAction,
+      SoapBodyMissing,
+      SoapEnvelopeMissing ,
+      SoapEnvelopeParseError,
+      UnknownEnvelopeNamespace,
+      WSSecurityCorruptSignedInfo,
+      WSSecurityCreatedDateIncorrectFormat,
+      WSSecurityEncodingTypeError,
+      WSSecurityExpiresDateIncorrectFormat,
+      WSSecurityIncorrectValuetype,
+      WSSecurityMissingValuetype,
+      WSSecurityMultipleCredentialError,
+      WSSecurityMultipleX509Error,
+      WSSecuritySignatureError,
+      WSSecuritySignatureMissing,
+      WSSecuritySignedInfoMissing,
+      WSSecurityTimestampExpired,
+      WSSecurityTimestampExpiresMissing,
+      WSSecurityTimestampMissing,
+      WSSecurityX509CertCredentialError ,
+      X509ParseError,
+      //End Header errors
+    
+      //Receive Errors
+      ReadCountOutOfRange,
+      
+      //Unknown
+      Unknown
+    
+    };
 
 		const std::string& getErrorMessage() { return theErrorMessage; }
+    
+    const ErrorCode getErrorCode() { return theErrorCode; }
+    
+    const std::string& getOrigErrorCode() { return theOrigErrorCode; }
+    
+    const std::string& getRequestId() { return theRequestId; }
+    
+    static ErrorCode parseError ( const std::string& aString );
 
 		virtual const char* what() const throw();
 
@@ -41,6 +110,12 @@ namespace aws {
 		SQSException(const QueryErrorResponse&);
 
 		std::string theErrorMessage;
+    
+    std::string theOrigErrorCode;
+    
+    ErrorCode theErrorCode;
+    
+    std::string theRequestId;
 	};
 
 	class CreateQueueException : public SQSException
