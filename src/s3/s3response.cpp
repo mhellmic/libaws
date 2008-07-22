@@ -44,9 +44,22 @@ namespace aws { namespace s3 {
     {
       if ( aString.compare ( "InvalidAccessKeyId" ) ) {
         return S3Exception::InvalidAccessKeyId;
-      }
-      else {
+      }if ( aString.compare ( "BucketAlreadyExists" ) ) {
+        return S3Exception::BucketAlreadyExists;
+      }else {
         return S3Exception::NoError;
+      }
+    }
+    
+    std::string 
+    S3ResponseError::getErrorCode(S3Exception::ErrorCode aCode){
+      switch(aCode){
+        case S3Exception::InvalidAccessKeyId:
+          return "InvalidAccessKeyId";
+        case S3Exception::BucketAlreadyExists:
+          return "BucketAlreadyExists";
+        default:
+          return "Not implemented the Conversion";
       }
     }
 

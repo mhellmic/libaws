@@ -47,6 +47,9 @@ namespace aws { namespace s3  {
   private:
     static S3Exception::ErrorCode
     parseError(const std::string&);
+    
+    static std::string 
+    getErrorCode(S3Exception::ErrorCode);
 
     S3ResponseError();
 
