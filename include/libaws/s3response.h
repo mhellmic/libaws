@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include <libaws/common.h>
+#include <libaws/awstime.h>
 
 namespace aws {
 
@@ -202,6 +203,12 @@ namespace aws {
 
       virtual const std::string&
       getContentType() const;
+      
+      virtual const Time&
+      getLastModified() const;
+      
+      virtual bool
+      isModified() const;
 
       const std::map<std::string, std::string>&
       getMetaData() const;

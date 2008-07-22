@@ -258,6 +258,17 @@ namespace aws {
   {
     return theS3Response->getContentType();
   }
+  
+  const Time&
+  GetResponse::getLastModified() const{
+    return theS3Response->getLastModified();
+  }
+  
+  bool
+  GetResponse::isModified() const{
+    return theS3Response->isModified();
+  }
+  
 
   /**
    * HeadResponse
@@ -270,6 +281,7 @@ namespace aws {
   {
     return theS3Response->getBucketName();
   }
+
 
   const std::map<std::string, std::string>&
   HeadResponse::getMetaData() const
