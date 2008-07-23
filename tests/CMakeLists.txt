@@ -15,21 +15,38 @@
 ENABLE_TESTING()
 INCLUDE(CTest)
 
+# S3
 CREATE_TEST_SOURCELIST(s3tests
     s3tests.cpp
     s3buckettest.cpp  
     s3objecttest.cpp  
-    sqstest.cpp
-    sdbtest.cpp
   )
 
 # add the executable
 ADD_EXECUTABLE(s3tests ${s3tests})
 TARGET_LINK_LIBRARIES(s3tests aws ${requiredlibs})
 
+# SQS
+CREATE_TEST_SOURCELIST(sqstests
+  sqstests.cpp
+  sqstest.cpp
+  )
+
+ADD_EXECUTABLE(sqstests ${sqstests})
+TARGET_LINK_LIBRARIES(sqstests aws ${requiredlibs})
+
+# SDB
+CREATE_TEST_SOURCELIST(sdbtests
+  sdbtests.cpp
+  sdbtest.cpp
+  )
+
+ADD_EXECUTABLE(sdbtests ${sdbtests})
+TARGET_LINK_LIBRARIES(sdbtests aws ${requiredlibs})
+
 # remove the test driver source file
-SET (TestsToRun ${s3tests})
-REMOVE (TestsToRun s3tests.cpp)
+SET (TestsToRun ${s3tests} ${sqstests} ${sdbtests})
+REMOVE (TestsToRun s3tests.cpp sqstests.cpp sdbtests.cpp)
 
 # add all the ADD_TEST for each testing
 FOREACH (test ${TestsToRun})
