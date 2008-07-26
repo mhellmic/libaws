@@ -26,6 +26,16 @@ CREATE_TEST_SOURCELIST(s3tests
 ADD_EXECUTABLE(s3tests ${s3tests})
 TARGET_LINK_LIBRARIES(s3tests aws ${requiredlibs})
 
+SET (TestsToRun ${s3tests})
+REMOVE (TestsToRun s3tests.cpp)
+
+# add all the ADD_TEST for each testing
+FOREACH (test ${TestsToRun})
+  GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
+  MESSAGE(STATUS ${TName})
+  ADD_TEST(${TName} s3tests ${TName})
+ENDFOREACH(test)
+
 # SQS
 CREATE_TEST_SOURCELIST(sqstests
   sqstests.cpp
@@ -34,6 +44,16 @@ CREATE_TEST_SOURCELIST(sqstests
 
 ADD_EXECUTABLE(sqstests ${sqstests})
 TARGET_LINK_LIBRARIES(sqstests aws ${requiredlibs})
+
+SET (TestsToRun ${sqstests})
+REMOVE (TestsToRun sqstests.cpp)
+
+# add all the ADD_TEST for each testing
+FOREACH (test ${TestsToRun})
+  GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
+  MESSAGE(STATUS ${TName})
+  ADD_TEST(${TName} sqstests ${TName})
+ENDFOREACH(test)
 
 # SDB
 CREATE_TEST_SOURCELIST(sdbtests
@@ -45,12 +65,12 @@ ADD_EXECUTABLE(sdbtests ${sdbtests})
 TARGET_LINK_LIBRARIES(sdbtests aws ${requiredlibs})
 
 # remove the test driver source file
-SET (TestsToRun ${s3tests} ${sqstests} ${sdbtests})
-REMOVE (TestsToRun s3tests.cpp sqstests.cpp sdbtests.cpp)
+SET (TestsToRun ${sdbtests})
+REMOVE (TestsToRun sdbtests.cpp)
 
 # add all the ADD_TEST for each testing
 FOREACH (test ${TestsToRun})
   GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
   MESSAGE(STATUS ${TName})
-  ADD_TEST(${TName} s3tests ${TName})
+  ADD_TEST(${TName} sdbtests ${TName})
 ENDFOREACH(test)
