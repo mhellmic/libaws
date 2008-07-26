@@ -676,7 +676,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, lSList);
 
-  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+ // curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
 
   if (++theNumberOfRequests >= MAX_REQUESTS) {
     curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");      
@@ -733,7 +733,7 @@ S3Connection::getS3Data(void *ptr, size_t size, size_t nmemb, void *data)
 
   char* lChars = static_cast<char*>(ptr);
 
-  std::cerr.write(lChars, size*nmemb);
+  //std::cerr.write(lChars, size*nmemb);
 
   // this guarantees to read the input in chunks as they come in
   // by libxml; we always read as much as is in the buffer

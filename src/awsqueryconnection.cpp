@@ -115,7 +115,7 @@ namespace aws {
       lStringToSign << ( *lIter ).first << ( *lIter ).second;
     }
 
-    std::cout << "String to sign "  << lStringToSign.str() << std::endl;
+    //std::cout << "String to sign "  << lStringToSign.str() << std::endl;
 
 
 
@@ -140,7 +140,7 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    std::cout << "Send request:" << lUrlString << std::endl;
+    //std::cout << "Send request:" << lUrlString << std::endl;
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );
@@ -154,7 +154,7 @@ namespace aws {
     // set a callback for retrieving all http header information
 //    curl_easy_setopt ( theCurl, CURLOPT_HEADERFUNCTION, AWSQueryConnection::getHeaderData );
 
-    curl_easy_setopt ( theCurl, CURLOPT_VERBOSE, 1 );
+    //curl_easy_setopt ( theCurl, CURLOPT_VERBOSE, 1 );
 
 
     if ( ++theNumberOfRequests >= MAX_REQUESTS )
@@ -215,7 +215,7 @@ namespace aws {
 
     char* lChars = static_cast<char*> ( ptr );
 
-    std::cout << lChars << std::endl;
+    //std::cout << lChars << std::endl;
 
     // this guarantees to read the input in chunks as they come in
     // by libxml; we always read as much as is in the buffer
