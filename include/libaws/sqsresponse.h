@@ -65,9 +65,6 @@ namespace aws {
     public:
       virtual ~DeleteQueueResponse() {}
 
-      const std::string&
-      getQueueUrl() const;
-
     protected:
       friend class SQSConnectionImpl;
       DeleteQueueResponse(sqs::DeleteQueueResponse*);

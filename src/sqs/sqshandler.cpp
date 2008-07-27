@@ -185,7 +185,7 @@ namespace aws {
         setState ( MessageId );
       } else if ( xmlStrEqual ( localname, BAD_CAST "ReceiptHandle" ) ) {
         setState ( ReceiptHandle );
-      } else if ( xmlStrEqual ( localname, BAD_CAST "MD5OfMessageBody" ) ) {
+      } else if ( xmlStrEqual ( localname, BAD_CAST "MD5OfBody" ) ) {
         setState ( MD5OfMessageBody );
       } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
         setState ( Body );
@@ -221,7 +221,7 @@ namespace aws {
       	unsetState ( MessageId );
       } else if ( xmlStrEqual ( localname, BAD_CAST "ReceiptHandle" ) ) {
       	unsetState ( ReceiptHandle );
-      } else if ( xmlStrEqual ( localname, BAD_CAST "MD5OfMessageBody" ) ) {
+      } else if ( xmlStrEqual ( localname, BAD_CAST "MD5OfBody" ) ) {
       	unsetState ( MD5OfMessageBody );
       } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
       	unsetState ( Body );
