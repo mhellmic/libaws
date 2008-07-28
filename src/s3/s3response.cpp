@@ -42,9 +42,9 @@ namespace aws { namespace s3 {
     S3Exception::ErrorCode
     S3ResponseError::parseError ( const std::string& aString )
     {
-      if ( aString.compare ( "InvalidAccessKeyId" ) ) {
+      if ( aString.compare ( "InvalidAccessKeyId" ) == 0 ) {
         return S3Exception::InvalidAccessKeyId;
-      }if ( aString.compare ( "BucketAlreadyExists" ) ) {
+      }if ( aString.compare ( "BucketAlreadyExists" ) == 0 ) {
         return S3Exception::BucketAlreadyExists;
       }else {
         return S3Exception::NoError;

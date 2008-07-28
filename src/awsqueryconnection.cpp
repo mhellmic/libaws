@@ -35,7 +35,7 @@ namespace aws {
       const std::string &aSecretAccessKey,
       const std::string& aHost,
       const std::string& aVersion ) :
-      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost ), theVersion ( aVersion )  {
+      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost ), theVersion ( aVersion ), theSList(NULL)  {
     // always use a content-type text/plain as required by amazon
     theSList = curl_slist_append ( theSList, "Content-Type: text/plain" );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPHEADER, theSList );
@@ -140,7 +140,7 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    //std::cout << "Send request:" << lUrlString << std::endl;
+    std::cout << "Send request:" << lUrlString << std::endl;
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );
@@ -167,6 +167,8 @@ namespace aws {
     CURLcode lCurlCode = curl_easy_perform ( theCurl );
     curl_easy_setopt ( theCurl, CURLOPT_FRESH_CONNECT, "FALSE" );
 
+    //If the error code is !=0 and the handler is marked as succefully there was nothing parsed
+    //so we should set the error code from the http reques
     if ( lCurlCode != 0 )
     {
       std::stringstream lTmp;
@@ -174,8 +176,7 @@ namespace aws {
       QueryErrorResponse lQER = QueryErrorResponse(lTmp.str(), lTmp.str(), "", lUrlString);
       aCallBack->theIsSuccessful = false;
       aCallBack->theQueryErrorResponse = lQER;
-    }
-    else {
+    } else if(aCallBack->theIsSuccessful){ //only if we haven't catched an error before, we overwrite the error with an HTTP one
     	// check HTTP response code
     	long lResponseCode = 0;
     	curl_easy_getinfo( theCurl, CURLINFO_RESPONSE_CODE, &lResponseCode );

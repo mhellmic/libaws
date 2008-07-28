@@ -37,6 +37,8 @@ namespace aws {
       AuthFailure,
       AWS_SimpleQueueService_InternalError,
       AWS_SimpleQueueService_NonExistentQueue,
+      AWS_SimpleQueueService_QueueDeletedRecently,
+      AWS_SimpleQueueService_QueueNameExists,
       ConflictingQueryParameter,
       ElementNotSigned,
       InternalError,

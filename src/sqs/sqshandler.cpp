@@ -65,7 +65,16 @@ namespace aws {
 
     void
     QueueErrorHandler::endElement ( const xmlChar *  localname ) {
-      responseEndElement ( localname );
+      if (theIsSuccessful ){
+        responseEndElement ( localname );
+      } else if (xmlStrEqual ( localname, BAD_CAST "Code" )) {
+        unsetState ( ERROR_Code );
+      } else if (xmlStrEqual ( localname, BAD_CAST "Message" )) {
+        unsetState ( ERROR_Message );
+      } else if (xmlStrEqual ( localname, BAD_CAST "RequestID" )) {
+        unsetState ( RequestId );
+      }
+      
     }
 
     void

@@ -35,11 +35,15 @@ namespace aws {
     }
 
     SQSException::ErrorCode
-    SQSException::parseError (const std::string& aString) {
-      if (aString.compare ("InvalidAccessKeyId")) {
+        SQSException::parseError (const std::string& aString) {
+      if (aString.compare ("InvalidAccessKeyId") == 0) {
         return SQSException::InvalidAccessKeyId;
-      }else if (aString.compare ("ReadCountOutOfRange")) {
+      }else if (aString.compare ("ReadCountOutOfRange") == 0) {
         return SQSException::ReadCountOutOfRange;
+      } else if (aString.compare ("AWS.SimpleQueueService.QueueDeletedRecently") == 0) {
+        return SQSException::AWS_SimpleQueueService_QueueDeletedRecently;
+      } else if (aString.compare ("AWS.SimpleQueueService.QueueNameExists") == 0 || aString.compare ("QueueAlreadyExists") == 0) {
+        return SQSException::AWS_SimpleQueueService_QueueNameExists;
       } else {
         return SQSException::Unknown;
       }
