@@ -107,3 +107,9 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CPackSourceConfig.cmake.in
                ${CMAKE_BINARY_DIR}/CPackSourceConfig.cmake)
 MESSAGE(STATUS "configured ${CMAKE_SOURCE_DIR}/CPackSourceConfig.cmake.in --> ${CMAKE_BINARY_DIR}/CPackSourceConfig.cmake")
 
+# export stuff
+INCLUDE(CMakeExportBuildSettings)
+CMAKE_EXPORT_BUILD_SETTINGS(${CMAKE_BINARY_DIR}/LIBAWSBuildSettings.cmake)
+EXPORT_LIBRARY_DEPENDENCIES(${CMAKE_BINARY_DIR}/LIBAWSDepends.cmake)
+
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/LIBAWSConfig.cmake.in ${CMAKE_BINARY_DIR}/LIBAWSConfig.cmake)

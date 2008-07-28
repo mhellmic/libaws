@@ -1,0 +1,19 @@
+# Tell the user project where to find our headers and libraries
+SET(LIBAWS_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/include"
+                       "${CMAKE_BINARY_DIR}/include"
+                       "${CMAKE_SOURCE_DIR}/src"
+                       "${CMAKE_BINARY_DIR}/src"
+)
+SET(LIBAWS_LIBRARY_DIRS "${CMAKE_BINARY_DIR}/src"
+)
+SET(LIBAWS_API "${CMAKE_BINARY_DIR}/include"
+              "${CMAKE_SOURCE_DIR}/include"
+)
+
+# Tell the user project where to find our build settings and library dependencies
+SET(LIBAWS_BUILD_SETTINGS_FILE "${CMAKE_BINARY_DIR}/LIBAWSBuildSettings.cmake")
+INCLUDE("${CMAKE_BINARY_DIR}/LIBAWSDepends.cmake")
+
+# Tell the user project where to find the "USE" file.
+# This file uses the above settings to configure the user project
+SET(LIBAWS_USE_FILE "${CMAKE_SOURCE_DIR}/LIBAWSUse.cmake")
