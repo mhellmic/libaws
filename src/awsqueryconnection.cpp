@@ -34,8 +34,10 @@ namespace aws {
   AWSQueryConnection::AWSQueryConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,
       const std::string& aHost,
-      const std::string& aVersion ) :
-      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost ), theVersion ( aVersion ), theSList(NULL)  {
+      const std::string& aVersion,
+      int aPort,
+      bool aIsSecure) :
+      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost, aPort, aIsSecure ), theVersion ( aVersion ), theSList(NULL)  {
     // always use a content-type text/plain as required by amazon
     theSList = curl_slist_append ( theSList, "Content-Type: text/plain" );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPHEADER, theSList );
@@ -65,7 +67,11 @@ namespace aws {
                                           QueryCallBack* aCallBack )
   {
     std::stringstream lUrlStream;
-    lUrlStream << ( theIsSecure ? "https://": "http://" ) << theHost  << ":" << thePort << "/" << aResource;
+    lUrlStream << ( theIsSecure ? "https://": "http://" ) << theHost;
+    if (thePort > 0) {
+    	lUrlStream << ":" << thePort;
+    }
+    lUrlStream << "/" << aResource;
     std::string lUrl = lUrlStream.str();
     return makeQueryRequest(lUrl, action, aParameterMap, aCallBack);
   }
@@ -76,7 +82,10 @@ namespace aws {
                                         QueryCallBack* aCallBack )
       {
         std::stringstream lUrlStream;
-        lUrlStream << ( theIsSecure ? "https://": "http://" ) << theHost << ":" << thePort;
+        lUrlStream << ( theIsSecure ? "https://": "http://" ) << theHost;
+        if (thePort > 0) {
+        	lUrlStream << ":" << thePort;
+        }
         std::string lUrl = lUrlStream.str();
         return makeQueryRequest(lUrl, action, aParameterMap, aCallBack);
       }

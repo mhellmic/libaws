@@ -32,11 +32,20 @@ namespace aws { namespace sqs {
   const std::string SQSConnection::DEFAULT_HOST = "queue.amazonaws.com";
 
   SQSConnection::SQSConnection(const std::string& aAccessKeyId,
-                               const std::string& aSecretAccessKey)
-  : AWSQueryConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, DEFAULT_VERSION)
+                               const std::string& aSecretAccessKey )
+  : AWSQueryConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, DEFAULT_VERSION, 80, true)
   {
 
   }
+
+  SQSConnection::SQSConnection(const std::string& aAccessKeyId,
+															 const std::string& aSecretAccessKey,
+															 const std::string& aHost,
+															 int aPort, bool aIsSecure)
+	: AWSQueryConnection(aAccessKeyId, aSecretAccessKey, aHost, DEFAULT_VERSION, aPort, aIsSecure)
+	{
+
+	}
 
   CreateQueueResponse*
   SQSConnection::createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout)

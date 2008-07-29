@@ -69,6 +69,15 @@ namespace aws {
     theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey);
   }
 
+  SQSConnectionImpl::SQSConnectionImpl(const std::string& aAccessKeyId,
+                                       const std::string& aSecretAccessKey,
+                                       const std::string& aHost,
+                                       int aPort,
+                                       bool aIsSecure)
+  {
+    theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey, aHost, aPort, aIsSecure);
+  }
+
   SQSConnectionImpl::~SQSConnectionImpl()
   {
     delete theConnection;

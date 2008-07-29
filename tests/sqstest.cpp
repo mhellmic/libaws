@@ -19,6 +19,8 @@
 
 using namespace aws;
 
+const std::string theHost = "fifthelement.inf.ethz.ch:8080/lwmservices";
+
 int
 testQueues(SQSConnection* lSQSCon)
 {
@@ -133,6 +135,10 @@ testMessages(SQSConnection* lSQSCon)
       		lMessage.receipt_handle);
       std::cout << "Message with ID " << lMessage.message_id << " has been deleted" << std::endl;
 
+      // delete queue
+			DeleteQueueResponsePtr lDeleteQueue = lSQSCon->deleteQueue(lAQueueURL);
+      std::cout << "Queue " << lAQueueURL << " has been deleted" << std::endl;
+
     } catch (CreateBucketException& e) {
       std::cerr << "Couldn't create bucket" << std::endl;
       std::cerr << e.what() << std::endl;
@@ -159,13 +165,16 @@ sqstest(int argc, char** argv)
     return 1;
   }
 
-  SQSConnectionPtr lS3Rest = lFactory->createSQSConnection(lAccessKeyId, lSecretAccessKey);
+  // theHost = "fifthelement.inf.ethz.ch:8080/lwmservices"
+  // aPort = -1 -> we have specified our own
+  // aIsSecure = false -> we would like http instead of https
+  SQSConnectionPtr lS3Rest = lFactory->createSQSConnection(lAccessKeyId, lSecretAccessKey, theHost, -1, false);
 
   int lReturnCode;
   try {
-   // lReturnCode = testQueues(lS3Rest.get());
-   // if (lReturnCode != 0)
-   // 	return lReturnCode;
+   lReturnCode = testQueues(lS3Rest.get());
+   if (lReturnCode != 0)
+  	 return lReturnCode;
 
     lReturnCode = testMessages(lS3Rest.get());
     if (lReturnCode != 0)

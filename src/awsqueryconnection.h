@@ -44,43 +44,45 @@ namespace aws {
           return s1.compare(s2) < 0;
         }
       };
-    
+
       typedef std::map<std::string, std::string, ltstr> ParameterMap;
       typedef std::pair<std::string, std::string> ParameterPair;
       typedef ParameterMap::iterator ParameterMapIter;
-      
+
     public:
       static std::string QUERY_DATE_FORMAT;
 
     public:
-      AWSQueryConnection ( const std::string& aAccessKeyId, 
-                           const std::string& aSecretAccessKey, 
+      AWSQueryConnection ( const std::string& aAccessKeyId,
+                           const std::string& aSecretAccessKey,
                            const std::string& aHost,
-                           const std::string& aVersion);
+                           const std::string& aVersion,
+                           int aPort = 80,
+                           bool aIsSecure = true);
       virtual ~AWSQueryConnection();
 
       virtual void makeQueryRequest ( const std::string& aUrl,
-                                      const std::string& aAction,  
-                                      ParameterMap* aParameterMap, 
+                                      const std::string& aAction,
+                                      ParameterMap* aParameterMap,
                                       QueryCallBack* aCallBackWrapper );
-      
-      virtual void makeQueryRequest ( const std::string& aAction,  
-                                      ParameterMap* aParameterMap, 
+
+      virtual void makeQueryRequest ( const std::string& aAction,
+                                      ParameterMap* aParameterMap,
                                       QueryCallBack* aCallBackWrapper );
-      
+
       virtual void makeQueryRequestOnResource ( const std::string& aResource,
-                                      const std::string& aAction,  
-                                      ParameterMap* aParameterMap, 
+                                      const std::string& aAction,
+                                      ParameterMap* aParameterMap,
                                       QueryCallBack* aCallBackWrapper );
 
       virtual void setCommonParamaters ( ParameterMap* aParameterMap, const std::string& );
-      
+
       // TODO make it const std::string
       std::string getQueryTimestamp();
 
       static size_t
       dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data );
-      
+
   };
 
 } /* namespace aws */

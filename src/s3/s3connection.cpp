@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,17 +66,17 @@ namespace aws { namespace s3 {
 
 
 std::string S3Connection::DEFAULT_HOST = "s3.amazonaws.com";
-    
+
 S3Connection::S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey)
-	: AWSConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST),
+	: AWSConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, -1, true),
 	  theEncryptedResultSize(0),
 	  theBase64EncodedString(0)
 {
   // set callbacks for retrieving all http header information
   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, S3Connection::getHeaderData);
-  
+
   curl_easy_setopt(theCurl, CURLOPT_ERRORBUFFER, theCurlErrorBuffer);
-  
+
   // we enforce http 1.0 here in order to not use transfer-encoding: chunked
   // amazon doesn't understand that
   curl_easy_setopt(theCurl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
@@ -96,7 +96,7 @@ S3Connection::createBucket(const std::string& aBucketName)
   makeRequest(aBucketName, CREATE_BUCKET, &lWrapper, 0, 0);
 
 	REQUEST_EPILOG(CreateBucket);
-  
+
   return lRes.release();
 }
 
@@ -115,12 +115,12 @@ S3Connection::listAllBuckets()
 }
 
 ListBucketResponse*
-S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
+S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix,
                          const std::string& aMarker, int aMaxKeys)
 {
-  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix, 
+  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix,
                                                                 aMarker, aMaxKeys));
-  
+
   ListBucketHandler     lHandler;
 
   S3CallBackWrapper       lWrapper;
@@ -130,7 +130,7 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
   lWrapper.theSAXHandler.startElementNs = &ListBucketHandler::startElementNs;
   lWrapper.theSAXHandler.characters     = &ListBucketHandler::charactersSAXFunc;
   lWrapper.theSAXHandler.endElementNs   = &ListBucketHandler::endElementNs;
-  
+
   PathArgs_t lPathArgsMap;
 
   char* lEscapedPrefixChar = curl_escape(aPrefix.c_str(), aPrefix.size());
@@ -138,7 +138,7 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
 
   std::string lEscapedPrefix(lEscapedPrefixChar);
   std::string lEscapedMarker(lEscapedMarkerChar);
- 
+
   if (lEscapedPrefix.size() != 0)
       lPathArgsMap.insert(stringpair_t("prefix", lEscapedPrefix));
 
@@ -167,17 +167,17 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
 
   if ( ! lRes->isSuccessful() )
     throw ListBucketException( lRes->theS3ResponseError );
-  
+
   return lRes.release();
 }
 
 ListBucketResponse*
-S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix, 
+S3Connection::listBucket(const std::string& aBucketName, const std::string& aPrefix,
                          const std::string& aMarker, const std::string& aDelimiter, int aMaxKeys)
 {
-  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix, 
+  std::auto_ptr<ListBucketResponse> lRes(new ListBucketResponse(aBucketName, aPrefix,
                                                                 aMarker, aMaxKeys));
-  
+
   ListBucketHandler     lHandler;
 
   S3CallBackWrapper       lWrapper;
@@ -187,7 +187,7 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
   lWrapper.theSAXHandler.startElementNs = &ListBucketHandler::startElementNs;
   lWrapper.theSAXHandler.characters     = &ListBucketHandler::charactersSAXFunc;
   lWrapper.theSAXHandler.endElementNs   = &ListBucketHandler::endElementNs;
-  
+
   PathArgs_t lPathArgsMap;
 
   char* lEscapedPrefixChar = curl_escape(aPrefix.c_str(), aPrefix.size());
@@ -197,7 +197,7 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
   std::string lEscapedPrefix(lEscapedPrefixChar);
   std::string lEscapedMarker(lEscapedMarkerChar);
   std::string lEscapedDelimiter(lEscapedDelimiterChar);
- 
+
   if (lEscapedPrefix.size() != 0)
       lPathArgsMap.insert(stringpair_t("prefix", lEscapedPrefix));
 
@@ -231,7 +231,7 @@ S3Connection::listBucket(const std::string& aBucketName, const std::string& aPre
 
   if ( ! lRes->isSuccessful() )
     throw ListBucketException( lRes->theS3ResponseError );
-  
+
   return lRes.release();
 }
 
@@ -241,7 +241,7 @@ S3Connection::deleteBucket(const std::string& aBucketName, RequestHeaderMap* aHe
   std::auto_ptr<DeleteBucketResponse> lRes(new DeleteBucketResponse(aBucketName));
 
 	REQUEST_PROLOG(DeleteBucket);
-  
+
   makeRequest(aBucketName, DELETE_BUCKET, &lWrapper, 0, aHeaderMap);
 
 	REQUEST_EPILOG(DeleteBucket);
@@ -300,17 +300,17 @@ S3Connection::put(const std::string& aBucketName,
         lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
       }
 
-      makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject); 
+      makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject);
     } else {
-      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject);
     }
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
     throw e;
   }
-  
-  lWrapper.destroyParser();    
+
+  lWrapper.destroyParser();
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -357,17 +357,17 @@ S3Connection::put(const std::string& aBucketName,
         lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
       }
 
-      makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject); 
+      makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject);
     } else {
-      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject); 
+      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, &lObject);
     }
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
     throw e;
   }
-  
-  lWrapper.destroyParser();    
+
+  lWrapper.destroyParser();
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -409,13 +409,13 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey)
 
   if ( ! lRes->isSuccessful() )
     throw GetException( lRes->theS3ResponseError );
-  
+
   return lRes.release();
 }
 
 
 GetResponse*
-S3Connection::get(const std::string& aBucketName, const std::string& aKey, 
+S3Connection::get(const std::string& aBucketName, const std::string& aKey,
                   const std::string& aOldEtag)
 {
   std::auto_ptr<GetResponse> lRes(new GetResponse(aBucketName, aKey));
@@ -435,18 +435,18 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey,
 
   RequestHeaderMap lRequestHeaderMap;
   lRequestHeaderMap.addHeader("If-None-Match",aOldEtag);
-  
+
   lWrapper.createParser();
-  
+
   try {
     makeRequest(aBucketName, GET, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, 0);
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
   }
-  
-  lWrapper.destroyParser();  
-    
+
+  lWrapper.destroyParser();
+
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -459,7 +459,7 @@ DeleteResponse*
 S3Connection::del(const std::string& aBucketName, const std::string& aKey)
 {
   std::auto_ptr<DeleteResponse> lRes(new DeleteResponse(aBucketName, aKey));
-  
+
   DeleteHandler           lHandler;
 
   S3CallBackWrapper       lWrapper;
@@ -483,7 +483,7 @@ S3Connection::del(const std::string& aBucketName, const std::string& aKey)
   }
 
   lWrapper.destroyParser();
-  
+
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -506,12 +506,12 @@ S3Connection::head(const std::string& aBucketName, const std::string& aKey)
   lWrapper.theSAXHandler.startElementNs = &HeadHandler::startElementNs;
   lWrapper.theSAXHandler.characters     = &HeadHandler::charactersSAXFunc;
   lWrapper.theSAXHandler.endElementNs   = &HeadHandler::endElementNs;
-  
+
   char* lEscapedKeyChar = curl_escape(aKey.c_str(), aKey.size());
   std::string lEscapedKey(lEscapedKeyChar);
 
   lWrapper.createParser();
-  
+
   try {
     makeRequest(aBucketName, HEAD, &lWrapper, 0, 0, lEscapedKey, 0);
   } catch (AWSException& e) {
@@ -520,7 +520,7 @@ S3Connection::head(const std::string& aBucketName, const std::string& aKey)
   }
 
   lWrapper.destroyParser();
-  
+
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -535,56 +535,56 @@ S3Connection::setRequestMethod(ActionType aActionType)
   curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, setCreateBucketData);
   // this is overriden in the curlstreambuf
   curl_easy_setopt(theCurl, CURLOPT_WRITEFUNCTION,  S3Connection::getS3Data);
-  curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "FALSE");      
+  curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "FALSE");
   switch (aActionType) {
       case CREATE_BUCKET: {
           curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, S3Connection::setCreateBucketData);
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0);
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
           break;
       }
       case LIST_ALL_BUCKETS: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1);
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
           break;
       }
       case LIST_BUCKET: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1);
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
           break;
       }
       case DELETE_BUCKET: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE");
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
           break;
       }
       case PUT: {
           curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, S3Connection::setPutData);
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 1);
           break;
       }
       case GET: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1);
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
           break;
       }
       case HEAD: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "HEAD"); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "HEAD");
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
           break;
       }
       case DELETE: {
-          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
-          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0); 
-          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0); 
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE");
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
           break;
       }
       default: {
@@ -593,20 +593,20 @@ S3Connection::setRequestMethod(ActionType aActionType)
   }
 }
 
-void 
-S3Connection::makeRequest(const std::string& aBucketName, 
-                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper, 
+void
+S3Connection::makeRequest(const std::string& aBucketName,
+                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper,
                           PathArgs_t* aPathArgsMap, RequestHeaderMap* aHeaderMap)
 {
   makeRequest(aBucketName, aActionType, aCallBackWrapper, aPathArgsMap, aHeaderMap, "", 0);
 }
 
-void 
-S3Connection::makeRequest(const std::string& aBucketName, 
-                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper,  
-                          PathArgs_t* aPathArgsMap, RequestHeaderMap* aHeaderMap, 
+void
+S3Connection::makeRequest(const std::string& aBucketName,
+                          ActionType aActionType, S3CallBackWrapper* aCallBackWrapper,
+                          PathArgs_t* aPathArgsMap, RequestHeaderMap* aHeaderMap,
                           const std::string& aKey, S3Object* aObject)
-{ 
+{
   S3Response* lResponse = aCallBackWrapper->theResponse;
 
   //  make it a template parameter and class member
@@ -620,28 +620,28 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   // set the request method (i.e. get, put) and the according callback functions
   setRequestMethod(aActionType);
-  
+
   // set the data object received in the callback function
   curl_easy_setopt(theCurl, CURLOPT_WRITEDATA, (void*)(aCallBackWrapper));
   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, (void*)(aCallBackWrapper));
-  
+
   // if we didn't get an existing header map as input, we have to create one
   bool lHeaderMapCreated = false;
   if (!aHeaderMap) {
       aHeaderMap = new RequestHeaderMap();
       lHeaderMapCreated = true;
   }
-  
+
   // add the date header according to the S3 REST spec
   aHeaderMap->addDateHeader();
-  
+
   if (aObject) {
     curl_easy_setopt(theCurl, CURLOPT_READDATA, (void*) aObject);
     aHeaderMap->addMetadataHeaders(aObject);
     aHeaderMap->addHeader("Content-Type", aObject->theContentType);
     curl_easy_setopt(theCurl, CURLOPT_INFILESIZE, aObject->theContentLength);
     aHeaderMap->addHeader("Transfer-Encoding", "");
-    aHeaderMap->addHeader("Expect", "");      
+    aHeaderMap->addHeader("Expect", "");
   } else {
     curl_easy_setopt(theCurl, CURLOPT_READDATA, 0);
     curl_easy_setopt(theCurl, CURLOPT_INFILESIZE, 0);
@@ -650,27 +650,27 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   // authorization
   std::string lStringToSign = Canonizer::canonicalize(aActionType, aBucketName, aKey, aHeaderMap);
-  
+
   std::stringstream lAuthData;
 
   {
     // compute signature
-    HMAC(EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(), 
-        (const unsigned char*) lStringToSign.c_str(), lStringToSign.size(), 
+    HMAC(EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(),
+        (const unsigned char*) lStringToSign.c_str(), lStringToSign.size(),
         theEncryptedResult, &theEncryptedResultSize);
-        
+
     long lBase64EncodedStringLength;
-    lAuthData << " AWS " << theAccessKeyId << ":" << 
+    lAuthData << " AWS " << theAccessKeyId << ":" <<
         base64Encode(theEncryptedResult, theEncryptedResultSize, lBase64EncodedStringLength);
   }
-  
-  
+
+
   // avoid temporary objects
   std::string lAuthDataString = lAuthData.str();
   aHeaderMap->addHeader("Authorization", lAuthDataString.c_str());
-      
+
   struct curl_slist* lSList = 0;
-  
+
   // add headers to curl
   aHeaderMap->addHeadersToCurlSList(lSList);
 
@@ -679,7 +679,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
  // curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
 
   if (++theNumberOfRequests >= MAX_REQUESTS) {
-    curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");      
+    curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");
     theNumberOfRequests = 0;
   }
 
@@ -704,13 +704,13 @@ S3Connection::makeRequest(const std::string& aBucketName,
         //std::cerr.write (lBuf, lRead);
         xmlParseChunk(aCallBackWrapper->theParserCtxt, lBuf, lRead, 0);
       }
-      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);      
+      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);
     }
   } else {
     lResCode = curl_easy_perform(theCurl);
     if (! (lResponse->isSuccessful()) ) {
       // tell the parser that parsing is finished
-      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);      
+      xmlParseChunk(aCallBackWrapper->theParserCtxt, 0, 0, 1);
     }
   }
 
@@ -719,11 +719,11 @@ S3Connection::makeRequest(const std::string& aBucketName,
   if (lHeaderMapCreated) {
     delete aHeaderMap; aHeaderMap = 0;
   }
-  
+
   if (lResCode != 0) {
     throw AWSConnectionException(theCurlErrorBuffer);
   }
-    
+
 }
 
 size_t
@@ -740,7 +740,7 @@ S3Connection::getS3Data(void *ptr, size_t size, size_t nmemb, void *data)
   // because we stream internally.
   xmlParseChunk(lWrapper->theParserCtxt, lChars, size * nmemb, 0);
 
-  return size * nmemb;  
+  return size * nmemb;
 }
 
 size_t
@@ -755,14 +755,14 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
   std::string lTmp(static_cast<char*>(ptr), size*nmemb);
   trim(lTmp);
 
-  if (lTmp.find("200 OK") != std::string::npos || 
+  if (lTmp.find("200 OK") != std::string::npos ||
       lTmp.find("204 No Content") != std::string::npos) {
     // if we got a 20x header, the request was successful
     lRes->theIsSuccessful = true;
   } else if (lTmp.find("ETag:") != std::string::npos) {
     lRes->theETag = lTmp.substr(7, lTmp.find_last_of('"') - 7);
   } else if (lTmp.find("Date:") != std::string::npos) {
-    lRes->theDate = lTmp.substr(6, lTmp.size()); 
+    lRes->theDate = lTmp.substr(6, lTmp.size());
   } else if (lTmp.find("x-amz-id-2:") != std::string::npos) {
     lRes->theAmazonId = lTmp.substr(12, lTmp.size());
   } else if (lTmp.find("x-amz-request-id:") != std::string::npos) {
@@ -804,7 +804,7 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
     }
   }
 
-  return size * nmemb;    
+  return size * nmemb;
 }
 
 
@@ -814,7 +814,7 @@ S3Connection::setCreateBucketData(void *aBuffer, size_t aSize, size_t nmemb, voi
   return 0; // signal EOF
 }
 
-size_t 
+size_t
 S3Connection::setPutData(void *aBuffer, size_t aSize, size_t nmemb, void* data)
 {
   S3Object* lObject = static_cast<S3Object*>(data);
@@ -826,7 +826,7 @@ S3Connection::setPutData(void *aBuffer, size_t aSize, size_t nmemb, void* data)
     return in->gcount();
   } else if (lObject->theDataPointer) { // serve data from a char pointer
 		if (lObject->theDataRead == lObject->theContentLength) {
-			return 0;	
+			return 0;
 		}
 		if ( maxsize > lObject->theContentLength - lObject->theDataRead ) {
 			charptr = const_cast<char*>(lObject->theDataPointer + lObject->theDataRead);
@@ -838,7 +838,7 @@ S3Connection::setPutData(void *aBuffer, size_t aSize, size_t nmemb, void* data)
 			return lObject->theContentLength - lObject->theDataRead;
 		}
   } else {
-    assert(false);  // either of the two (theIstream or theDataPointer) must be set 
+    assert(false);  // either of the two (theIstream or theDataPointer) must be set
   }
 }
 
@@ -876,5 +876,5 @@ S3Connection::requestTypeForAction(ActionType aType)
   }
 }
 
-} } // namespaces	
+} } // namespaces
 

@@ -66,7 +66,7 @@ protected:
 
 
     AWSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-                  const std::string& aHost);
+                  const std::string& aHost, int aPort, bool aIsSecure);
 
 
     static std::string urlencode(const std::string&);

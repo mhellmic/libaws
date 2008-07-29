@@ -54,6 +54,8 @@ namespace aws {
       // only the factory can create us
       friend class AWSConnectionFactoryImpl;
       SQSConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      SQSConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+      		const std::string& aHost, int aPort, bool aIsSecure);
 
       sqs::SQSConnection* theConnection;
 

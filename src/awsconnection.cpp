@@ -33,14 +33,17 @@ uint8_t AWSConnection::MAX_REQUESTS = 30;
 
 AWSConnection::AWSConnection(const std::string& aAccessKeyId,
                              const std::string& aSecretAccessKey,
-                             const std::string& aHost)
+                             const std::string& aHost,
+                             int aPort,
+                             bool aIsSecure)
     : theAccessKeyId(aAccessKeyId),
       theSecretAccessKey(aSecretAccessKey),
 	    theHost(aHost),
       theCurlErrorBuffer(0),
       theIsSecure(false),
       theNumberOfRequests(0),
-      theCurl(0)
+      theCurl(0),
+      thePort(aPort)
 {
   // Initialize SHA1 encryption
   HMAC_CTX_init(&theHctx);
@@ -49,8 +52,10 @@ AWSConnection::AWSConnection(const std::string& aAccessKeyId,
   // curl initialization (check on every call if everything went ok
   curl_version_info_data* lVersionInfo = curl_version_info(CURLVERSION_NOW);
   int lFeatures = lVersionInfo->features;
-  theIsSecure = lFeatures & CURL_VERSION_SSL;
-  thePort = theIsSecure?443:80;
+  theIsSecure = aIsSecure && (lFeatures & CURL_VERSION_SSL);
+  if (theIsSecure) {
+  	thePort = 443;
+  }
 
   theCurlErrorBuffer = new char[CURLOPT_ERRORBUFFER];
 
