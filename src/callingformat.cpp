@@ -64,8 +64,10 @@ RegularCallingFormat::getUrl(bool aIsSecure, std::string aServer, int aPort, std
                              std::string aKey, PathArgs_t* aPathArgs)
 {
     std::stringstream s;
-    s << (aIsSecure ? "https://": "http://") << aServer  << ":" << aPort
-      << getPathBase(aBucketName, aKey) << Canonizer::convertPathArgs(aPathArgs);
+    s << (aIsSecure ? "https://": "http://") << aServer;
+    if(aPort > 0)
+      s << ":" << aPort;
+    s << getPathBase(aBucketName, aKey) << Canonizer::convertPathArgs(aPathArgs);
     return s.str();
 }
 

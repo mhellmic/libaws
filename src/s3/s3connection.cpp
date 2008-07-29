@@ -612,6 +612,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
   //  make it a template parameter and class member
   aws::CallingFormat* lCallingFormat = aws::CallingFormat::getRegularCallingFormat();
 
+  
   std::string lUrl = lCallingFormat->getUrl(theIsSecure, DEFAULT_HOST, thePort,
                                             aBucketName, aKey, aPathArgsMap);
 

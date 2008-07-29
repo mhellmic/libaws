@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "libaws/config.h"
 #include <curl/curl.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
@@ -52,14 +53,16 @@ AWSConnection::AWSConnection(const std::string& aAccessKeyId,
   // curl initialization (check on every call if everything went ok
   curl_version_info_data* lVersionInfo = curl_version_info(CURLVERSION_NOW);
   int lFeatures = lVersionInfo->features;
+#ifdef WITH_SSL
   theIsSecure = aIsSecure && (lFeatures & CURL_VERSION_SSL);
   if (theIsSecure) {
   	thePort = 443;
   }
-
+#endif
   theCurlErrorBuffer = new char[CURLOPT_ERRORBUFFER];
 
   theCurl = curl_easy_init();
+
 }
 
 AWSConnection::~AWSConnection()

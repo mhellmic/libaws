@@ -149,7 +149,7 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    std::cout << "Send request:" << lUrlString << std::endl;
+    //std::cout << "Send request:" << lUrlString << std::endl;
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );

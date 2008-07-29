@@ -19,3 +19,4 @@
 #cmakedefine HAVE_SYS_TYPES_H
 #cmakedefine HAVE_STRTOIMAX_F
 #cmakedefine HAVE_STRPTIME_F 
+#cmakedefine WITH_SSL
