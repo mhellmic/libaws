@@ -153,6 +153,7 @@ main (int argc, char** argv) {
   char* lAccessKeyId = 0;
   char* lSecretAccessKey = 0;
   char* lReceiptHandle = 0;
+  char* lHost = 0;
 
   int c;
   opterr = 0;
@@ -170,6 +171,9 @@ main (int argc, char** argv) {
       case 'a':
         lAction = optarg;
         break;
+      case 'o':
+      	lHost = optarg;
+      	break;
       case 'n':
         lQueueName = optarg;
         break;
@@ -190,7 +194,7 @@ main (int argc, char** argv) {
         break;
       case 'h': {
           std::cout << "libaws version " << lFactory->getVersion() << std::endl;
-          std::cout << "Usage: s3 <options>" << std::endl;
+          std::cout << "Usage: sqs <options>" << std::endl;
           std::cout << "  -i: AWS Access Key Id"  << std::endl;
           std::cout << "  -s: AWS Secret Access Key"  << std::endl;
           std::cout << "  -a action: Action to perform" << std::endl;
@@ -202,6 +206,7 @@ main (int argc, char** argv) {
           std::cout << "             list-message: Receive messages" << std::endl;
           std::cout << "             delete-message: Delete messages" << std::endl;
           std::cout << "             delete-all-messages: Delete all messages retrieved" << std::endl;
+          std::cout << "  -o: host name"  << std::endl;
           std::cout << "  -n name: A Queue Name/URL"  << std::endl;
           std::cout << "  -p prefix: Prefix for listing queues"  << std::endl;
           std::cout << "  -x #messages: Number of messages to return"  << std::endl;
@@ -223,25 +228,39 @@ main (int argc, char** argv) {
         exit (1);
       }
 
-  if (!lAccessKeyId)
+  if (!lAccessKeyId) {
     lAccessKeyId = getenv ("AWS_ACCESS_KEY");
+  }
 
-  if (!lSecretAccessKey)
+  if (!lSecretAccessKey) {
     lSecretAccessKey = getenv ("AWS_SECRET_ACCESS_KEY");
+  }
+
+  if (!lHost) {
+  	lHost = getenv ("SQS_HOST");
+  }
 
   if (!lAccessKeyId) {
-      std::cerr << "No Access Key given" << std::endl;
-      std::cerr << "Either use -i as a command line argument or set AWS_ACCESS_KEY as an environmental variable" << std::endl;
-      exit (1);
-    }
+		std::cerr << "No Access Key given" << std::endl;
+		std::cerr << "Either use -i as a command line argument or set AWS_ACCESS_KEY as an environmental variable" << std::endl;
+		exit (1);
+	}
+
   if (!lSecretAccessKey) {
-      std::cerr << "No Secret Access Key given" << std::endl;
-      std::cerr << "Either use -s as a command line argument or set AWS_SECRET_ACCESS_KEY as an environmental variable" << std::endl;
-      exit (1);
-    }
+		std::cerr << "No Secret Access Key given" << std::endl;
+		std::cerr << "Either use -s as a command line argument or set AWS_SECRET_ACCESS_KEY as an environmental variable" << std::endl;
+		exit (1);
+	}
 
-
-  SQSConnectionPtr lSQSRest =  lFactory->createSQSConnection (lAccessKeyId, lSecretAccessKey);
+  SQSConnectionPtr lSQSRest;
+  if (!lHost) {
+  	lSQSRest = lFactory->createSQSConnection (lAccessKeyId, lSecretAccessKey);
+  }
+  else {
+    // aPort = -1 -> we have specified our own
+    // aIsSecure = false -> we would like http instead of https
+  	lSQSRest = lFactory->createSQSConnection(lAccessKeyId, lSecretAccessKey, lHost, -1, false);
+  }
 
   if (!lAction) {
       std::cerr << "No Action parameter specified." << std::endl;
