@@ -16,8 +16,6 @@
 #ifndef AWS_AWSQUERYRESPONSE_H
 #define AWS_AWSQUERYRESPONSE_H
 
-#include <libxml/parser.h>
-
 
 namespace aws
 {
