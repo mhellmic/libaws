@@ -19,6 +19,7 @@
 #include "common.h"
 #include "awsconnection.h"
 
+
 #include <map>
 
 struct curl_slist;
@@ -28,6 +29,9 @@ namespace aws {
   class QueryCallBack;
 
   class AWSQueryConnection : public AWSConnection {
+    private:
+      DECLARE_LOGGER;
+      
     protected:
       std::string theDefaultHost;
       std::string theVersion;

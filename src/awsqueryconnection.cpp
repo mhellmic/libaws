@@ -28,6 +28,8 @@
 
 
 namespace aws {
+  
+  DEFINE_LOGGER ( aws::AWSQueryConnection );
 
   std::string AWSQueryConnection::QUERY_DATE_FORMAT("%FT%H:%M:%SZ");
 
@@ -149,7 +151,7 @@ namespace aws {
     // because it will always copy
     std::string lUrlString = lUrl.str();
 
-    //std::cout << "Send request:" << lUrlString << std::endl;
+    LOG_INFO("Send request:" << lUrlString);
 
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );

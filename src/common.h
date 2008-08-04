@@ -28,6 +28,8 @@
 # include <stdint.h>
 #endif
 
+#include "logging/logging.hh"
+
 namespace aws { 
 	
   typedef std::pair<std::string, std::string> stringpair_t;

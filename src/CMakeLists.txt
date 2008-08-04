@@ -52,6 +52,12 @@ FOREACH (SRCS ${SDB_SRCS})
    LIST(APPEND AWS_SRCS sdb/${SRCS})
 ENDFOREACH (SRCS)
 
+INCLUDE(logging/CMakeLists.txt)
+FOREACH (SRCS ${LOGGING_SRCS})
+   LIST(APPEND AWS_SRCS logging/${SRCS})
+ENDFOREACH (SRCS)
+
+
 # which libraries should be installed
 SET(AWS_INSTALL_LIST)
 
