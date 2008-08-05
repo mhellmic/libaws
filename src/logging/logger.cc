@@ -8,8 +8,8 @@
 
 namespace logging {
   bool Logger::DO_XML_LOG=true;
-    
-  Logger::Logger(const std::string& loggerName) : theLoggerName(loggerName){ 
+
+  Logger::Logger(const std::string& loggerName) : theLoggerName(loggerName){
 	theLoggerPtr = LoggerManager::logmanager()->registerLogger(loggerName);
 }
 
@@ -17,7 +17,7 @@ int Logger::getLevel() const{
 	return theLoggerPtr->getLogLevel();
 }
 
-void Logger::logMessage(int level, const std::string& message, uint line) {
+void Logger::logMessage(int level, const std::string& message, uint32_t line) {
 	if(getLevel() <= level)
 	{
 		//get and format the current time
@@ -38,7 +38,7 @@ void Logger::logMessage(int level, const std::string& message, uint line) {
 		logMessage << "LogLevel=" << level << '\t' << message << std::endl ;
 		std::string lMessage(logMessage.str().c_str());
 	  theLoggerPtr->logMessage(lMessage);
-    
+
     if(DO_XML_LOG){
       std::stringstream log4jMessage;
       log4jMessage << "<log4j:event logger=\"";
@@ -56,17 +56,17 @@ void Logger::logMessage(int level, const std::string& message, uint line) {
           break;
           }
           log4jMessage << " thread=\"\">\r\n";
-       
+
        log4jMessage << "<log4j:locationInfo class=\"dummy\"  method=\"dummy\" file=\"dummy\" line=\"" << line << "\"/>\r\n";
 
-       
+
        log4jMessage << "<log4j:message><![CDATA[" << message << "]]></log4j:message>\r\n";
-       
-       
+
+
        log4jMessage << "</log4j:event>\r\n\r\n" << std::endl;
        std::string lXMLMessage(log4jMessage.str().c_str());
        theLoggerPtr->logXMLMessage(lXMLMessage);
-       
+
     }
 	}
 }
