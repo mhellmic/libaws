@@ -124,7 +124,7 @@ namespace aws { namespace sqs {
                                 int aVisibilityTimeout)
   {
     ParameterMap lMap;
-    if (aNumberOfMessages > -1 ) {
+    if (aNumberOfMessages != 0 ) {
       std::stringstream s;
       s << aNumberOfMessages;
       lMap.insert ( ParameterPair ( "MaxNumberOfMessages", s.str() ) );

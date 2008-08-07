@@ -65,7 +65,7 @@ namespace aws {
 
         ReceiveMessageResponse*
         receiveMessage( const std::string &aQueueUrl,
-                        int aNumberOfMessages = -1,
+                        int aNumberOfMessages = 0,
                         int aVisibilityTimeout = -1);
 
         DeleteMessageResponse*

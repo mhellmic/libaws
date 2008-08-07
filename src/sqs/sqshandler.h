@@ -108,6 +108,8 @@ namespace aws {
 
     class ReceiveMessageHandler : public QueueErrorHandler
     {
+      private:
+        std::string theBody;
       protected:
         friend class SQSConnection;
         ReceiveMessageResponse* theReceiveMessageResponse;

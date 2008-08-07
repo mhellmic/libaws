@@ -198,6 +198,8 @@ namespace aws {
         setState ( MD5OfMessageBody );
       } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
         setState ( Body );
+        //ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
+        //std::cout << std::endl << "SET BODY " << "ID" << lMessage.message_id << std::endl;
       }
     }
 
@@ -217,9 +219,13 @@ namespace aws {
     		std::string lMessageMD5((const char*)value, len);
     		lMessage.message_md5 = lMessageMD5;
     	} else if ( isSet ( Body )) {
-    		ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
+    		//ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
     		// transfering ownership of the message body to the message
-    		lMessage.message_body = AWSConnection::base64Decode((const char*) value, len, lMessage.message_size);
+        theBody.append( (const char*)value, len );
+    		//lMessage.message_body = AWSConnection::base64Decode((const char*) value, len, lMessage.message_size);
+        //std::string test((const char*)value, len);
+        //std::cout << std::endl << "ID" << lMessage.message_id << "Original[" << test << "]" << std::endl;
+        //std::cout << std::endl << "ID" << lMessage.message_id << "Encoded[" << lMessage.message_body  << "]" << std::endl;
     	}
     }
 
@@ -234,6 +240,12 @@ namespace aws {
       	unsetState ( MD5OfMessageBody );
       } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
       	unsetState ( Body );
+        ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
+        lMessage.message_body = AWSConnection::base64Decode(theBody.c_str(), theBody.size(), lMessage.message_size);
+        //std::cout << std::endl << "ID" << lMessage.message_id << "Original[" << theBody << "]" << std::endl;
+        //std::cout << std::endl << "ID" << lMessage.message_id << "Encoded[" << lMessage.message_body  << "]" << std::endl;
+        //std::cout << std::endl << "UNSET BODY " << "ID" << lMessage.message_id << std::endl;
+        theBody.clear();
       }
     }
 

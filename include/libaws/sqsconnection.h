@@ -41,7 +41,7 @@ namespace aws {
 
       virtual ReceiveMessageResponsePtr
       receiveMessage(const std::string &aQueueUrl,
-                    int aNumberOfMessages = -1,
+                    int aNumberOfMessages = 0,
                     int aVisibilityTimeout = -1) = 0;
 
       virtual DeleteMessageResponsePtr
