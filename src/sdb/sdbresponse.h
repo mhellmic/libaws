@@ -31,11 +31,16 @@ namespace aws {
 
 		class SDBResponse: public QueryResponse {
 		public:
-			const std::string& getBoxUsage();
-			void setBoxUsage(std::string& aUsage);
+			float getBoxUsage() {
+	      return theBoxUsage;
+	    }
+			void setBoxUsage(float aUsage) {
+	      theBoxUsage = aUsage;
+	    }
+			void setBoxUsage(const std::string& aUsageStr);
 
 		protected:
-			std::string theBoxUsage;
+			float theBoxUsage;
 		};
 
 		class CreateDomainResponse: public SDBResponse {

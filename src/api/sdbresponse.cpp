@@ -38,8 +38,7 @@ namespace aws {
 	}
 
 	template<class T>
-	const std::string&
-	SDBTemplateResponse<T>::getBoxUsage() const {
+	float SDBTemplateResponse<T>::getBoxUsage() const {
 		return theSDBResponse->getBoxUsage();
 	}
 

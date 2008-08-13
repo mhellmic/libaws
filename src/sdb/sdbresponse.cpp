@@ -17,21 +17,15 @@
 
 #include "sdb/sdbresponse.h"
 
-
 using namespace aws;
 
 namespace aws {
-  namespace sdb {
+	namespace sdb {
 
-    const std::string&
-    SDBResponse::getBoxUsage() {
-      return theBoxUsage;
-    }
+		void SDBResponse::setBoxUsage(const std::string& aUsageStr) {
+			std::istringstream i(aUsageStr);
+			i >> theBoxUsage;
+		}
 
-    void
-    SDBResponse::setBoxUsage ( std::string& aUsage ) {
-      theBoxUsage = aUsage;
-    }
-
-  }
+	}
 }//namespaces
