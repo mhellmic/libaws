@@ -54,8 +54,16 @@ namespace aws {
 		SDBTemplateResponse<sdb::ListDomainsResponse> (r) {
 	}
 
-	const std::vector<std::string>& ListDomainsResponse::getDomainNames() {
-		return theSDBResponse->getDomainNames();
+	void ListDomainsResponse::open() {
+		theSDBResponse->open();
+	}
+
+	bool ListDomainsResponse::next(std::string& aDomainName) {
+		return theSDBResponse->next(aDomainName);
+	}
+
+	void ListDomainsResponse::close() {
+		theSDBResponse->close();
 	}
 
 	const std::string& ListDomainsResponse::getNextToken() {
@@ -75,16 +83,32 @@ namespace aws {
 		SDBTemplateResponse<sdb::GetAttributesResponse> (r) {
 	}
 
-	const std::vector<AttributePair>& GetAttributesResponse::getAttributes() {
-		return theSDBResponse->getAttributes();
+	void GetAttributesResponse::open() {
+		theSDBResponse->open();
+	}
+
+	bool GetAttributesResponse::next(AttributePair& attribute) {
+		return theSDBResponse->next(attribute);
+	}
+
+	void GetAttributesResponse::close() {
+		theSDBResponse->close();
 	}
 
 	SDBQueryResponse::SDBQueryResponse(sdb::SDBQueryResponse* r) :
 		SDBTemplateResponse<sdb::SDBQueryResponse> (r) {
 	}
 
-	const std::vector<std::string>& SDBQueryResponse::getItemNames() {
-		return theSDBResponse->getItemNames();
+	void SDBQueryResponse::open() {
+		theSDBResponse->open();
+	}
+
+	bool SDBQueryResponse::next(std::string& aDomainName) {
+		return theSDBResponse->next(aDomainName);
+	}
+
+	void SDBQueryResponse::close() {
+		theSDBResponse->close();
 	}
 
 	const std::string& SDBQueryResponse::getNextToken() {

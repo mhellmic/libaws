@@ -64,7 +64,11 @@ int listDomains(SDBConnection* lCon) {
 	try {
 		ListDomainsResponsePtr lPtr = lCon->listDomains();
 		std::cout << "Listing of domains: " << std::endl;
-		printVector(lPtr->getDomainNames());
+		lPtr->open();
+		std::string name;
+		while (lPtr->next(name)) {
+			std::cout << name << std::endl;
+		}
 		printBoxUsage(*lPtr);
 	}
 	catch (ListDomainsException& e) {
@@ -114,11 +118,11 @@ int getAttributes(SDBConnection* lCon) {
 	try {
 		GetAttributesResponsePtr lPtr = lCon->getAttributes("testDomain",
 				"testItem");
-		std::vector<AttributePair> attributes = lPtr->getAttributes();
 		std::cout << "Get Attributes:" << std::endl;
-		for (std::vector<AttributePair>::iterator iter = attributes.begin(); iter
-				!= attributes.end(); iter++) {
-			std::cout << "Name: " << (*iter).first << " Value: " << (*iter).second
+		lPtr->open();
+		AttributePair attPair;
+		while (lPtr->next(attPair)) {
+			std::cout << "Name: " << attPair.first << " Value: " << attPair.second
 					<< std::endl;
 		}
 		printBoxUsage(*lPtr);
@@ -136,7 +140,11 @@ int query(SDBConnection* lCon) {
 		std::string query("['amount'<'6']");
 		SDBQueryResponsePtr lPtr = lCon->query("testDomain", query);
 		std::cout << "Query result for query " << query << ": " << std::endl;
-		printVector(lPtr->getItemNames());
+		lPtr->open();
+		std::string name;
+		while (lPtr->next(name)) {
+			std::cout << name << std::endl;
+		}
 		printBoxUsage(*lPtr);
 	}
 	catch (QueryException& e) {

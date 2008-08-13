@@ -27,5 +27,53 @@ namespace aws {
 			i >> theBoxUsage;
 		}
 
+		void ListDomainsResponse::open() {
+			theIter = theDomainNames.begin();
+		}
+
+		bool ListDomainsResponse::next(std::string& aDomainName) {
+			if (theIter != theDomainNames.end()) {
+				aDomainName = *theIter++;
+				return true;
+			}
+			return false;
+		}
+
+		void ListDomainsResponse::close() {
+			theIter = theDomainNames.begin();
+		}
+
+		void GetAttributesResponse::open() {
+			theIter = theAttributes.begin();
+		}
+
+		bool GetAttributesResponse::next(AttributePair& attribute) {
+			if (theIter != theAttributes.end()) {
+				attribute = *theIter++;
+				return true;
+			}
+			return false;
+		}
+
+		void GetAttributesResponse::close() {
+			theIter = theAttributes.begin();
+		}
+
+		void SDBQueryResponse::open() {
+			theIter = theItemNames.begin();
+		}
+
+		bool SDBQueryResponse::next(std::string& aItemName) {
+			if (theIter != theItemNames.end()) {
+				aItemName = *theIter++;
+				return true;
+			}
+			return false;
+		}
+
+		void SDBQueryResponse::close() {
+			theIter = theItemNames.begin();
+		}
+
 	}
 }//namespaces

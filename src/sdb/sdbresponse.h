@@ -53,11 +53,12 @@ namespace aws {
 			friend class ListDomainsHandler;
 		private:
 			std::vector<std::string> theDomainNames;
+			std::vector<std::string>::iterator theIter;
 			std::string theNextToken;
 		public:
-			const std::vector<std::string>& getDomainNames() {
-				return theDomainNames;
-			}
+			void open();
+			bool next(std::string& aDomainName);
+			void close();
 			const std::string& getNextToken() {
 				return theNextToken;
 			}
@@ -73,22 +74,24 @@ namespace aws {
 			friend class GetAttributesHandler;
 		private:
 			std::vector<AttributePair> theAttributes;
+			std::vector<AttributePair>::iterator theIter;
 			std::string theTmpName;
 		public:
-			const std::vector<AttributePair>& getAttributes() {
-				return theAttributes;
-			}
+			void open();
+			bool next(AttributePair& attribute);
+			void close();
 		};
 
 		class SDBQueryResponse: public SDBResponse {
 			friend class QueryHandler;
 		private:
 			std::vector<std::string> theItemNames;
+			std::vector<std::string>::iterator theIter;
 			std::string theNextToken;
 		public:
-			const std::vector<std::string>& getItemNames() {
-				return theItemNames;
-			}
+			void open();
+			bool next(std::string& aItemName);
+			void close();
 			const std::string& getNextToken() {
 				return theNextToken;
 			}

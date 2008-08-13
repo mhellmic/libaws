@@ -87,7 +87,9 @@ namespace aws {
 	class ListDomainsResponse: public SDBTemplateResponse<
 			sdb::ListDomainsResponse> {
 	public:
-		const std::vector<std::string>& getDomainNames();
+		void open();
+		bool next(std::string& aDomainName);
+		void close();
 		const std::string& getNextToken();
 		virtual ~ListDomainsResponse() {
 		}
@@ -125,7 +127,9 @@ namespace aws {
 	class GetAttributesResponse: public SDBTemplateResponse<
 			sdb::GetAttributesResponse> {
 	public:
-		const std::vector<AttributePair>& getAttributes();
+		void open();
+		bool next(AttributePair& attribute);
+		void close();
 		virtual ~GetAttributesResponse() {
 		}
 		;
@@ -137,7 +141,9 @@ namespace aws {
 
 	class SDBQueryResponse: public SDBTemplateResponse<sdb::SDBQueryResponse> {
 	public:
-		const std::vector<std::string>& getItemNames();
+		void open();
+		bool next(std::string& aItemName);
+		void close();
 		const std::string& getNextToken();
 		virtual ~SDBQueryResponse() {
 		}
