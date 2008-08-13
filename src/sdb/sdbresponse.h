@@ -24,28 +24,72 @@
 
 namespace aws {
 
-  // forward declaration of internal response classes
-  namespace sdb {
+	// forward declaration of internal response classes
+	namespace sdb {
 
+		typedef std::pair<std::string, std::string> AttributePair;
 
-    class SDBResponse : public QueryResponse
-    {
-      
-      
-      public:
-        const std::string&  getBoxUsage();
-        void setBoxUsage(std::string& aUsage);
-        
-      protected:
-        std::string theBoxUsage;
-    };
+		class SDBResponse: public QueryResponse {
+		public:
+			const std::string& getBoxUsage();
+			void setBoxUsage(std::string& aUsage);
 
-    class CreateDomainResponse : public SDBResponse
-    {
-      
-    };
-    
-  }
+		protected:
+			std::string theBoxUsage;
+		};
+
+		class CreateDomainResponse: public SDBResponse {
+		};
+
+		class DeleteDomainResponse: public SDBResponse {
+		};
+
+		class ListDomainsResponse: public SDBResponse {
+			friend class ListDomainsHandler;
+		private:
+			std::vector<std::string> theDomainNames;
+			std::string theNextToken;
+		public:
+			const std::vector<std::string>& getDomainNames() {
+				return theDomainNames;
+			}
+			const std::string& getNextToken() {
+				return theNextToken;
+			}
+		};
+
+		class PutAttributesResponse: public SDBResponse {
+		};
+
+		class DeleteAttributesResponse: public SDBResponse {
+		};
+
+		class GetAttributesResponse: public SDBResponse {
+			friend class GetAttributesHandler;
+		private:
+			std::vector<AttributePair> theAttributes;
+			std::string theTmpName;
+		public:
+			const std::vector<AttributePair>& getAttributes() {
+				return theAttributes;
+			}
+		};
+
+		class SDBQueryResponse: public SDBResponse {
+			friend class QueryHandler;
+		private:
+			std::vector<std::string> theItemNames;
+			std::string theNextToken;
+		public:
+			const std::vector<std::string>& getItemNames() {
+				return theItemNames;
+			}
+			const std::string& getNextToken() {
+				return theNextToken;
+			}
+		};
+
+	}
 }//namespaces
 
 #endif

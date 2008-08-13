@@ -15,4 +15,5 @@
 SET(SDB_SRCS
     sdbconnection.cpp
     sdbresponse.cpp
-    sdbhandler.cpp)
+    sdbhandler.cpp
+    sdbexception.cpp)

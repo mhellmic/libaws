@@ -19,32 +19,68 @@
 #include "common.h"
 
 #include <map>
+#include <vector>
 #include <iostream>
-
+#include <libaws/sdbconnection.h>
 #include "awsqueryconnection.h"
 
 namespace aws {
 
-  namespace sdb {
+	namespace sdb {
 
-    class CreateDomainResponse;
-    
-    class SDBConnection : public AWSQueryConnection
-    {
-      public:
-        static const std::string DEFAULT_VERSION;
-        static const std::string DEFAULT_HOST;
-        
-      
-      public:
-        SDBConnection(const std::string& aAccessKeyId, 
-                      const std::string& aSecretAccessKey);
-      
-        CreateDomainResponse*
-            createDomain ( const std::string &aQueueName );
-    };
-    
-  } /* namespace sdb  */
+		class CreateDomainResponse;
+		class DeleteDomainResponse;
+		class ListDomainsResponse;
+		class PutAttributesResponse;
+		class DeleteAttributesResponse;
+		class GetAttributesResponse;
+		class SDBQueryResponse;
+
+		class SDBConnection: public AWSQueryConnection {
+
+		public:
+			static const std::string DEFAULT_VERSION;
+			static const std::string DEFAULT_HOST;
+
+			SDBConnection(const std::string& aAccessKeyId,
+					const std::string& aSecretAccessKey);
+
+			CreateDomainResponse*
+			createDomain(const std::string& aQueueName);
+
+			DeleteDomainResponse*
+			deleteDomain(const std::string& aDomainName);
+
+			ListDomainsResponse*
+			listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken =
+					"");
+
+			PutAttributesResponse*
+			putAttributes(const std::string& aDomainName,
+					const std::string& aItemName,
+					const std::vector<aws::Attribute>& attributes);
+
+			DeleteAttributesResponse*
+			deleteAttributes(const std::string& aDomainName,
+					const std::string& aItemName,
+					const std::vector<aws::Attribute>& attributes);
+
+			GetAttributesResponse*
+			getAttributes(const std::string& aDomainName,
+					const std::string& aItemName, const std::string& attributeName = "");
+
+			SDBQueryResponse*
+			query(const std::string& aDomainName,
+					const std::string& aQueryExpression, int aMaxNumberOfItems = 0,
+					const std::string& aNextToken = "");
+
+		private:
+			void insertAttParameter(ParameterMap& aMap,
+					const std::vector<aws::Attribute>& attributes,
+					bool insertReplaces);
+		};
+
+	} /* namespace sdb  */
 } /* namespace aws */
 
-#endif        
+#endif

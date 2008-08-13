@@ -19,6 +19,8 @@
 #include "sdb/sdbresponse.h"
 #include "sdb/sdbhandler.h"
 
+#include <libaws/sdbexception.h>
+
 #include <sstream>
 #include <memory>
 #include <cassert>
@@ -36,22 +38,171 @@ namespace aws {
                                    const std::string& aSecretAccessKey )
         : AWSQueryConnection ( aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, DEFAULT_VERSION )
     {
-
     }
 
     CreateDomainResponse*
-    SDBConnection::createDomain ( const std::string &aDomainName ) {
+    SDBConnection::createDomain ( const std::string& aDomainName ) {
 
       ParameterMap lMap;
-      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) ); 
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
 
       CreateDomainHandler lHandler;
       makeQueryRequest ( "CreateDomain", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
         CreateDomainResponse* lPtr = lHandler.theResponse;
         return lPtr;
-      }else{
-        assert ( false ); //Matthias you need to throw the exception here! Get the ErrorResponse from lHandler.getQueryErrorResponse()
+      }
+			else {
+				throw CreateDomainException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    DeleteDomainResponse*
+    SDBConnection::deleteDomain ( const std::string& aDomainName ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+
+      DeleteDomainHandler lHandler;
+      makeQueryRequest ( "DeleteDomain", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	DeleteDomainResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw DeleteDomainException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    ListDomainsResponse*
+    SDBConnection::listDomains(int aMaxNumberOfDomains, const std::string& aNextToken) {
+
+      ParameterMap lMap;
+      if (aMaxNumberOfDomains > 0 ) {
+        std::stringstream s;
+        s << aMaxNumberOfDomains;
+        lMap.insert ( ParameterPair ( "MaxNumberOfDomains", s.str() ) );
+      }
+      if (aNextToken != std::string("")) {
+      	lMap.insert( ParameterPair ( "NextToken", aNextToken ) );
+      }
+
+      ListDomainsHandler lHandler;
+      makeQueryRequest ( "ListDomains", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	ListDomainsResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw ListDomainsException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    PutAttributesResponse*
+    SDBConnection::putAttributes ( const std::string& aDomainName, const std::string& aItemName,
+			const std::vector<Attribute>& attributes ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      lMap.insert ( ParameterPair ( "ItemName", aItemName ) );
+      insertAttParameter(lMap, attributes, true);
+
+      PutAttributesHandler lHandler;
+      makeQueryRequest ( "PutAttributes", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	PutAttributesResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw PutAttributesException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    DeleteAttributesResponse*
+    SDBConnection::deleteAttributes ( const std::string& aDomainName, const std::string& aItemName,
+			const std::vector<Attribute>& attributes ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      lMap.insert ( ParameterPair ( "ItemName", aItemName ) );
+      insertAttParameter(lMap, attributes, false);
+
+      DeleteAttributesHandler lHandler;
+      makeQueryRequest ( "DeleteAttributes", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	DeleteAttributesResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw DeleteAttributesException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    GetAttributesResponse*
+    SDBConnection::getAttributes ( const std::string& aDomainName, const std::string& aItemName,
+			const std::string& attributeName ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      lMap.insert ( ParameterPair ( "ItemName", aItemName ) );
+      if (attributeName != std::string("")) {
+        lMap.insert ( ParameterPair ( "AttributeName", attributeName ) );
+      }
+
+      GetAttributesHandler lHandler;
+      makeQueryRequest ( "GetAttributes", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	GetAttributesResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw GetAttributesException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    SDBQueryResponse*
+    SDBConnection::query ( const std::string& aDomainName, const std::string& aQueryExpression,
+    		int aMaxNumberOfItems, const std::string& aNextToken ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      lMap.insert ( ParameterPair ( "QueryExpression", aQueryExpression ) );
+      if (aMaxNumberOfItems > 0 ) {
+        std::stringstream s;
+        s << aMaxNumberOfItems;
+        lMap.insert ( ParameterPair ( "MaxNumberOfItems", s.str() ) );
+      }
+      if (aNextToken != std::string("") ) {
+        lMap.insert ( ParameterPair ( "NextToken", aNextToken ) );
+      }
+
+      QueryHandler lHandler;
+      makeQueryRequest ( "Query", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	SDBQueryResponse* lPtr = lHandler.theResponse;
+        return lPtr;
+      }
+			else {
+				throw QueryException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    void
+    SDBConnection::insertAttParameter(ParameterMap& aMap, const std::vector<Attribute>& attributes, bool insertReplaces) {
+      int lAttNr = 0;
+      for(std::vector<Attribute>::const_iterator iter = attributes.begin(); iter != attributes.end(); iter++) {
+      	std::stringstream a;
+      	a << "Attribute." << lAttNr << ".Name";
+      	aMap.insert(ParameterPair(a.str(), iter->getName()));
+      	std::stringstream b;
+      	b << "Attribute." << lAttNr << ".Value";
+      	aMap.insert(ParameterPair(b.str(), iter->getValue()));
+      	if (insertReplaces && iter->isReplace()) {
+					std::stringstream c;
+					c << "Attribute." << lAttNr << ".Replace";
+					aMap.insert(ParameterPair(c.str(), std::string("true")));
+      	}
+      	lAttNr++;
       }
     }
 

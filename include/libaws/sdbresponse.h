@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef AWS_SDBRESPONSE_API_H
-#define AWS_SDBRESPONSE_API_H
+#ifndef AWS_SDBTemplateResponse_API_H
+#define AWS_SDBTemplateResponse_API_H
 
 #include <vector>
 #include <map>
@@ -23,37 +23,131 @@
 
 namespace aws {
 
-  // forward declaration of internal response classes
-  namespace sdb {
-    class CreateDomainResponse;
-  } /* namespace sqs */
+	typedef std::pair<std::string, std::string> AttributePair;
 
-  template <class T>
-  class SDBResponse : public SmartObject
-  {
-    public:
-      virtual ~SDBResponse();
+	// forward declaration of internal response classes
+	namespace sdb {
+		class CreateDomainResponse;
+		class DeleteDomainResponse;
+		class ListDomainsResponse;
+		class PutAttributesResponse;
+		class DeleteAttributesResponse;
+		class GetAttributesResponse;
+		class SDBQueryResponse;
+	} /* namespace sqs */
 
-      virtual const std::string&
-      getRequestId() const;
+	class SDBResponse: public SmartObject {
+	public:
+		virtual ~SDBResponse() {
+		}
+		;
+		virtual const std::string& getRequestId() const = 0;
+		virtual const std::string& getBoxUsage() const = 0;
+	};
 
-      virtual const std::string&
-      getBoxUsage() const;
+	template<class T>
+	class SDBTemplateResponse: public SDBResponse {
+	public:
+		virtual ~SDBTemplateResponse();
 
-    protected:
-      T* theSDBResponse;
-      SDBResponse ( T* );
-  };
+		virtual const std::string&
+		getRequestId() const;
 
-  class CreateDomainResponse : public SDBResponse<sdb::CreateDomainResponse >
-  {
-    public:
-      virtual ~CreateDomainResponse() {};
+		virtual const std::string&
+		getBoxUsage() const;
 
-    protected:
-      friend class SDBConnectionImpl;
-      CreateDomainResponse ( sdb::CreateDomainResponse* );
-  };
+	protected:
+		T* theSDBResponse;
+		SDBTemplateResponse(T*);
+	};
+
+	class CreateDomainResponse: public SDBTemplateResponse<
+			sdb::CreateDomainResponse> {
+	public:
+		virtual ~CreateDomainResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		CreateDomainResponse(sdb::CreateDomainResponse*);
+	};
+
+	class DeleteDomainResponse: public SDBTemplateResponse<
+			sdb::DeleteDomainResponse> {
+	public:
+		virtual ~DeleteDomainResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		DeleteDomainResponse(sdb::DeleteDomainResponse*);
+	};
+
+	class ListDomainsResponse: public SDBTemplateResponse<
+			sdb::ListDomainsResponse> {
+	public:
+		const std::vector<std::string>& getDomainNames();
+		const std::string& getNextToken();
+		virtual ~ListDomainsResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		ListDomainsResponse(sdb::ListDomainsResponse*);
+	};
+
+	class PutAttributesResponse: public SDBTemplateResponse<
+			sdb::PutAttributesResponse> {
+	public:
+		virtual ~PutAttributesResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		PutAttributesResponse(sdb::PutAttributesResponse*);
+	};
+
+	class DeleteAttributesResponse: public SDBTemplateResponse<
+			sdb::DeleteAttributesResponse> {
+	public:
+		virtual ~DeleteAttributesResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		DeleteAttributesResponse(sdb::DeleteAttributesResponse*);
+	};
+
+	class GetAttributesResponse: public SDBTemplateResponse<
+			sdb::GetAttributesResponse> {
+	public:
+		const std::vector<AttributePair>& getAttributes();
+		virtual ~GetAttributesResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		GetAttributesResponse(sdb::GetAttributesResponse*);
+	};
+
+	class SDBQueryResponse: public SDBTemplateResponse<sdb::SDBQueryResponse> {
+	public:
+		const std::vector<std::string>& getItemNames();
+		const std::string& getNextToken();
+		virtual ~SDBQueryResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		SDBQueryResponse(sdb::SDBQueryResponse*);
+	};
 
 } /* namespace aws */
 #endif

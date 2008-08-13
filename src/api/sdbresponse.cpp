@@ -21,35 +21,75 @@
 
 namespace aws {
 
-  template <class T>
-  SDBResponse<T>::SDBResponse ( T* aResponse )
-      : theSDBResponse ( aResponse ) {}
+	template<class T>
+	SDBTemplateResponse<T>::SDBTemplateResponse(T* aResponse) :
+		theSDBResponse(aResponse) {
+	}
 
-  template <class T>
-  SDBResponse<T>::~SDBResponse()
-  {
-    delete theSDBResponse;
-  }
+	template<class T>
+	SDBTemplateResponse<T>::~SDBTemplateResponse() {
+		delete theSDBResponse;
+	}
 
-  template <class T>
-  const std::string&
-  SDBResponse<T>::getRequestId() const
-  {
-    return theSDBResponse->getRequestId();
-  }
+	template<class T>
+	const std::string&
+	SDBTemplateResponse<T>::getRequestId() const {
+		return theSDBResponse->getRequestId();
+	}
 
-  template <class T>
-  const std::string&
-  SDBResponse<T>::getBoxUsage() const
-  {
-    return theSDBResponse->getBoxUsage();
-  }
+	template<class T>
+	const std::string&
+	SDBTemplateResponse<T>::getBoxUsage() const {
+		return theSDBResponse->getBoxUsage();
+	}
 
-  /**
-   * CreateDomainResponse
-   */
-  CreateDomainResponse::CreateDomainResponse ( sdb::CreateDomainResponse* r )
-      : SDBResponse<sdb::CreateDomainResponse> ( r ) {}
+	CreateDomainResponse::CreateDomainResponse(sdb::CreateDomainResponse* r) :
+		SDBTemplateResponse<sdb::CreateDomainResponse> (r) {
+	}
 
+	DeleteDomainResponse::DeleteDomainResponse(sdb::DeleteDomainResponse* r) :
+		SDBTemplateResponse<sdb::DeleteDomainResponse> (r) {
+	}
+
+	ListDomainsResponse::ListDomainsResponse(sdb::ListDomainsResponse* r) :
+		SDBTemplateResponse<sdb::ListDomainsResponse> (r) {
+	}
+
+	const std::vector<std::string>& ListDomainsResponse::getDomainNames() {
+		return theSDBResponse->getDomainNames();
+	}
+
+	const std::string& ListDomainsResponse::getNextToken() {
+		return theSDBResponse->getNextToken();
+	}
+
+	PutAttributesResponse::PutAttributesResponse(sdb::PutAttributesResponse* r) :
+		SDBTemplateResponse<sdb::PutAttributesResponse> (r) {
+	}
+
+	DeleteAttributesResponse::DeleteAttributesResponse(
+			sdb::DeleteAttributesResponse* r) :
+		SDBTemplateResponse<sdb::DeleteAttributesResponse> (r) {
+	}
+
+	GetAttributesResponse::GetAttributesResponse(sdb::GetAttributesResponse* r) :
+		SDBTemplateResponse<sdb::GetAttributesResponse> (r) {
+	}
+
+	const std::vector<AttributePair>& GetAttributesResponse::getAttributes() {
+		return theSDBResponse->getAttributes();
+	}
+
+	SDBQueryResponse::SDBQueryResponse(sdb::SDBQueryResponse* r) :
+		SDBTemplateResponse<sdb::SDBQueryResponse> (r) {
+	}
+
+	const std::vector<std::string>& SDBQueryResponse::getItemNames() {
+		return theSDBResponse->getItemNames();
+	}
+
+	const std::string& SDBQueryResponse::getNextToken() {
+		return theSDBResponse->getNextToken();
+	}
 
 } /* namespace aws */

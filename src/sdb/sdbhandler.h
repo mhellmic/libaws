@@ -19,50 +19,130 @@
 #include "awsquerycallback.h"
 
 namespace aws {
-  namespace sdb  {
+	namespace sdb {
 
-    class SDBResponse;
-    class CreateDomainResponse;
-    
-    template <class T>
-    class SDBHandler : public SimpleQueryCallBack{
-      friend class SDBConnection;
-      
-      protected:               
-      T* theResponse;
-      
-      public:
-        enum States {
-          ERROR_Code        = 1,
-          ERROR_Message     = 2,
-          RequestId   = 4,
-          HostId      = 8,
-          BoxUsage    = 16
-        };
-        
-        virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
-        virtual void characters ( const xmlChar *  value, int len );
-        virtual void endElement ( const xmlChar *  localname );
-        
-        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes ) = 0;
-        virtual void responseCharacters ( const xmlChar *  value, int len ) = 0;
-        virtual void responseEndElement ( const xmlChar *  localname ) = 0; 
-      
-    };
+		class SDBResponse;
+		class CreateDomainResponse;
+		class DeleteDomainResponse;
+		class ListDomainsResponse;
+		class PutAttributesResponse;
+		class DeleteAttributesResponse;
+		class GetAttributesResponse;
+		class SDBQueryResponse;
 
-    class CreateDomainHandler : public SDBHandler<CreateDomainResponse>
-    {
-      protected:
+		template<class T>
+		class SDBHandler: public SimpleQueryCallBack {
+			friend class SDBConnection;
 
-      public:
-        virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
-        virtual void responseCharacters ( const xmlChar *  value, int len );
-        virtual void responseEndElement ( const xmlChar *  localname );
+		protected:
+			T* theResponse;
 
-    };
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes) = 0;
+			virtual void responseCharacters(const xmlChar * value, int len) = 0;
+			virtual void responseEndElement(const xmlChar * localname) = 0;
 
+		public:
+			enum States {
+				ERROR_Code = 1 << 0,
+				ERROR_Message = 1 << 1,
+				RequestId = 1 << 2,
+				HostId = 1 << 3,
+				BoxUsage = 1 << 4,
+				DomainName = 1 << 5,
+				NextToken = 1 << 6,
+				Name = 1 << 7,
+				Value = 1 << 8,
+				ItemName = 1 << 9
+			};
 
-  } /* namespace sdb  */
+			SDBHandler() : theResponse(0) {
+			};
+
+			void startElement(const xmlChar * localname, int nb_attributes,
+					const xmlChar ** attributes);
+			void characters(const xmlChar * value, int len);
+			void endElement(const xmlChar * localname);
+		};
+
+		class CreateDomainHandler: public SDBHandler<CreateDomainResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class DeleteDomainHandler: public SDBHandler<DeleteDomainResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class ListDomainsHandler: public SDBHandler<ListDomainsResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class PutAttributesHandler: public SDBHandler<PutAttributesResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class DeleteAttributesHandler: public SDBHandler<DeleteAttributesResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class GetAttributesHandler: public SDBHandler<GetAttributesResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class QueryHandler: public SDBHandler<SDBQueryResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+	} /* namespace sdb  */
 } /* namespace aws */
 
-#endif  
+#endif

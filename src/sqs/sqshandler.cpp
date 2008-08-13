@@ -32,7 +32,6 @@ namespace aws {
                                       const xmlChar ** attributes ) {
       if (xmlStrEqual ( localname, BAD_CAST "ErrorResponse" ) ) {
         theIsSuccessful = false;
-        theQueryErrorResponse = QueryErrorResponse();
       } else if (theIsSuccessful ) {
         responseStartElement ( localname, nb_attributes, attributes );
       } else if (xmlStrEqual ( localname, BAD_CAST "Code" )) {
@@ -74,7 +73,7 @@ namespace aws {
       } else if (xmlStrEqual ( localname, BAD_CAST "RequestID" )) {
         unsetState ( RequestId );
       }
-      
+
     }
 
     void

@@ -21,21 +21,57 @@
 
 namespace aws {
 
-  SDBConnectionImpl::SDBConnectionImpl ( const std::string& aAccessKeyId,
-                                         const std::string& aSecretAccessKey )
-  {
-    theConnection = new sdb::SDBConnection ( aAccessKeyId, aSecretAccessKey );
-  }
+	SDBConnectionImpl::SDBConnectionImpl(const std::string& aAccessKeyId,
+			const std::string& aSecretAccessKey) {
+		theConnection = new sdb::SDBConnection(aAccessKeyId, aSecretAccessKey);
+	}
 
-  SDBConnectionImpl::~SDBConnectionImpl()
-  {
-    delete theConnection;
-  }
+	SDBConnectionImpl::~SDBConnectionImpl() {
+		delete theConnection;
+	}
 
-  CreateDomainResponsePtr 
-  SDBConnectionImpl::createDomain ( const std::string &aDomainName )
-  {
-    return new CreateDomainResponse ( theConnection->createDomain ( aDomainName ) );
-  }
+	CreateDomainResponsePtr SDBConnectionImpl::createDomain(
+			const std::string &aDomainName) {
+		return new CreateDomainResponse(theConnection->createDomain(aDomainName));
+	}
+
+	DeleteDomainResponsePtr SDBConnectionImpl::deleteDomain(
+			const std::string &aDomainName) {
+		return new DeleteDomainResponse(theConnection->deleteDomain(aDomainName));
+	}
+
+	ListDomainsResponsePtr SDBConnectionImpl::listDomains(
+			int aMaxNumberOfDomains, const std::string& aNextToken) {
+		return new ListDomainsResponse(theConnection->listDomains(
+				aMaxNumberOfDomains, aNextToken));
+	}
+
+	PutAttributesResponsePtr SDBConnectionImpl::putAttributes(
+			const std::string& aDomainName, const std::string& aItemName,
+			const std::vector<aws::Attribute>& attributes) {
+		return new PutAttributesResponse(theConnection->putAttributes(aDomainName,
+				aItemName, attributes));
+	}
+
+	DeleteAttributesResponsePtr SDBConnectionImpl::deleteAttributes(
+			const std::string& aDomainName, const std::string& aItemName,
+			const std::vector<aws::Attribute>& attributes) {
+		return new DeleteAttributesResponse(theConnection->deleteAttributes(
+				aDomainName, aItemName, attributes));
+	}
+
+	GetAttributesResponsePtr SDBConnectionImpl::getAttributes(
+			const std::string& aDomainName, const std::string& aItemName,
+			const std::string& attributeName) {
+		return new GetAttributesResponse(theConnection->getAttributes(aDomainName,
+				aItemName, attributeName));
+	}
+
+	SDBQueryResponsePtr SDBConnectionImpl::query(const std::string& aDomainName,
+			const std::string& aQueryExpression, int aMaxNumberOfItems,
+			const std::string& aNextToken) {
+		return new SDBQueryResponse(theConnection->query(aDomainName,
+				aQueryExpression, aMaxNumberOfItems, aNextToken));
+	}
 
 }//namespace aws

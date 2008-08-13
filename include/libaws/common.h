@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 28msec, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,7 +77,7 @@ namespace aws {
 
   class ReceiveMessageResponse;
   typedef SmartPtr<ReceiveMessageResponse> ReceiveMessageResponsePtr;
-  
+
   class DeleteMessageResponse;
   typedef SmartPtr<DeleteMessageResponse> DeleteMessageResponsePtr;
 
@@ -87,11 +87,29 @@ namespace aws {
   class SDBConnection;
   typedef SmartPtr<SDBConnection> SDBConnectionPtr;
 
-  template <class T> class SDBResponse;
-  typedef SmartPtr<SDBResponse<class T> > SDBResponsePtr;
+  class SDBResponse;
+  typedef SmartPtr<SDBResponse> SDBResponsePtr;
 
   class CreateDomainResponse;
   typedef SmartPtr<CreateDomainResponse> CreateDomainResponsePtr;
+
+  class DeleteDomainResponse;
+  typedef SmartPtr<DeleteDomainResponse> DeleteDomainResponsePtr;
+
+  class ListDomainsResponse;
+  typedef SmartPtr<ListDomainsResponse> ListDomainsResponsePtr;
+
+  class PutAttributesResponse;
+  typedef SmartPtr<PutAttributesResponse> PutAttributesResponsePtr;
+
+  class DeleteAttributesResponse;
+  typedef SmartPtr<DeleteAttributesResponse> DeleteAttributesResponsePtr;
+
+  class GetAttributesResponse;
+  typedef SmartPtr<GetAttributesResponse> GetAttributesResponsePtr;
+
+  class SDBQueryResponse;
+  typedef SmartPtr<SDBQueryResponse> SDBQueryResponsePtr;
 
 } /* namespace aws */
 
