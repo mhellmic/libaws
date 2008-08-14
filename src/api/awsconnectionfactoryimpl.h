@@ -22,37 +22,40 @@
 namespace aws {
 
   class AWSConnectionFactoryImpl : public AWSConnectionFactory {
+    
+    friend class AWSConnectionFactory;
+    
 
-    private:
-
+    protected:
       void checkParameters(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey);
-
-    public:
       AWSConnectionFactoryImpl();
-      ~AWSConnectionFactoryImpl();
+      
+    public:
+      
+      virtual ~AWSConnectionFactoryImpl();
 
-      S3ConnectionPtr
+      virtual S3ConnectionPtr
       createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey);
 
-      SQSConnectionPtr
+      virtual SQSConnectionPtr
       createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
 
-      SQSConnectionPtr
+      virtual SQSConnectionPtr
       createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
       		const std::string& aHost, int aPort, bool aIsSecure);
 
-      SDBConnectionPtr
+      virtual SDBConnectionPtr
       createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
 
-      void
+      virtual void
       shutdown();
 
-      std::string
+      virtual std::string
       getVersion();
 
       // initialization called during static initialization
       // called from getInstance on the first call or after shutdown has been called
-      void init();
+      virtual void init();
 
       // remember whether we have to (re)initialize
       bool theIsInitialized;

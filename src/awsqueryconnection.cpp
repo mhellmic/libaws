@@ -152,7 +152,7 @@ namespace aws {
     std::string lUrlString = lUrl.str();
 
     LOG_INFO("Send request:" << lUrlString);
-
+    //std::cout << lUrlString << std::endl;
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );
 

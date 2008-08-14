@@ -43,8 +43,8 @@ AWSConnection::AWSConnection(const std::string& aAccessKeyId,
       theCurlErrorBuffer(0),
       theIsSecure(false),
       theNumberOfRequests(0),
-      theCurl(0),
-      thePort(aPort)
+      thePort(aPort),
+      theCurl(0)
 {
   // Initialize SHA1 encryption
   HMAC_CTX_init(&theHctx);
