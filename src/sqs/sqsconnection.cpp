@@ -119,30 +119,38 @@ namespace aws { namespace sqs {
   }
 
   ReceiveMessageResponse*
-  SQSConnection::receiveMessage(const std::string &aQueueUrl,
-                                int aNumberOfMessages,
-                                int aVisibilityTimeout)
-  {
+  SQSConnection::receiveMessage (const std::string &aQueueUrl,
+                                 int aNumberOfMessages,
+                                 int aVisibilityTimeout) {
     ParameterMap lMap;
-    if (aNumberOfMessages != 0 ) {
-      std::stringstream s;
-      s << aNumberOfMessages;
-      lMap.insert ( ParameterPair ( "MaxNumberOfMessages", s.str() ) );
-    }
-    if (aVisibilityTimeout > -1 ) {
-      std::stringstream s;
-      s << aVisibilityTimeout;
-      lMap.insert ( ParameterPair ( "VisibilityTimeout", s.str() ) );
-    }
-
+    if (aNumberOfMessages != 0) {
+        std::stringstream s;
+        s << aNumberOfMessages;
+        lMap.insert (ParameterPair ("MaxNumberOfMessages", s.str()));
+      }
+    if (aVisibilityTimeout > -1) {
+        std::stringstream s;
+        s << aVisibilityTimeout;
+        lMap.insert (ParameterPair ("VisibilityTimeout", s.str()));
+      }
+  
+    return receiveMessage (aQueueUrl, lMap);
+  } 
+  
+  ReceiveMessageResponse*
+  SQSConnection::receiveMessage (const std::string &aQueueUrl,
+                                 ParameterMap& lMap) {
     ReceiveMessageHandler lHandler;
-    makeQueryRequest ( aQueueUrl, "ReceiveMessage", &lMap, &lHandler );
+    makeQueryRequest (aQueueUrl, "ReceiveMessage", &lMap, &lHandler);
     if (lHandler.isSuccessful()) {
-      return lHandler.theReceiveMessageResponse;
-    } else {
-    	throw ReceiveMessageException( lHandler.getQueryErrorResponse() );
-    }
+        return lHandler.theReceiveMessageResponse;
+      } else {
+        throw ReceiveMessageException (lHandler.getQueryErrorResponse());
+      }
   }
+
+
+
 
   DeleteMessageResponse*
   SQSConnection::deleteMessage(const std::string &aQueueUrl, const std::string &aReceiptHandle)

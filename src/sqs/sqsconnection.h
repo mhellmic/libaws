@@ -51,24 +51,28 @@ namespace aws {
                       int aPort,
                       bool aIsSecure);
 
-        CreateQueueResponse*
+        virtual CreateQueueResponse*
         createQueue ( const std::string &aQueueName, int aDefaultVisibilityTimeout );
 
-        DeleteQueueResponse*
+        virtual DeleteQueueResponse*
         deleteQueue ( const std::string &aQueueUrl );
 
-        ListQueuesResponse*
+        virtual ListQueuesResponse*
         listQueues ( const std::string &aQueueNamePrefix = "" );
 
-        SendMessageResponse*
+        virtual SendMessageResponse*
         sendMessage ( const std::string &aQueueUrl, const std::string &aMessageBody );
 
-        ReceiveMessageResponse*
+        virtual ReceiveMessageResponse*
         receiveMessage( const std::string &aQueueUrl,
                         int aNumberOfMessages = 0,
                         int aVisibilityTimeout = -1);
+        
+        virtual ReceiveMessageResponse*
+        receiveMessage (const std::string &aQueueUrl,
+                        ParameterMap& lMap);
 
-        DeleteMessageResponse*
+        virtual DeleteMessageResponse*
         deleteMessage( const std::string &aQueueUrl, const std::string &aReceiptHandle);
 
     };

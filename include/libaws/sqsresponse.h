@@ -131,8 +131,6 @@ namespace aws {
       int
       getNumberOfRetrievedMessages() const;
 
-    protected:
-      friend class SQSConnectionImpl;
       ReceiveMessageResponse(sqs::ReceiveMessageResponse*);
   };
 
