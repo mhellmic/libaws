@@ -37,8 +37,8 @@ If a parent element is configured after one of its childs, the childs configurat
 #include <sstream>
 #include <string>
 
-#include "logging/loggermanager.hh"
-#include "logging/logger.hh"
+#include "loggermanager.hh"
+#include "logger.hh"
 
 
 const int DEBUG_LEVEL = 1;

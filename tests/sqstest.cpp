@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <libaws/aws.h>
+#include <../src/logging/logging.hh> //HACK 
 
 using namespace aws;
 
@@ -151,7 +152,8 @@ sqstest(int argc, char** argv)
 {
 
   AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
-
+  //logging::LoggerManager::logmanager()->setLoggerConfig("|1|logging.log");
+  //logging::LoggerManager::logmanager()->setFileName ( "", "logging.log" );
   std::cout << "Testing libaws version " << lFactory->getVersion() << std::endl;
 
   char* lAccessKeyId = getenv("AWS_ACCESS_KEY");

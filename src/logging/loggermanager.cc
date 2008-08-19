@@ -24,7 +24,7 @@ LoggerManager* LoggerManager::logmanager()
 	return &theLogManagerInstance;
 }
 
-LoggerManager::LoggerManager() : theLongestLoggerNameLength(0), theLogId(0)
+LoggerManager::LoggerManager() :  theLogId(0), theLongestLoggerNameLength(0)
 {
 	theRootElement = "";							
 	theDefaultFileName = "logging.log";				

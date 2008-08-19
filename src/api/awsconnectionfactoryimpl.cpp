@@ -94,7 +94,7 @@ namespace aws {
   void
   AWSConnectionFactoryImpl::shutdown()
   {
-    if ( ! theInitializationFailed ) {
+    if ( !theInitializationFailed ) {
       xmlCleanupParser();
       curl_global_cleanup();
     }
