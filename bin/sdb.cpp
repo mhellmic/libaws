@@ -121,10 +121,11 @@ bool listAll(SDBConnectionPtr aSDB){
     while (lRes->next (lDomain)) {
       std::cout << "  Domain: " << lDomain  << std::endl;
       SDBQueryResponsePtr lRes = aSDB->query (lDomain, "");
+      int lCounter = 0;
       lRes->open();
       std::string lItem;
       while (lRes->next (lItem)) {
-        std::cout << "    Item: " << lItem;
+        std::cout << "    " << ++lCounter << ". Item: " << lItem;
         GetAttributesResponsePtr lRes = aSDB->getAttributes (lDomain, lItem);
         lRes->open();
         std::pair<std::string, std::string> lAttr;

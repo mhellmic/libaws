@@ -62,6 +62,8 @@ namespace aws {
 
         virtual SendMessageResponse*
         sendMessage ( const std::string &aQueueUrl, const std::string &aMessageBody );
+        
+        virtual SendMessageResponse* sendMessage (const std::string &aQueueUrl, ParameterMap& lMap);
 
         virtual ReceiveMessageResponse*
         receiveMessage( const std::string &aQueueUrl,

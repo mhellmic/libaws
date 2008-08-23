@@ -62,6 +62,7 @@ namespace aws { namespace sqs {
     CreateQueueHandler lHandler;
     makeQueryRequest ( "CreateQueue", &lMap, &lHandler );
     if (lHandler.isSuccessful()) {
+      setCommons(lHandler, lHandler.theCreateQueueResponse);
       return lHandler.theCreateQueueResponse;
     } else {
     	throw CreateQueueException( lHandler.getQueryErrorResponse() );
@@ -76,6 +77,7 @@ namespace aws { namespace sqs {
     DeleteQueueHandler lHandler;
     makeQueryRequest ( aQueueUrl,  "DeleteQueue", &lMap, &lHandler );
     if (lHandler.isSuccessful()) {
+      setCommons(lHandler, lHandler.theDeleteQueueResponse);
       return lHandler.theDeleteQueueResponse;
     } else {
     	throw DeleteQueueException( lHandler.getQueryErrorResponse() );
@@ -92,6 +94,7 @@ namespace aws { namespace sqs {
   	ListQueuesHandler lHandler;
     makeQueryRequest ( "ListQueues", &lMap, &lHandler );
     if (lHandler.isSuccessful()) {
+      setCommons(lHandler, lHandler.theListQueuesResponse);
       return lHandler.theListQueuesResponse;
     } else {
     	throw ListQueuesException( lHandler.getQueryErrorResponse() );
@@ -108,14 +111,20 @@ namespace aws { namespace sqs {
     	throw SendMessageException( QueryErrorResponse("1", "Message larger than 8kB", "", "") );
     }
     lMap.insert ( ParameterPair ( "MessageBody", enc ) );
-
+    return sendMessage(aQueueUrl, lMap);
+  }
+    
+  SendMessageResponse*
+  SQSConnection::sendMessage (const std::string &aQueueUrl,
+                              ParameterMap& lMap) {
     SendMessageHandler lHandler;
-    makeQueryRequest ( aQueueUrl, "SendMessage", &lMap, &lHandler );
+    makeQueryRequest (aQueueUrl, "SendMessage", &lMap, &lHandler);
     if (lHandler.isSuccessful()) {
-      return lHandler.theSendMessageResponse;
-    } else {
-    	throw SendMessageException( lHandler.getQueryErrorResponse() );
-    }
+      setCommons(lHandler, lHandler.theSendMessageResponse);
+        return lHandler.theSendMessageResponse;
+      } else {
+        throw SendMessageException (lHandler.getQueryErrorResponse());
+      }
   }
 
   ReceiveMessageResponse*
@@ -143,14 +152,12 @@ namespace aws { namespace sqs {
     ReceiveMessageHandler lHandler;
     makeQueryRequest (aQueueUrl, "ReceiveMessage", &lMap, &lHandler);
     if (lHandler.isSuccessful()) {
+      setCommons(lHandler, lHandler.theReceiveMessageResponse);
         return lHandler.theReceiveMessageResponse;
       } else {
         throw ReceiveMessageException (lHandler.getQueryErrorResponse());
       }
   }
-
-
-
 
   DeleteMessageResponse*
   SQSConnection::deleteMessage(const std::string &aQueueUrl, const std::string &aReceiptHandle)
@@ -161,6 +168,7 @@ namespace aws { namespace sqs {
     DeleteMessageHandler lHandler;
     makeQueryRequest ( aQueueUrl, "DeleteMessage", &lMap, &lHandler );
     if (lHandler.isSuccessful()) {
+      setCommons(lHandler, lHandler.theDeleteMessageResponse);
       return lHandler.theDeleteMessageResponse;
     } else {
     	throw DeleteMessageException( lHandler.getQueryErrorResponse() );

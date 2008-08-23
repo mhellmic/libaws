@@ -43,6 +43,8 @@ namespace aws {
 		;
 		virtual const std::string& getRequestId() const = 0;
 		virtual float getBoxUsage() const = 0;
+    virtual const double getKBOutTransfer() const = 0;
+    virtual const double getKBInTransfer() const = 0;
 	};
 
 	template<class T>
@@ -54,6 +56,9 @@ namespace aws {
 		getRequestId() const;
 
 		virtual float	getBoxUsage() const;
+    
+    virtual const double getKBOutTransfer() const;
+    virtual const double getKBInTransfer() const;
 
 	protected:
 		T* theSDBResponse;

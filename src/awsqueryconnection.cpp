@@ -46,6 +46,8 @@ namespace aws {
     curl_easy_setopt ( theCurl, CURLOPT_WRITEFUNCTION,  AWSQueryConnection::dataReceiver );
     curl_easy_setopt ( theCurl, CURLOPT_ERRORBUFFER, theCurlErrorBuffer );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPGET, 1);
+    
+    
   };
 
   AWSQueryConnection::~AWSQueryConnection()
@@ -152,6 +154,9 @@ namespace aws {
     std::string lUrlString = lUrl.str();
 
     LOG_INFO("Send request:" << lUrlString);
+    
+    
+    
     //std::cout << lUrlString << std::endl;
     // set the request url
     curl_easy_setopt ( theCurl, CURLOPT_URL, lUrlString.c_str() );
@@ -203,8 +208,13 @@ namespace aws {
 
     // signal the parse that this is the end
     xmlParseChunk ( aCallBack->theParserCtxt, 0, 0, 1 );
+    
+    double lDownloadSize;
+    curl_easy_getinfo( theCurl, CURLINFO_SIZE_DOWNLOAD, &lDownloadSize);
+    aCallBack->theInTransfer = lUrlString.size();
+    aCallBack->theOutTransfer = lDownloadSize;
     aCallBack->destroyParser();
-
+    
   }
 
   std::string
@@ -224,7 +234,6 @@ namespace aws {
   AWSQueryConnection::dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data )
   {
     QueryCallBack* lQueryCallBack = static_cast<QueryCallBack*> ( data );
-
     char* lChars = static_cast<char*> ( ptr );
 
     //std::cout << lChars << std::endl;
@@ -235,6 +244,11 @@ namespace aws {
     xmlParseChunk ( lQueryCallBack->theParserCtxt, lChars, size * nmemb, 0 );
 
     return size * nmemb;
+  }
+  
+  void AWSQueryConnection::setCommons(QueryCallBack& aHandler, QueryResponse* aResponse){
+    aResponse->theOutTransfer = aHandler.theOutTransfer;
+    aResponse->theInTransfer = aHandler.theInTransfer;
   }
 
 

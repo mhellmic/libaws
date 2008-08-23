@@ -38,6 +38,16 @@ namespace aws {
   {
     return theSQSResponse->getRequestId();
   }
+  
+  template <class T>
+  const double SQSResponse<T>::getKBOutTransfer() const{
+    return theSQSResponse->getOutTransfer() / 1024;
+  }
+      
+  template <class T>
+      const double SQSResponse<T>::getKBInTransfer() const{
+    return  theSQSResponse->getInTransfer() / 1024;
+  }
 
   /**
    * CreateQueueResponse

@@ -41,6 +41,10 @@ namespace aws {
 
       virtual const std::string&
       getRequestId() const;
+      
+      virtual const double getKBOutTransfer() const;
+      
+      virtual const double getKBInTransfer() const;
 
     protected:
       T* theSQSResponse;
@@ -99,9 +103,7 @@ namespace aws {
 
       const std::string&
       getMD5OfMessageBody() const;
-
-    protected:
-      friend class SQSConnectionImpl;
+      
       SendMessageResponse(sqs::SendMessageResponse*);
   };
 

@@ -27,6 +27,7 @@ struct curl_slist;
 namespace aws {
 
   class QueryCallBack;
+  class QueryResponse;
 
   class AWSQueryConnection : public AWSConnection {
     private:
@@ -86,6 +87,8 @@ namespace aws {
 
       static size_t
       dataReceiver ( void *ptr, size_t size, size_t nmemb, void *data );
+      
+      virtual void setCommons(QueryCallBack& aHandler, QueryResponse* aResponse);
 
   };
 

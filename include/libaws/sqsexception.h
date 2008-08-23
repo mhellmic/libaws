@@ -151,9 +151,10 @@ namespace aws {
 	{
 	public:
 		virtual ~SendMessageException() throw();
+    SendMessageException(const QueryErrorResponse&);
 	private:
 		friend class sqs::SQSConnection;
-		SendMessageException(const QueryErrorResponse&);
+		
 	};
 
 	class ReceiveMessageException : public SQSException

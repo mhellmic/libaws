@@ -22,7 +22,6 @@
 
 namespace aws
 {
-  class QueryResponse;
 
   class QueryCallBack{
       friend class AWSQueryConnection;
@@ -33,10 +32,12 @@ namespace aws
       xmlParserCtxtPtr theParserCtxt;
       xmlSAXHandler theSAXHandler;
       bool theParserCreated;
+      double theOutTransfer;
+      double theInTransfer;
 
     public:
 
-      QueryCallBack() : theIsSuccessful ( true ), theParserCreated ( false ) {
+      QueryCallBack() : theIsSuccessful ( true ), theParserCreated ( false ),theOutTransfer(0), theInTransfer(0)  {
         memset ( &theSAXHandler, 0, sizeof ( theSAXHandler ) );
         theSAXHandler.initialized    = XML_SAX2_MAGIC;
       }
@@ -59,7 +60,7 @@ namespace aws
           theParserCreated=false;
         }
       }
-
+      
       virtual void startElementNs ( const xmlChar * localname,
                                     const xmlChar * prefix,
                                     const xmlChar * URI,

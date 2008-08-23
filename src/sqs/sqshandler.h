@@ -29,9 +29,9 @@ namespace aws {
     class DeleteMessageResponse;
 
     class QueueErrorHandler : public SimpleQueryCallBack{
-
+      
+      
       public:
-
         enum States {
           ERROR_Code        = 1,
           ERROR_Message     = 2,

@@ -19,16 +19,30 @@
 
 namespace aws
 {
+  class AWSQueryConnection;
 
   class QueryResponse
   {
     protected:
+      friend class AWSQueryConnection;
       std::string theRequestId;
+      double theInTransfer;
+      double theOutTransfer;
 
     public:
       const std::string& getRequestId() const
       {
         return theRequestId;
+      }
+      
+      const double getInTransfer() const
+      {
+        return theInTransfer;
+      }
+      
+      const double getOutTransfer() const
+      {
+        return theOutTransfer;
       }
   };
 

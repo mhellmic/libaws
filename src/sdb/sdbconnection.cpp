@@ -50,6 +50,7 @@ namespace aws {
       makeQueryRequest ( "CreateDomain", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
         CreateDomainResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -67,6 +68,7 @@ namespace aws {
       makeQueryRequest ( "DeleteDomain", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	DeleteDomainResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -91,6 +93,7 @@ namespace aws {
       makeQueryRequest ( "ListDomains", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	ListDomainsResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -111,6 +114,7 @@ namespace aws {
       makeQueryRequest ( "PutAttributes", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	PutAttributesResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -131,6 +135,7 @@ namespace aws {
       makeQueryRequest ( "DeleteAttributes", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	DeleteAttributesResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -153,6 +158,7 @@ namespace aws {
       makeQueryRequest ( "GetAttributes", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	GetAttributesResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
@@ -180,6 +186,7 @@ namespace aws {
       makeQueryRequest ( "Query", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	SDBQueryResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
         return lPtr;
       }
 			else {
