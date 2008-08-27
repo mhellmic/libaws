@@ -197,8 +197,8 @@ namespace aws {
         setState ( MD5OfMessageBody );
       } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
         setState ( Body );
-        //ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
-        //std::cout << std::endl << "SET BODY " << "ID" << lMessage.message_id << std::endl;
+      }else if ( xmlStrEqual ( localname, BAD_CAST "MetaData" ) ) {
+        setState ( MetaData );
       }
     }
 
@@ -217,14 +217,14 @@ namespace aws {
     		ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
     		std::string lMessageMD5((const char*)value, len);
     		lMessage.message_md5 = lMessageMD5;
-    	} else if ( isSet ( Body )) {
-    		//ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
-    		// transfering ownership of the message body to the message
+      } else if ( isSet ( MetaData )) {
+        ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
+        std::string lMetaDataStr((const char*)value, len);
+        const char* lCharNullTerminated = lMetaDataStr.c_str();
+        uint64_t lMetaData = strtoul(lCharNullTerminated, NULL,0);
+        lMessage.meta_data = lMetaData;
+      } else if ( isSet ( Body )) {
         theBody.append( (const char*)value, len );
-    		//lMessage.message_body = AWSConnection::base64Decode((const char*) value, len, lMessage.message_size);
-        //std::string test((const char*)value, len);
-        //std::cout << std::endl << "ID" << lMessage.message_id << "Original[" << test << "]" << std::endl;
-        //std::cout << std::endl << "ID" << lMessage.message_id << "Encoded[" << lMessage.message_body  << "]" << std::endl;
     	}
     }
 
@@ -237,7 +237,9 @@ namespace aws {
       	unsetState ( ReceiptHandle );
       } else if ( xmlStrEqual ( localname, BAD_CAST "MD5OfBody" ) ) {
       	unsetState ( MD5OfMessageBody );
-      } else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
+      } else if ( xmlStrEqual ( localname, BAD_CAST "MetaData" ) ) {
+        unsetState ( MetaData );
+      }else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
       	unsetState ( Body );
         ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
         lMessage.message_body = AWSConnection::base64Decode(theBody.c_str(), theBody.size(), lMessage.message_size);

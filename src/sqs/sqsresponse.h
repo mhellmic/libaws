@@ -86,6 +86,7 @@ namespace aws {
           size_t      message_size;
           std::string message_md5;
           std::string message_id;
+          uint64_t    meta_data;
           std::string receipt_handle;
         };
 

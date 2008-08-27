@@ -130,6 +130,7 @@ namespace aws {
       aMessage.message_size   = lMessage.message_size;
       aMessage.message_md5    = lMessage.message_md5;
       aMessage.message_id     = lMessage.message_id;
+      aMessage.meta_data      = lMessage.meta_data;
       aMessage.receipt_handle = lMessage.receipt_handle;
       return true;
     } else {

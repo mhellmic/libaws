@@ -41,7 +41,8 @@ namespace aws {
           MessageId   			= 32,
           MD5OfMessageBody 	= 64,
           ReceiptHandle			= 128,
-          Body							= 256
+          Body							= 256,
+          MetaData          = 512
         };
 
         virtual void startElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
