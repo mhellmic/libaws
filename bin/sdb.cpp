@@ -29,15 +29,17 @@ bool deleteDomain (SDBConnectionPtr aSDB, const std::string &aDomainName) {
 }
 
 
-bool deleteAllDomains (SDBConnectionPtr aSDB) {
+bool deleteAllDomains (SDBConnectionPtr aSDB, std::string aPrefix) {
   try {
       ListDomainsResponsePtr lRes = aSDB->listDomains();
       std::cout << "start deleting" << std::endl;
       lRes->open();
       std::string lDomain;
       while (lRes->next (lDomain)) {
-          std::cout << "   " << lDomain  << std::endl;
-          aSDB->deleteDomain (lDomain);
+        if(aPrefix.length() == 0 || lDomain.compare(0, aPrefix.length(),aPrefix) == 0){
+            std::cout << "   " << lDomain  << std::endl;
+            aSDB->deleteDomain (lDomain);
+          }
         }
       lRes->close();
     } catch (PutAttributesException &e) {
@@ -293,7 +295,7 @@ main (int argc, char** argv) {
       exit (0);
     }
   if (lActionString.compare ("delete-all-domains") == 0) {
-      deleteAllDomains (lSDBRest);
+      deleteAllDomains (lSDBRest, lQuery==0?"":lQuery);
       exit (0);
     }
     if (lActionString.compare ("list-all") == 0) {
