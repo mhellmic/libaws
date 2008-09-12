@@ -107,8 +107,10 @@ namespace aws { namespace sqs {
     ParameterMap lMap;
     long lBody64Len;
     std::string enc = AWSConnection::base64Encode(aMessageBody.c_str(), aMessageBody.size(), lBody64Len);
-    if (enc.size() > 8192) {
-    	throw SendMessageException( QueryErrorResponse("1", "Message larger than 8kB", "", "") );
+    if (enc.size() > 32768) {
+      std::stringstream lTmp;
+      lTmp << "Message larger than 32kB : " << enc.size() / 1024 << " kb";
+      throw SendMessageException( QueryErrorResponse("1", lTmp.str(), "", "") );
     }
     lMap.insert ( ParameterPair ( "MessageBody", enc ) );
     return sendMessage(aQueueUrl, lMap);
