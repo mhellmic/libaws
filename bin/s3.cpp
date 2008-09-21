@@ -75,18 +75,28 @@ bool deleteAllEntries(S3ConnectionPtr aS3, std::string aBucketName)
   ListBucketResponsePtr lListBucket;
   ListBucketResponse::Object lObject;
   std::string lMarker;
+  std::cout << "Start deleting items from bucket " << aBucketName << std::endl;
   try {
+    uint32_t lCtr = 0;
     do
     {
       lListBucket = aS3->listBucket(aBucketName, "", lMarker);
       lListBucket->open();
       while (lListBucket->next(lObject)) {
         DeleteResponsePtr lDelete = aS3->del(aBucketName, lObject.KeyValue);
-        std::cout << "deleted item with key " << lObject.KeyValue << std::endl;
+        if(lCtr < 25){
+        std::cout << "   deleted item with key " << lObject.KeyValue << std::endl;
+        }else if( lCtr == 25){
+          std::cout << "   deleting more items..." << std::endl;
+        }else if (lCtr % 50 == 0){
+          std::cout << " still deleting more items..." << std::endl;
+        }
+        ++lCtr;
         lMarker = lObject.KeyValue;
       }
       lListBucket->close();
     } while (lListBucket->isTruncated());
+    std::cout << "deleted " << lCtr << " items" << std::endl;
   } catch (ListBucketException &e) {
     std::cerr << e.what() << std::endl;
     return false;
