@@ -40,8 +40,12 @@ namespace aws {
   void Time::setUp(const std::string& aDateTime, const std::string& aFormat) {
     struct tm aTm;
     memset(&aTm, 0, sizeof(aTm));
+#ifndef NDEBUG
     char* lParseResult = strptime(aDateTime.c_str(), aFormat.c_str(), &aTm);
     assert(lParseResult);
+#else
+    strptime(aDateTime.c_str(), aFormat.c_str(), &aTm);
+#endif
     theTime = mktime(&aTm);
     
     std::string::size_type aLoc = aDateTime.find( "GMT", 0 );

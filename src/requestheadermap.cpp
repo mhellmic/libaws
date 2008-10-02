@@ -53,9 +53,12 @@ RequestHeaderMap::addDateHeader()
     lPtm = gmtime ( &lRawTime );
 
     char* lDateString = new char[31];
+#ifndef NDEBUG
     size_t lTest = strftime(lDateString, 31, DATE_FORMAT.c_str(), lPtm);
-
     assert(lTest<31); // should be long enough for the date format above
+#else
+    strftime(lDateString, 31, DATE_FORMAT.c_str(), lPtm);
+#endif
 
     addHeader("Date", lDateString);
     

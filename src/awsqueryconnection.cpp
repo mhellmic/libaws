@@ -225,8 +225,12 @@ namespace aws {
     lPtm = gmtime ( &lRawTime );
     char   theDateString[31];
 
+#ifndef NDEBUG
     size_t lTest = strftime ( theDateString, 31, QUERY_DATE_FORMAT.c_str(), lPtm );
     assert ( lTest < 31 );
+#else
+    strftime ( theDateString, 31, QUERY_DATE_FORMAT.c_str(), lPtm );
+#endif
     return std::string ( theDateString );
   }
 
