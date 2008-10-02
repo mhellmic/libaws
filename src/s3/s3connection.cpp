@@ -841,6 +841,7 @@ S3Connection::setPutData(void *aBuffer, size_t aSize, size_t nmemb, void* data)
   } else {
     assert(false);  // either of the two (theIstream or theDataPointer) must be set
   }
+  return 0; // avoid warning
 }
 
 std::string
@@ -875,6 +876,7 @@ S3Connection::requestTypeForAction(ActionType aType)
           assert(false);
       }
   }
+  return "";
 }
 
 } } // namespaces

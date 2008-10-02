@@ -51,9 +51,9 @@ AWSConnection::AWSConnection(const std::string& aAccessKeyId,
   HMAC_Init(&theHctx, theSecretAccessKey.c_str(), theSecretAccessKey.size(), EVP_sha1());
 
   // curl initialization (check on every call if everything went ok
+#ifdef WITH_SSL
   curl_version_info_data* lVersionInfo = curl_version_info(CURLVERSION_NOW);
   int lFeatures = lVersionInfo->features;
-#ifdef WITH_SSL
   theIsSecure = aIsSecure && (lFeatures & CURL_VERSION_SSL);
   if (theIsSecure) {
   	thePort = 443;

@@ -18,6 +18,12 @@ PROJECT(libaws)
 ENABLE_TESTING()
 INCLUDE(CTest)
 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+IF(COMMAND cmake_policy)
+  CMAKE_POLICY(SET CMP0003 NEW)
+ENDIF(COMMAND cmake_policy)
+
+
 # prohibit in-source-builds
 IF (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     MESSAGE(STATUS "In-source-builds are not allowed")
