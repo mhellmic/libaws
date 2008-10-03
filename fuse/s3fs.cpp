@@ -49,8 +49,8 @@ using namespace aws;
 
 
 static AWSConnectionFactory* theFactory;
-static char* theAccessKeyId;
-static char* theSecretAccessKey;
+static std::string theAccessKeyId;
+static std::string theSecretAccessKey;
 static std::string BUCKETNAME("msb");
 
 /**
@@ -369,6 +369,15 @@ main(int argc, char **argv)
 
   theAccessKeyId = getenv("AWS_ACCESS_KEY");
   theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
+
+  if (theAccessKeyId.length() == 0) {
+    std::cerr << "Please specify the AWS_ACCESS_KEY environment variable" << std::endl;
+    return 1;
+  }
+  if (theSecretAccessKey.length() == 0) {
+    std::cerr << "Please specify the AWS_SECRET_ACCESS_KEY environment variable" << std::endl;
+    return 2;
+  }
 
   // let's get started
   return fuse_main(argc, argv, &s3_filesystem_operations, NULL);
