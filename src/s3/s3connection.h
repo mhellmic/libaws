@@ -105,11 +105,12 @@ namespace aws {
           long aSize);
 
       GetResponse*
-      get(const std::string& aBucketName, const std::string& aKey);
+      get(const std::string& aBucketName, const std::string& aKey, 
+          const std::string& aOldEtag);
 
       GetResponse*
       get(const std::string& aBucketName, const std::string& aKey, 
-          const std::string& aOldEtag);
+          const std::map<std::string, std::string>* aMetaDataMap);
 
       DeleteResponse*
       del(const std::string& aBucketName, const std::string& aKey);

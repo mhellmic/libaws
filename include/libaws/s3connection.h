@@ -147,13 +147,17 @@ namespace aws {
        *
        * @param aBucketName The name of the bucket in which the object is stored.
        * @param aKey The key for which the object should be retrieved.
+       * @param aMetaDataMap A map containing additional headers that are sent 
+       *                     with the get requests (e.g. Range:)
+       *
        *
        * \throws aws::s3::GetException if the object coldn't be received.
        * \throws aws::AWSConnectionException if a connection error occured.
        */
       virtual GetResponsePtr
       get(const std::string& aBucketName,
-          const std::string& aKey) = 0;
+          const std::string& aKey,
+          const std::map<std::string, std::string>* aMetaDataMap = 0) = 0;
 
       /*! \brief Receive an object from S3 if the given ETag has changed.
        *

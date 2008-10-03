@@ -194,7 +194,8 @@ namespace aws { namespace s3 {
 
 
     HeadResponse::HeadResponse ( const std::string& aBucketName )
-        : theBucketName ( aBucketName )
+        : theBucketName ( aBucketName ),
+          theContentLength ( 0 )
     {
     }
 

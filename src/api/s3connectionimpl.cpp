@@ -71,9 +71,11 @@ namespace aws {
   }
 
   GetResponsePtr
-  S3ConnectionImpl::get(const std::string& aBucketName, const std::string& aKey)
+  S3ConnectionImpl::get(const std::string& aBucketName,
+                        const std::string& aKey,
+                        const std::map<std::string, std::string>* aMetaDataMap)
   {
-    return new GetResponse(theConnection->get(aBucketName, aKey));
+    return new GetResponse(theConnection->get(aBucketName, aKey, aMetaDataMap));
   }
 
   GetResponsePtr

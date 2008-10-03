@@ -60,7 +60,9 @@ namespace aws {
           const std::map<std::string, std::string>* aMetaDataMap = 0);
 
       GetResponsePtr
-      get(const std::string& aBucketName, const std::string& aKey);
+      get(const std::string& aBucketName,
+          const std::string& aKey,
+          const std::map<std::string, std::string>* aMetaDataMap = 0);
 
       GetResponsePtr
       get(const std::string& aBucketName, const std::string& aKey, const std::string& aOldEtag);

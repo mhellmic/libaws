@@ -377,7 +377,8 @@ S3Connection::put(const std::string& aBucketName,
 }
 
 GetResponse*
-S3Connection::get(const std::string& aBucketName, const std::string& aKey)
+S3Connection::get(const std::string& aBucketName, const std::string& aKey, 
+                  const std::map<std::string, std::string>* aMetaDataMap)
 {
   std::auto_ptr<GetResponse> lRes(new GetResponse(aBucketName, aKey));
 
@@ -397,7 +398,19 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey)
   lWrapper.createParser();
 
   try {
-    makeRequest(aBucketName, GET, &lWrapper, 0, 0, lEscapedKey, 0);
+
+    if (aMetaDataMap) {
+      RequestHeaderMap lRequestHeaderMap;
+      for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
+           lIter != aMetaDataMap->end(); ++lIter) {
+        lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+      }
+
+      makeRequest(aBucketName, GET, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, 0);
+    } else {
+      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, 0);
+    }
+
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
@@ -677,7 +690,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, lSList);
 
- // curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+//  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
 
   if (++theNumberOfRequests >= MAX_REQUESTS) {
     curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");
@@ -787,18 +800,14 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
     } else if ( lTmp.find("Content-Length:") != std::string::npos) {
       lGetResponse->theContentLength = atoll(lTmp.c_str() + 16);
     } else if ( lTmp.find("Content-Type:") != std::string::npos) {
-     // lGetResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
+      lGetResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
     }
   } else if ((lHeadResponse = dynamic_cast<HeadResponse*>(lRes))) {
-  //if (lTmp.find("Last-Modified:") != std::string::npos) {
-  //  // parse a time string of the following format: Fri, 09 Nov 2007 13:05:49 GMT
-  //  Time t(lTmp.c_str()+15);
-  //  lGetResponse->theLastModified = t;
-  //} else if ( lTmp.find("Content-Length:") != std::string::npos) {
-  //  lGetResponse->theContentLength = atoll(lTmp.c_str() + 16);
-  //} else if ( lTmp.find("Content-Type:") != std::string::npos) {
-  //  //lGetResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
-  //}
+    if ( lTmp.find("Content-Length:") != std::string::npos) {
+      lHeadResponse->theContentLength = atoll(lTmp.c_str() + 16);
+    } else if ( lTmp.find("Content-Type:") != std::string::npos) {
+      lHeadResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
+    }
   } else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes))) {
     if (lTmp.find("Location:") != std::string::npos) {
       lCreateResponse->theLocation = lTmp.substr(10, lTmp.find_last_of('"') - 10);
