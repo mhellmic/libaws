@@ -31,6 +31,9 @@
  *     - gid : int
  *     - oid : int
  */
+#define _FILE_OFFSET_BITS 64
+#define FUSE_USE_VERSION  26
+#include <fuse.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -40,9 +43,6 @@
 #include <map>
 #include <sstream>
 
-#define _FILE_OFFSET_BITS 64
-#define FUSE_USE_VERSION  26
-#include <fuse.h>
 #include <libaws/aws.h>
 
 using namespace aws;
@@ -126,8 +126,10 @@ fill_stat(map_t& aMap, struct stat* stbuf, long long aContentLength)
 
   if (aMap.count("dir") != 0) {
     stbuf->st_mode |= S_IFDIR;
+    stbuf->st_nlink = 1;
   } else if (aMap.count("file") != 0) {
     stbuf->st_mode |= S_IFREG;
+    stbuf->st_nlink = 1;
     stbuf->st_size = 5;
   } 
   // TODO date
@@ -143,16 +145,20 @@ s3_getattr(const char *path, struct stat *stbuf)
   std::cerr << "getattr path: " << path << std::endl;
 #endif
 
+  memset(stbuf, 0, sizeof(struct stat));
+
   // we always immediately exit if the root dir is requested.
   if (strcmp(path, "/") == 0) { /* The root directory of our file system. */
-    stbuf->st_mode = S_IFDIR | 0777;
-    stbuf->st_nlink = 3;
+    stbuf->st_mode = S_IFDIR | 0755;
+    stbuf->st_nlink = 2;
+#ifndef NDEBUG
+    std::cerr << "  requested getattr for /" << std::endl;
+#endif
     return 0;
   }
 
   S3ConnectionPtr lCon = getConnection();
   S3FS_TRY
-    memset(stbuf, 0, sizeof(struct stat));
 
     // check if we have that path
     HeadResponsePtr lRes;
@@ -268,7 +274,7 @@ s3_readdir(const char *path,
         std::cerr << "  result: " << o.KeyValue << std::endl;
 #endif
         std::string lTmp = o.KeyValue.replace(0, lPath.length(), "");
-        filler(buf, lTmp.c_str(), &lStat, 0);
+        filler(buf, lTmp.c_str(), NULL, 0);
         lMarker = o.KeyValue;
       }
       lRes->close();
