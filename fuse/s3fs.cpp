@@ -57,7 +57,6 @@ static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string BUCKETNAME("msb");
-static std::map<int,std::fstream*> tempfilemap;
 static std::map<int,std::string> tempfilenamemap;
 #ifndef NDEBUG
 static int S3_DEBUG=0;
@@ -144,7 +143,7 @@ fill_stat(map_t& aMap, struct stat* stbuf, long long aContentLength)
   stbuf->st_uid  |= to_int(aMap["oid"]);
   stbuf->st_mtime  |= to_int(aMap["mtime"]);
   stbuf->st_size = aContentLength;
-  
+
   if (aMap.count("dir") != 0) {
     stbuf->st_mode |= S_IFDIR;
     stbuf->st_nlink = 2;
@@ -202,10 +201,10 @@ s3_getattr(const char *path, struct stat *stbuf)
   if (strcmp(path, "/") == 0) { /* The root directory of our file system. */
     stbuf->st_mode = S_IFDIR | 0755;
     stbuf->st_nlink = 2;
-    
+
     // set the meta data in the stat struct
     map_t lMap;
-    lMap["mode"]="0755";
+    lMap["mode"]="493";
     lMap["gid"]="0";
     lMap["uid"]="0";
     lMap["dir"]="1";
@@ -244,24 +243,24 @@ s3_getattr(const char *path, struct stat *stbuf)
     S3ConnectionPtr lCon = getConnection();
     S3FS_TRY
 
-	std::string lpath(path);
+       std::string lpath(path);
 
-    	// check if we have that path without first /
-    	HeadResponsePtr lRes;
-    	lRes = lCon->head(BUCKETNAME, lpath.substr(1));
-    	map_t lMap = lRes->getMetaData();
+       // check if we have that path without first /
+       HeadResponsePtr lRes;
+       lRes = lCon->head(BUCKETNAME, lpath.substr(1));
+       map_t lMap = lRes->getMetaData();
 #ifndef NDEBUG
-    	S3_LOG(S3_DEBUG,location,"  requested metadata for " << lpath.substr(1));
-	
-	// get information without first /
-    	for (map_t::iterator lIter = lMap.begin(); lIter != lMap.end(); ++lIter) {
-    	  S3_LOG(S3_DEBUG,location,"    got " << (*lIter).first << " : " << (*lIter).second);
-    	}
-    	S3_LOG(S3_DEBUG,location,"    content-length: " << lRes->getContentLength());
+       S3_LOG(S3_DEBUG,location,"  requested metadata for " << lpath.substr(1));
+
+       // get information without first /
+       for (map_t::iterator lIter = lMap.begin(); lIter != lMap.end(); ++lIter) {
+          S3_LOG(S3_DEBUG,location,"    got " << (*lIter).first << " : " << (*lIter).second);
+       }
+       S3_LOG(S3_DEBUG,location,"    content-length: " << lRes->getContentLength());
 #endif
 
-    	// set the meta data in the stat struct
-    	fill_stat(lMap, stbuf, lRes->getContentLength());
+       // set the meta data in the stat struct
+       fill_stat(lMap, stbuf, lRes->getContentLength());
     S3FS_CATCH(Head)
 
     S3FS_EXIT(result);
@@ -386,20 +385,20 @@ s3_readdir(const char *path,
       lRes->open();
       ListBucketResponse::Object o;
       while (lRes->next(o)) {
- 	struct stat lStat;
+        struct stat lStat;
         memset(&lStat, 0, sizeof(struct stat));
 
 #ifndef NDEBUG
-  	S3_LOG(S3_DEBUG,location,"  result: " << o.KeyValue);
+        S3_LOG(S3_DEBUG,location,"  result: " << o.KeyValue);
 #endif
         std::string lTmp = o.KeyValue.replace(0, lPath.length()-1, "");
         int isfull=filler(buf, lTmp.c_str(), &lStat, 0);
 #ifndef NDEBUG
         if(isfull){
-		S3_LOG(S3_INFO,location,"  buffer is full");
-	}
+           S3_LOG(S3_INFO,location,"  buffer is full");
+        }
 #endif
-	lMarker = o.KeyValue;
+        lMarker = o.KeyValue;
       }
       lRes->close();
     } while (lRes->isTruncated());
@@ -461,7 +460,7 @@ s3_open(const char *path,
   // initialize result
   int result=0;
   memset(fileinfo, 0, sizeof(struct fuse_file_info));
-	
+
   // generate temp file and open it
   int ltempsize=theS3FSTempFolder.length();
   char ltempfile[ltempsize];
@@ -470,37 +469,40 @@ s3_open(const char *path,
 #ifndef NDEBUG
   S3_LOG(S3_DEBUG,location,"File Descriptor # is: " << fileHandle << " file name = " << ltempfile);
 #endif
-  std::fstream* tempfile=new std::fstream();
+  std::auto_ptr<std::fstream> tempfile(new std::fstream());
   tempfile->open(ltempfile);
-	
+
   // now lets get the data and save it into the temp file
   S3ConnectionPtr lCon = getConnection();
 
   S3FS_TRY
 
-	std::string lpath(path);
-    	GetResponsePtr lGet = lCon->get(BUCKETNAME, lpath.substr(1));
-        std::istream& lInStream = lGet->getInputStream();
+    std::string lpath(path);
+    GetResponsePtr lGet = lCon->get(BUCKETNAME, lpath.substr(1));
+    std::istream& lInStream = lGet->getInputStream();
 
 #ifndef NDEBUG
-	S3_LOG(S3_DEBUG,location,"content length: " << lGet->getContentLength());
+    S3_LOG(S3_DEBUG,location,"content length: " << lGet->getContentLength());
 #endif
-        char lBuf[lGet->getContentLength()+1];
-        size_t lRead = lInStream.readsome(lBuf, lGet->getContentLength());
-        lBuf[lRead] = '\0';
 
-	// write data to temp file
-	(*tempfile) << lBuf;
-	tempfile->flush();
-	
-        //remember tempfile
-        fileinfo->fh = (uint64_t)fileHandle;
-        tempfilemap.insert( std::pair<int,std::fstream*>(fileHandle,tempfile) );
-	tempfilenamemap.insert( std::pair<int,std::string>(fileHandle,ltempfile) );
+    // write data to temp file
+    while (lInStream.good())     // loop while extraction from file is possible
+    {
+      (*tempfile) << (char) lInStream.get();       // get character from file
+    }
+    (*tempfile) << lInStream;
+    tempfile->flush();
 
-    S3FS_CATCH(Get)
+    //remember tempfile
+    fileinfo->fh = (uint64_t)fileHandle;
+    tempfilenamemap.insert( std::pair<int,std::string>(fileHandle,ltempfile) );
+
+    //cleanup
+    if(tempfile->is_open()) tempfile->close();
+
+  S3FS_CATCH(Get)
     
-    return result;
+  return result;
 }
 
 
@@ -529,14 +531,12 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
   // initialize result
   int result=0;
  
+  // get name of temp file
   int fileHandle = (int)fileinfo->fh;
-  std::fstream* tempfile=tempfilemap.find(fileHandle)->second;
   std::string tempfilename=tempfilenamemap.find(fileHandle)->second;
 
   //cleanup 
-  if(tempfile->is_open()) tempfile->close();
   remove(tempfilename.c_str()); 
-  tempfilemap.erase(fileHandle);
   tempfilenamemap.erase(fileHandle);
 
   return result;
@@ -567,22 +567,23 @@ s3_read(const char *path,
 #endif
 
   int fileHandle = (int)fileinfo->fh;
-  std::fstream* tempfile=tempfilemap.find(fileHandle)->second;
+  std::string tempfilename=tempfilenamemap.find(fileHandle)->second;
+  std::auto_ptr<std::fstream> tempfile(new std::fstream());
+  tempfile->open(tempfilename.c_str());
 
   // get length of file:
   tempfile->seekg (0, std::ios::end);
   unsigned int filelength = tempfile->tellg();
   int readsize = 0;
   if(size>filelength || (size-offset)>filelength){
-	readsize=filelength-offset;
+    readsize=filelength-offset;
   }else{
-	readsize=size;
+    readsize=size;
   }
   
   tempfile->seekg(offset);
   memset(buf, 0, readsize); 
   tempfile->read(buf,readsize);
-  //std::cerr.write(buf,readsize);
   return readsize;
   
 #if 0
@@ -638,20 +639,20 @@ main(int argc, char **argv)
   theFactory = AWSConnectionFactory::getInstance();
 
   if(getenv("S3FS_TEMP")!=NULL){
-  	theS3FSTempFolder = getenv("S3FS_TEMP");
-	theS3FSTempFolder.append("/s3fs_file_XXXXXX");
+    theS3FSTempFolder = getenv("S3FS_TEMP");
+    theS3FSTempFolder.append("/s3fs_file_XXXXXX");
   }else{
-  	std::cerr << "Please specify the S3FS_TEMP environment variable. It should point to a folder where you have write access." << std::endl;
+    std::cerr << "Please specify the S3FS_TEMP environment variable. It should point to a folder where you have write access." << std::endl;
   }
   if(getenv("AWS_ACCESS_KEY")!=NULL){
-  	theAccessKeyId = getenv("AWS_ACCESS_KEY");
+    theAccessKeyId = getenv("AWS_ACCESS_KEY");
   }else{
-  	theAccessKeyId = "";
+    theAccessKeyId = "";
   }
   if(getenv("AWS_SECRET_ACCESS_KEY")!=NULL){
-  	theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
+    theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
   }else{
-  	theSecretAccessKey = "";
+    theSecretAccessKey = "";
   }
 
   if (theAccessKeyId.length() == 0) {
