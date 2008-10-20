@@ -408,7 +408,7 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey,
 
       makeRequest(aBucketName, GET, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, 0);
     } else {
-      makeRequest(aBucketName, PUT, &lWrapper, 0, 0, lEscapedKey, 0);
+      makeRequest(aBucketName, GET, &lWrapper, 0, 0, lEscapedKey, 0);
     }
 
   } catch (AWSException& e) {
@@ -528,8 +528,7 @@ S3Connection::head(const std::string& aBucketName, const std::string& aKey)
   try {
     makeRequest(aBucketName, HEAD, &lWrapper, 0, 0, lEscapedKey, 0);
   } catch (AWSException& e) {
-    lWrapper.destroyParser();
-    curl_free(lEscapedKeyChar);
+    std::cerr << "[S3Connection::head] caught AWSException: " << e.what() << std::endl;
   }
 
   lWrapper.destroyParser();
@@ -734,7 +733,10 @@ S3Connection::makeRequest(const std::string& aBucketName,
     delete aHeaderMap; aHeaderMap = 0;
   }
 
-  if (lResCode != 0) {
+  if (lResCode != 0 && 
+	!(lResCode==18 && !lGetResponse) // head only (reporting partial file, that can be ignored)
+		) {
+     std::cerr << "[S3Connection::makeRequest] Response CURLCode is: " << (int) lResCode << std::endl;
     throw AWSConnectionException(theCurlErrorBuffer);
   }
 
