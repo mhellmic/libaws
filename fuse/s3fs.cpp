@@ -57,6 +57,8 @@ static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string BUCKETNAME("msb");
+static std::map<int,std::fstream*> tempfilemap;
+static std::map<int,int> tempfilesizemap;
 static std::map<int,std::string> tempfilenamemap;
 #ifndef NDEBUG
 static int S3_DEBUG=0;
@@ -484,6 +486,7 @@ s3_open(const char *path,
 #ifndef NDEBUG
     S3_LOG(S3_DEBUG,location,"content length: " << lGet->getContentLength());
 #endif
+    int tempfilesize=lGet->getContentLength();
 
     // write data to temp file
     while (lInStream.good())     // loop while extraction from file is possible
@@ -496,9 +499,8 @@ s3_open(const char *path,
     //remember tempfile
     fileinfo->fh = (uint64_t)fileHandle;
     tempfilenamemap.insert( std::pair<int,std::string>(fileHandle,ltempfile) );
-
-    //cleanup
-    if(tempfile->is_open()) tempfile->close();
+    tempfilesizemap.insert( std::pair<int,int>(fileHandle,tempfilesize) );
+    tempfilemap.insert( std::pair<int,std::fstream*>(fileHandle,(std::fstream*)tempfile.release()) );
 
   S3FS_CATCH(Get)
     
@@ -532,13 +534,68 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
   int result=0;
  
   // get name of temp file
-  int fileHandle = (int)fileinfo->fh;
-  std::string tempfilename=tempfilenamemap.find(fileHandle)->second;
+  if(fileinfo!=NULL){
+    int fileHandle = (int)fileinfo->fh;
+    if(fileHandle){
 
-  //cleanup 
-  remove(tempfilename.c_str()); 
-  tempfilenamemap.erase(fileHandle);
+      // init
+      std::string tempfilename="";
 
+      // release filename from filenamemap
+      std::map<int,std::string>::iterator foundtempfilename=tempfilenamemap.find(fileHandle);
+      if(foundtempfilename!=tempfilenamemap.end()){
+         tempfilename=foundtempfilename->second;
+
+         //cleanup
+         tempfilenamemap.erase(fileHandle);
+      }else{
+#ifndef NDEBUG
+        S3_LOG(S3_INFO,location,"couldn't find tempfilename.");
+#endif
+      }
+
+      // release filesize from filesizemap
+      std::map<int,int>::iterator foundtempfilesize=tempfilesizemap.find(fileHandle);
+      if(foundtempfilesize!=tempfilesizemap.end()){
+         
+         //cleanup
+         tempfilesizemap.erase(fileHandle);
+      }else{
+#ifndef NDEBUG
+        S3_LOG(S3_INFO,location,"couldn't find tempfilesize.");
+#endif
+      }
+
+      // release file from filemap
+      std::map<int,std::fstream*>::iterator foundtempfile=tempfilemap.find(fileHandle);
+      if(foundtempfile!=tempfilemap.end()){
+         std::fstream* tempfile=foundtempfile->second;
+
+         if(tempfile->is_open())tempfile->close();
+
+         //cleanup
+         tempfilemap.erase(fileHandle);
+      }else{
+#ifndef NDEBUG
+        S3_LOG(S3_INFO,location,"couldn't find tempfile.");
+#endif
+      }
+      
+      // delete tempfile
+      if (!tempfilename.empty()){
+        remove(tempfilename.c_str());
+      }
+
+    }else{
+#ifndef NDEBUG
+        S3_LOG(S3_INFO,location,"no filehandle in fileinfo.");
+#endif
+    }
+  }else{
+#ifndef NDEBUG
+      S3_LOG(S3_INFO,location,"no fileinfo provided.");
+#endif
+  }
   return result;
 }
 
@@ -568,12 +625,21 @@ s3_read(const char *path,
 
   int fileHandle = (int)fileinfo->fh;
   std::string tempfilename=tempfilenamemap.find(fileHandle)->second;
-  std::auto_ptr<std::fstream> tempfile(new std::fstream());
-  tempfile->open(tempfilename.c_str());
+  std::fstream* tempfile=tempfilemap.find(fileHandle)->second;
+  //tempfile->open(tempfilename.c_str());
 
   // get length of file:
-  tempfile->seekg (0, std::ios::end);
-  unsigned int filelength = tempfile->tellg();
+  unsigned int filelength = 0;
+  std::map<int,int>::iterator foundtempfilesize=tempfilesizemap.find(fileHandle);
+  if(foundtempfilesize!=tempfilesizemap.end()){
+     filelength=(unsigned int)foundtempfilesize->second;
+  }else{
+#ifndef NDEBUG
+     S3_LOG(S3_INFO,location,"couldn't find tempfilesize.");
+#endif
+  }
+  //tempfile->seekg (0, std::ios::end);
+  //unsigned int filelength = tempfile->tellg();
   int readsize = 0;
   if(size>filelength || (size-offset)>filelength){
     readsize=filelength-offset;
