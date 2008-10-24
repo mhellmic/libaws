@@ -51,15 +51,25 @@
 
 using namespace aws;
 
+struct FileHandle {
+   int id;
+   std::fstream* filestream;
+   std::string filename;
+   std::string s3key;
+   int size;
+   bool is_write; 
+   mode_t mode;
+   time_t mtime;
+};
 
 static AWSConnectionFactory* theFactory;
 static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string BUCKETNAME("msb");
-static std::map<int,std::fstream*> tempfilemap;
-static std::map<int,int> tempfilesizemap;
-static std::map<int,std::string> tempfilenamemap;
+
+static std::map<int,struct FileHandle*> tempfilemap;
+
 #ifndef NDEBUG
 static int S3_DEBUG=0;
 static int S3_INFO=1;
@@ -192,7 +202,7 @@ s3_getattr(const char *path, struct stat *stbuf)
 {
 #ifndef NDEBUG
   std::string location="s3_getattr(...)";
-  S3_LOG(S3_DEBUG,location,"getattr path: " << path);
+//  S3_LOG(S3_DEBUG,location,"getattr path: " << path);
 #endif
 
   // initialize result
@@ -216,29 +226,15 @@ s3_getattr(const char *path, struct stat *stbuf)
     S3_LOG(S3_DEBUG,location,"  requested getattr for root / => exit");
 #endif
     result=0;
-  }else if (strcmp(path, "/libattr.so.1") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/libpthread.so.0") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/libacl.so.1") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/librt.so.1") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/libc.so.6") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/tls") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/i686") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
-    result=-ENOENT;
-  }else if (strcmp(path, "/sse2") == 0) { 
-    S3_LOG(S3_DEBUG,location,"  refusing "<<path);
+  }else if (strcmp(path, "/libattr.so.1") == 0 
+      || strcmp(path, "/libpthread.so.0") == 0
+      || strcmp(path, "/libacl.so.1") == 0
+      || strcmp(path, "/librt.so.1") == 0
+      || strcmp(path, "/libc.so.6") == 0
+      || strcmp(path, "/tls") == 0
+      || strcmp(path, "/i686") == 0
+      || strcmp(path, "/sse2") == 0) { 
+    //S3_LOG(S3_DEBUG,location,"  refusing "<<path);
     result=-ENOENT;
   }else{
 
@@ -271,6 +267,108 @@ s3_getattr(const char *path, struct stat *stbuf)
   return result;
 }
 
+
+/*
+ * Change the permission bits of a file
+ */
+static int
+s3_chmod(const char * path, mode_t mode)
+{
+#ifndef NDEBUG
+  std::string location="s3_chmod(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " mode: " << mode);
+#endif
+
+   // init result
+   int result=0;
+
+   //TODO 
+
+   return result;
+
+}
+
+/*
+ * Change the access and modification times of a file with nanosecond resolution
+ */
+static int
+s3_utimens(const char *path, const struct timespec tv[2])
+{
+#ifndef NDEBUG
+  std::string location="s3_utimens(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " time:" << tv);
+#endif
+
+  //init result
+  int result=0;
+
+  // TODO set new mtime
+
+  return result;
+}
+
+
+/*
+ * Change the owner and group of a file
+ */
+static int
+s3_chown(const char * path, uid_t uid, gid_t gid)
+{
+#ifndef NDEBUG
+  std::string location="s3_chown(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " uid:" << uid << " gid:" << gid);
+#endif
+
+  //init result
+  int result=0;
+
+  // TODO set new owner
+
+  return result;
+
+}
+
+
+/*
+ * Change the size of a file
+ *
+ * This function is not needed as the size is changed anyway when
+ * putting an object on s3
+ */
+static int 
+s3_truncate(const char * path, off_t offset)
+{
+#ifndef NDEBUG
+  std::string location="s3_truncate(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " offset:" << offset);
+#endif
+
+  //init result
+  int result=0;
+
+  return result;
+
+}
+
+/*
+ * Set extended attributes
+ *
+ */
+/*static int
+s3_setxattr(const char * path, const char * char2, const char * char3, size_t size, int int1)
+{
+#ifndef NDEBUG
+  std::string location="s3_setxattr(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " char2: " << char2 << " char3: " << char3 << " size: " << size << " int1: " << int1);
+#endif
+
+   // init result
+   int result=0;
+
+   //TODO 
+
+   return result;
+} */
 
 
 static int
@@ -412,27 +510,57 @@ s3_readdir(const char *path,
 }
 
 
-
+/*
+ * Create and open a file
+ * 
+ * If the file does not exist, first create it with the specified 
+ * mode, and then open it.
+ * 
+ * If this method is not implemented or under Linux kernel versions 
+ * earlier than 2.6.15, the mknod() and open() methods will be called 
+ * instead.
+ * 
+ */
 static int
-s3_create(const char *path, mode_t mode, struct fuse_file_info *fs)
+s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 {
 #ifndef NDEBUG
   std::string location="s3_create(...)";
   S3_LOG(S3_DEBUG,location,"path: " << path << " mode: " << mode);
 #endif
 
+  std::string lpath(path);
 
-  S3ConnectionPtr lCon = getConnection();
-  S3FS_TRY
-    map_t lDirMap;
-    lDirMap.insert(pair_t("file", "1"));
-    lDirMap.insert(pair_t("gid", to_string(getgid())));
-    lDirMap.insert(pair_t("uid", to_string(getuid())));
-    lDirMap.insert(pair_t("mode", to_string(mode)));
-    PutResponsePtr lRes = lCon->put(BUCKETNAME, path, 0, "text/plain", 0, &lDirMap);
-    S3FS_EXIT(0);
-  S3FS_CATCH(Put)
-  S3FS_EXIT(-ENOENT);
+  FileHandle* fileHandle=new FileHandle;
+
+  // initialize result
+  int result=0;
+  memset(fileinfo, 0, sizeof(struct fuse_file_info));
+
+  // generate temp file and open it
+  int ltempsize=theS3FSTempFolder.length();
+  char ltempfile[ltempsize];
+  strcpy(ltempfile,theS3FSTempFolder.c_str());
+  fileHandle->id=mkstemp(ltempfile);
+#ifndef NDEBUG
+  S3_LOG(S3_DEBUG,location,"File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
+#endif
+  std::auto_ptr<std::fstream> tempfile(new std::fstream());
+  tempfile->open(ltempfile);
+
+  fileHandle->filename = std::string(ltempfile);
+  fileHandle->size = 0;
+  fileHandle->s3key = lpath.substr(1);// cut off the first slash
+  fileHandle->mode = mode;
+  fileHandle->filestream = tempfile.release();
+  fileHandle->is_write = true;
+  fileHandle->mtime = time (NULL);
+
+  //remember filehandle
+  fileinfo->fh = (uint64_t)fileHandle->id;
+  tempfilemap.insert( std::pair<int,struct FileHandle*>(fileHandle->id,fileHandle) );
+
+  return result;
 }
 
 
@@ -459,6 +587,12 @@ s3_open(const char *path,
   S3_LOG(S3_DEBUG,location,"path: " << path);
 #endif
 
+  //get file stat
+  struct stat stbuf;
+  s3_getattr(path,&stbuf);
+
+  FileHandle* fileHandle=new FileHandle;
+
   // initialize result
   int result=0;
   memset(fileinfo, 0, sizeof(struct fuse_file_info));
@@ -467,9 +601,10 @@ s3_open(const char *path,
   int ltempsize=theS3FSTempFolder.length();
   char ltempfile[ltempsize];
   strcpy(ltempfile,theS3FSTempFolder.c_str());
-  int fileHandle = mkstemp(ltempfile);
+  fileHandle->id=mkstemp(ltempfile);
+  fileHandle->filename = std::string(ltempfile);
 #ifndef NDEBUG
-  S3_LOG(S3_DEBUG,location,"File Descriptor # is: " << fileHandle << " file name = " << ltempfile);
+  S3_LOG(S3_DEBUG,location,"File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
 #endif
   std::auto_ptr<std::fstream> tempfile(new std::fstream());
   tempfile->open(ltempfile);
@@ -486,26 +621,67 @@ s3_open(const char *path,
 #ifndef NDEBUG
     S3_LOG(S3_DEBUG,location,"content length: " << lGet->getContentLength());
 #endif
-    int tempfilesize=lGet->getContentLength();
+    fileHandle->size=lGet->getContentLength();
 
     // write data to temp file
     while (lInStream.good())     // loop while extraction from file is possible
     {
       (*tempfile) << (char) lInStream.get();       // get character from file
     }
-    (*tempfile) << lInStream;
     tempfile->flush();
 
+    fileHandle->filestream = tempfile.release();
+    fileHandle->is_write = false;
+    fileHandle->mode = stbuf.st_mode;
+    fileHandle->s3key = lpath.substr(1);
+
     //remember tempfile
-    fileinfo->fh = (uint64_t)fileHandle;
-    tempfilenamemap.insert( std::pair<int,std::string>(fileHandle,ltempfile) );
-    tempfilesizemap.insert( std::pair<int,int>(fileHandle,tempfilesize) );
-    tempfilemap.insert( std::pair<int,std::fstream*>(fileHandle,(std::fstream*)tempfile.release()) );
+    fileinfo->fh = (uint64_t)fileHandle->id;
+    tempfilemap.insert( std::pair<int,struct FileHandle*>(fileHandle->id,fileHandle) );
 
   S3FS_CATCH(Get)
-    
+
   return result;
 }
+
+
+/*
+ * Write data to an open file
+ * 
+ * Write should return exactly the number of bytes requested except 
+ * on error. An exception to this is when the 'direct_io' mount option 
+ * is specified (see read operation).
+ * 
+ * 
+ */
+static int
+s3_write(const char * path, const char * data, size_t size, off_t offset, struct fuse_file_info * fileinfo)
+{
+#ifndef NDEBUG
+  std::string location="s3_write(...)";
+  S3_LOG(S3_DEBUG,location,"path: " << path << " data: " << data << " size: " << size << " offset: " << offset);
+#endif
+
+  // init result
+  int result=0;
+
+  FileHandle* fileHandle=tempfilemap.find((int)fileinfo->fh)->second;
+  std::string tempfilename=fileHandle->filename;
+  std::fstream* tempfile=fileHandle->filestream;
+
+  // write data to temp file
+  tempfile->seekp(offset);
+  tempfile->write(data,size);
+
+  // flag to update file on s3
+  fileHandle->is_write = true;
+
+  result=size;
+
+  return result;
+}
+
+
 
 
 /*
@@ -534,66 +710,64 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
   int result=0;
  
   // get name of temp file
-  if(fileinfo!=NULL){
-    int fileHandle = (int)fileinfo->fh;
-    if(fileHandle){
+  if(fileinfo!=NULL
+        && (int)fileinfo->fh){
 
       // init
       std::string tempfilename="";
 
-      // release filename from filenamemap
-      std::map<int,std::string>::iterator foundtempfilename=tempfilenamemap.find(fileHandle);
-      if(foundtempfilename!=tempfilenamemap.end()){
-         tempfilename=foundtempfilename->second;
-
-         //cleanup
-         tempfilenamemap.erase(fileHandle);
-      }else{
-#ifndef NDEBUG
-        S3_LOG(S3_INFO,location,"couldn't find tempfilename.");
-#endif
-      }
-
-      // release filesize from filesizemap
-      std::map<int,int>::iterator foundtempfilesize=tempfilesizemap.find(fileHandle);
-      if(foundtempfilesize!=tempfilesizemap.end()){
-         
-         //cleanup
-         tempfilesizemap.erase(fileHandle);
-      }else{
-#ifndef NDEBUG
-        S3_LOG(S3_INFO,location,"couldn't find tempfilesize.");
-#endif
-      }
-
-      // release file from filemap
-      std::map<int,std::fstream*>::iterator foundtempfile=tempfilemap.find(fileHandle);
+      // get filehandle struct
+      std::map<int,struct FileHandle*>::iterator foundtempfile=tempfilemap.find((int)fileinfo->fh);
       if(foundtempfile!=tempfilemap.end()){
-         std::fstream* tempfile=foundtempfile->second;
+         FileHandle* fileHandle = foundtempfile->second;
 
-         if(tempfile->is_open())tempfile->close();
+         if(fileHandle->is_write){
+
+              // reset filestream
+              fileHandle->filestream->seekg(0);
+
+              // transfer temp file to s3
+              S3ConnectionPtr lCon = getConnection();
+              S3FS_TRY
+                 map_t lDirMap;
+                 lDirMap.insert(pair_t("file", "1"));
+                 lDirMap.insert(pair_t("gid", to_string(getgid())));
+                 lDirMap.insert(pair_t("uid", to_string(getuid())));
+                 lDirMap.insert(pair_t("mode", to_string(fileHandle->mode)));
+#ifndef NDEBUG
+        S3_LOG(S3_DEBUG,location,"mode is "<<to_string(fileHandle->mode));
+#endif
+                 lDirMap.insert(pair_t("mtime", to_string(fileHandle->mtime)));
+                 PutResponsePtr lRes = lCon->put(BUCKETNAME, fileHandle->s3key, *(fileHandle->filestream), "text/plain", &lDirMap);
+               S3FS_CATCH(Put)
+
+         }else{
+
+            //close file stream if still open
+            if(fileHandle->filestream && fileHandle->filestream->is_open()){
+               fileHandle->filestream->close();
+            }
+
+         }
+
+         // delete tempfilename if existent
+         if(!fileHandle->filename.empty()){
+            remove(fileHandle->filename.c_str());
+         }
 
          //cleanup
-         tempfilemap.erase(fileHandle);
+         tempfilemap.erase(fileHandle->id);
+         delete fileHandle->filestream;fileHandle->filestream=0;
+         delete fileHandle;fileHandle=0;
       }else{
 #ifndef NDEBUG
-        S3_LOG(S3_INFO,location,"couldn't find tempfile.");
+        S3_LOG(S3_INFO,location,"couldn't find filehandle.");
 #endif
-      }
-      
-      // delete tempfile
-      if (!tempfilename.empty()){
-        remove(tempfilename.c_str());
       }
 
-    }else{
-#ifndef NDEBUG
-        S3_LOG(S3_INFO,location,"no filehandle in fileinfo.");
-#endif
-    }
   }else{
 #ifndef NDEBUG
-      S3_LOG(S3_INFO,location,"no fileinfo provided.");
+      S3_LOG(S3_INFO,location,"no fileinfo or filehandle-ID provided.");
 #endif
   }
   return result;
@@ -623,23 +797,13 @@ s3_read(const char *path,
   S3_LOG(S3_DEBUG,location,"path: " << path << " offset: " << offset << " size: " << size);
 #endif
 
-  int fileHandle = (int)fileinfo->fh;
-  std::string tempfilename=tempfilenamemap.find(fileHandle)->second;
-  std::fstream* tempfile=tempfilemap.find(fileHandle)->second;
-  //tempfile->open(tempfilename.c_str());
-
+  FileHandle* fileHandle=tempfilemap.find((int)fileinfo->fh)->second;
+  std::string tempfilename=fileHandle->filename;
+  std::fstream* tempfile=fileHandle->filestream;
+  
   // get length of file:
-  unsigned int filelength = 0;
-  std::map<int,int>::iterator foundtempfilesize=tempfilesizemap.find(fileHandle);
-  if(foundtempfilesize!=tempfilesizemap.end()){
-     filelength=(unsigned int)foundtempfilesize->second;
-  }else{
-#ifndef NDEBUG
-     S3_LOG(S3_INFO,location,"couldn't find tempfilesize.");
-#endif
-  }
-  //tempfile->seekg (0, std::ios::end);
-  //unsigned int filelength = tempfile->tellg();
+  unsigned int filelength = (unsigned int) fileHandle->size;
+  
   int readsize = 0;
   if(size>filelength || (size-offset)>filelength){
     readsize=filelength-offset;
@@ -691,6 +855,10 @@ main(int argc, char **argv)
 {
   // set callback functions
   s3_filesystem_operations.getattr    = s3_getattr;
+  s3_filesystem_operations.utimens = s3_utimens;
+  s3_filesystem_operations.truncate = s3_truncate;
+  s3_filesystem_operations.chmod = s3_chmod;
+  s3_filesystem_operations.chown = s3_chown;
   s3_filesystem_operations.mkdir      = s3_mkdir;
   s3_filesystem_operations.rmdir      = s3_rmdir;
   s3_filesystem_operations.readdir    = s3_readdir;
@@ -698,10 +866,12 @@ main(int argc, char **argv)
   s3_filesystem_operations.opendir     = s3_opendir;
   // can't be supported because s3 doesn't allow to change meta data without putting the object again
   s3_filesystem_operations.read       = s3_read;
+  s3_filesystem_operations.write       = s3_write;
   s3_filesystem_operations.open       = s3_open;
   s3_filesystem_operations.release       = s3_release;
+  
 
-  // initialization
+   // initialization
   theFactory = AWSConnectionFactory::getInstance();
 
   if(getenv("S3FS_TEMP")!=NULL){
