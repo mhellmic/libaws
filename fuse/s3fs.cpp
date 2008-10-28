@@ -496,12 +496,7 @@ s3_readdir(const char *path,
         S3_LOG(S3_DEBUG,location,"  result: " << o.KeyValue);
 #endif
         std::string lTmp = o.KeyValue.replace(0, lPath.length()-1, "");
-        int isfull=filler(buf, lTmp.c_str(), &lStat, 0);
-#ifndef NDEBUG
-        if(isfull){
-           S3_LOG(S3_INFO,location,"  buffer is full");
-        }
-#endif
+        filler(buf, lTmp.c_str(), &lStat, 0);
         lMarker = o.KeyValue;
       }
       lRes->close();
@@ -535,7 +530,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 
   std::string lpath(path);
 
-  FileHandle* fileHandle=new FileHandle;
+  std::auto_ptr<FileHandle> fileHandle(new FileHandle);
 
   // initialize result
   int result=0;
@@ -562,7 +557,8 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 
   //remember filehandle
   fileinfo->fh = (uint64_t)fileHandle->id;
-  tempfilemap.insert( std::pair<int,struct FileHandle*>(fileHandle->id,fileHandle) );
+  int lTmpPointer = fileHandle->id;
+  tempfilemap.insert( std::pair<int,struct FileHandle*>(lTmpPointer,fileHandle.release()) );
 
   return result;
 }
@@ -595,7 +591,7 @@ s3_open(const char *path,
   struct stat stbuf;
   s3_getattr(path,&stbuf);
 
-  FileHandle* fileHandle=new FileHandle;
+  std::auto_ptr<FileHandle> fileHandle(new FileHandle);
 
   // initialize result
   int result=0;
@@ -641,7 +637,8 @@ s3_open(const char *path,
 
     //remember tempfile
     fileinfo->fh = (uint64_t)fileHandle->id;
-    tempfilemap.insert( std::pair<int,struct FileHandle*>(fileHandle->id,fileHandle) );
+    int lTmpPointer = fileHandle->id;
+    tempfilemap.insert( std::pair<int,struct FileHandle*>(lTmpPointer,fileHandle.release()) );
 
   S3FS_CATCH(Get)
 
@@ -818,6 +815,7 @@ s3_read(const char *path,
   tempfile->seekg(offset);
   memset(buf, 0, readsize); 
   tempfile->read(buf,readsize);
+  assert(readsize == tempfile->gcount());
   return readsize;
   
 #if 0
@@ -883,6 +881,7 @@ main(int argc, char **argv)
     theS3FSTempFolder.append("/s3fs_file_XXXXXX");
   }else{
     std::cerr << "Please specify the S3FS_TEMP environment variable. It should point to a folder where you have write access." << std::endl;
+    return 3;
   }
   if(getenv("AWS_ACCESS_KEY")!=NULL){
     theAccessKeyId = getenv("AWS_ACCESS_KEY");
