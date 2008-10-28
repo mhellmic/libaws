@@ -379,6 +379,8 @@ s3_mkdir(const char *path, mode_t mode)
   S3_LOG(S3_DEBUG,location,"path: " << path << " mode: " << mode);
 #endif
 
+  std::string lpath(path);
+
   S3ConnectionPtr lCon = getConnection();
   S3FS_TRY
     map_t lDirMap;
@@ -386,7 +388,7 @@ s3_mkdir(const char *path, mode_t mode)
     lDirMap.insert(pair_t("gid", to_string(getgid())));
     lDirMap.insert(pair_t("uid", to_string(getuid())));
     lDirMap.insert(pair_t("mode", to_string(mode)));
-    PutResponsePtr lRes = lCon->put(BUCKETNAME, path, 0, "text/plain", 0, &lDirMap);
+    PutResponsePtr lRes = lCon->put(BUCKETNAME, lpath.substr(1), 0, "text/plain", 0, &lDirMap);
     S3FS_EXIT(0);
   S3FS_CATCH(Put)
   S3FS_EXIT(-ENOENT);
@@ -402,11 +404,13 @@ s3_rmdir(const char *path)
   S3_LOG(S3_DEBUG,location,"path: " << path);
 #endif
 
+  std::string lpath(path);
+
   S3ConnectionPtr lCon = getConnection();
 
   try {
     HeadResponsePtr lRes;
-    lRes = lCon->head(BUCKETNAME, path);
+    lRes = lCon->head(BUCKETNAME, lpath.substr(1));
     map_t lMap = lRes->getMetaData();
     if (lMap.count("dir") == 0) {
 #ifndef NDEBUG
@@ -428,7 +432,7 @@ s3_rmdir(const char *path)
   }
 
   S3FS_TRY
-    DeleteResponsePtr lRes = lCon->del(BUCKETNAME, path);
+    DeleteResponsePtr lRes = lCon->del(BUCKETNAME, lpath.substr(1));
   S3FS_CATCH(Put)
   S3FS_EXIT(0);
 }
