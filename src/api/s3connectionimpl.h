@@ -70,6 +70,9 @@ namespace aws {
       DeleteResponsePtr
       del(const std::string& aBucketName, const std::string& aKey);
 
+      DeleteAllResponsePtr
+      deleteAll(const std::string& aBucketName, const std::string& aPrefix);
+
       HeadResponsePtr
       head(const std::string& aBucketName, const std::string& aKey);
 

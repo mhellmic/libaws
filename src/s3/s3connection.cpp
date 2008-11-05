@@ -505,6 +505,34 @@ S3Connection::del(const std::string& aBucketName, const std::string& aKey)
   return lRes.release();
 }
 
+DeleteAllResponse*
+S3Connection::deleteAll(const std::string& aBucketName, const std::string& aPrefix)
+{
+  std::auto_ptr<DeleteAllResponse> lRes(new DeleteAllResponse(aBucketName, aPrefix));
+
+  std::auto_ptr<ListBucketResponse> lListBucket;
+  std::auto_ptr<DeleteResponse> lDelete;
+  ListBucketResponse::Key lKey;
+  std::string lMarker;
+  try {
+    do {
+      lListBucket.reset(listBucket(aBucketName, "", lMarker, -1));
+      lListBucket->open();
+      while (lListBucket->next(lKey)) {
+        lDelete.reset(del(aBucketName, lKey.KeyValue));
+        lMarker = lKey.KeyValue;
+      }
+      lListBucket->close();
+    } while (lListBucket->isTruncated());
+  } catch (ListBucketException &e) {
+    throw DeleteAllException( e.getErrorCode(), e.getErrorMessage(), e.getRequestId(), e.getHostId() );
+  } catch (DeleteException &lDelExc) {
+    throw DeleteAllException( lDelExc.getErrorCode(), lDelExc.getErrorMessage(), lDelExc.getRequestId(), lDelExc.getHostId() );
+  }
+
+  return lRes.release();
+}
+
 HeadResponse*
 S3Connection::head(const std::string& aBucketName, const std::string& aKey)
 {

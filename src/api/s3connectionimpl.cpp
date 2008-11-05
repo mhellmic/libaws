@@ -91,6 +91,12 @@ namespace aws {
     return new DeleteResponse(theConnection->del(aBucketName, aKey));
   }
 
+  DeleteAllResponsePtr
+  S3ConnectionImpl::deleteAll(const std::string& aBucketName, const std::string& aPrefix)
+  {
+    return new DeleteAllResponse(theConnection->deleteAll(aBucketName, aPrefix));
+  }
+
   HeadResponsePtr
   S3ConnectionImpl::head(const std::string& aBucketName, const std::string& aKey)
   {

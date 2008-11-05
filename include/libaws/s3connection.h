@@ -193,6 +193,20 @@ namespace aws {
       del(const std::string& aBucketName,
           const std::string& aKey) = 0;
 
+      /*! \brief Delete all objects in a bucket that share the same prefix.
+       *
+       * This function deletes all objects in the given bucket whose keys have the same prefix.
+       *
+       * @param aBucketName The name of the bucket whose keys should be deleted.
+       * @param aPrefix The prefix of the keys that should be deleted.
+       *
+       * \throws aws::s3::DeleteException if the object coldn't be deleted.
+       * \throws aws::AWSConnectionException if a connection error occured.
+       */
+      virtual DeleteAllResponsePtr
+      deleteAll(const std::string& aBucketName,
+              const std::string& aPrefix = "") = 0;
+
       virtual HeadResponsePtr
       head(const std::string& aBucketName,
           const std::string& aKey) = 0;

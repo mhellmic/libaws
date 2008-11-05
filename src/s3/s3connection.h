@@ -115,6 +115,9 @@ namespace aws {
       DeleteResponse*
       del(const std::string& aBucketName, const std::string& aKey);
 
+      DeleteAllResponse*
+      deleteAll(const std::string& aBucketName, const std::string& aPrefix);
+
       HeadResponse*
       head(const std::string& aBucketName, const std::string& aKey);
 

@@ -51,6 +51,9 @@ namespace aws {
   class DeleteResponse;
   typedef SmartPtr<DeleteResponse> DeleteResponsePtr;
 
+  class DeleteAllResponse;
+  typedef SmartPtr<DeleteAllResponse> DeleteAllResponsePtr;
+
   class HeadResponse;
   typedef SmartPtr<HeadResponse> HeadResponsePtr;
 

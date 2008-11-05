@@ -28,6 +28,16 @@ namespace aws {
     theHostId       = aError.getHostId();
   }
 
+  S3Exception::S3Exception(const ErrorCode&   aErrorCode,
+              const std::string& aErrorMessage,
+              const std::string& aRequestId,
+              const std::string& aHostId)
+    : theErrorCode   (aErrorCode),
+      theErrorMessage(aErrorMessage),
+      theRequestId   (aRequestId),
+      theHostId      (aHostId)
+  { }
+
   S3Exception::~S3Exception() throw() {}
 
   const char*
@@ -75,5 +85,18 @@ namespace aws {
   : S3Exception(aError) {}
 
   DeleteException::~DeleteException() throw() {}
+
+  DeleteAllException::DeleteAllException(const s3::S3ResponseError& aError)
+  : S3Exception(aError) {}
+
+  DeleteAllException::DeleteAllException(const ErrorCode&   aErrorCode,
+                                         const std::string& aErrorMessage,
+                                         const std::string& aRequestId,
+                                         const std::string& aHostId)
+    : S3Exception(aErrorCode, aErrorMessage, aRequestId, aHostId)
+  {
+  }
+
+  DeleteAllException::~DeleteAllException() throw() {}
 
 } /* namespace aws */

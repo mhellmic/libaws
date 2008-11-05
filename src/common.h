@@ -46,6 +46,7 @@ namespace aws {
     class GetResponse;
     class HeadResponse;
     class DeleteResponse;
+    class DeleteAllResponse;
   } /* namespace s3 */
 
 

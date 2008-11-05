@@ -34,6 +34,7 @@ namespace aws {
       class GetResponse;
       class HeadResponse;
       class DeleteResponse;
+      class DeleteAllResponse;
   } /* namespace s3 */
 
   /** \brief S3Response is the base class of all classes that can be
@@ -255,6 +256,22 @@ namespace aws {
       friend class S3ConnectionImpl;
       DeleteResponse(s3::DeleteResponse*);
   }; /* class DeleteResponse */
+
+  class DeleteAllResponse  : public S3Response<s3::DeleteAllResponse>
+  {
+    public:
+      virtual ~DeleteAllResponse() {}
+
+      virtual const std::string&
+      getPrefix() const;
+
+      virtual const std::string&
+      getBucketName() const;
+
+    private:
+      friend class S3ConnectionImpl;
+      DeleteAllResponse(s3::DeleteAllResponse*);
+  }; /* class DeleteAllResponse */
 
 } /* namespace aws */
 #endif

@@ -319,5 +319,23 @@ namespace aws {
     return theS3Response->getBucketName();
   }
 
+  /**
+   * DeleteAllResponse
+   */
+  DeleteAllResponse::DeleteAllResponse(s3::DeleteAllResponse* r)
+    : S3Response<s3::DeleteAllResponse>(r) {}
+
+  const std::string&
+  DeleteAllResponse::getPrefix() const
+  {
+    return theS3Response->getPrefix();
+  }
+
+  const std::string&
+  DeleteAllResponse::getBucketName() const
+  {
+    return theS3Response->getBucketName();
+  }
+
 } /* namespace aws */
 

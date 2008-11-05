@@ -54,6 +54,8 @@ namespace aws { namespace s3  {
     S3ResponseError();
 
   public:
+    S3ResponseError(const S3ResponseError&);
+
     S3Exception::ErrorCode
     getErrorCode() const { return theErrorCode; }
 
@@ -351,6 +353,23 @@ public:
 protected:
     std::string     theBucketName;
     std::string     theKey;
+};
+
+class DeleteAllResponse : public S3Response
+{
+public:
+    DeleteAllResponse(const std::string& aBucketName, const std::string& aPrefix);
+    virtual ~DeleteAllResponse();
+    
+    const std::string&
+    getBucketName() const { return theBucketName; }
+
+    const std::string&
+    getPrefix() const { return thePrefix; }
+        
+protected:
+    std::string     theBucketName;
+    std::string     thePrefix;
 };
     
 } } // end namespaces

@@ -38,6 +38,12 @@ namespace aws { namespace s3 {
     S3ResponseError::S3ResponseError()
     { }
 
+    S3ResponseError::S3ResponseError(const S3ResponseError& e)
+      : theErrorCode(e.theErrorCode),
+        theErrorMessage(e.theErrorMessage),
+        theRequestId(e.theRequestId),
+        theHostId(e.theHostId)
+    {}
 
     S3Exception::ErrorCode
     S3ResponseError::parseError ( const std::string& aString )
@@ -207,11 +213,22 @@ namespace aws { namespace s3 {
     DeleteResponse::DeleteResponse ( const std::string& aBucketName,
                                      const std::string& aKey )
         : theBucketName ( aBucketName ),
-        theKey ( aKey )
+          theKey ( aKey )
     {
     }
 
     DeleteResponse::~DeleteResponse()
+    {
+    }
+
+    DeleteAllResponse::DeleteAllResponse ( const std::string& aBucketName,
+                                           const std::string& aPrefix )
+        : theBucketName ( aBucketName ),
+          thePrefix ( aPrefix )
+    {
+    }
+
+    DeleteAllResponse::~DeleteAllResponse()
     {
     }
 

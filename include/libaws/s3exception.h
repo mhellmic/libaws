@@ -89,13 +89,18 @@ namespace aws {
 
       virtual ~S3Exception() throw();
 
+      S3Exception(const ErrorCode&   theErrorCode,
+                  const std::string&  theErrorMessage,
+                  const std::string&  theRequestId,
+                  const std::string&  theHostId);
+
     protected:
       S3Exception(const s3::S3ResponseError&);
 
       ErrorCode   theErrorCode;
       std::string theErrorMessage;
       std::string theRequestId;
-      std::string  theHostId;
+      std::string theHostId;
     };
 
     class CreateBucketException : public S3Exception 
@@ -168,6 +173,19 @@ namespace aws {
     private:
       friend class s3::S3Connection;
       DeleteException(const s3::S3ResponseError&);
+    };
+
+    class DeleteAllException : public S3Exception 
+    {
+    public:
+      virtual ~DeleteAllException() throw();
+    private:
+      friend class s3::S3Connection;
+      DeleteAllException(const s3::S3ResponseError&);
+      DeleteAllException(const ErrorCode&   theErrorCode,
+                         const std::string&  theErrorMessage,
+                         const std::string&  theRequestId,
+                         const std::string&  theHostId);
     };
 } /* namespace aws */
 
