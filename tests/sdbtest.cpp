@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <stdlib.h>
 #include <libaws/aws.h>
 
 using namespace aws;

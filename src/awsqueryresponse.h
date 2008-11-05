@@ -35,12 +35,12 @@ namespace aws
         return theRequestId;
       }
       
-      const double getInTransfer() const
+      double getInTransfer() const
       {
         return theInTransfer;
       }
       
-      const double getOutTransfer() const
+      double getOutTransfer() const
       {
         return theOutTransfer;
       }
@@ -66,13 +66,13 @@ namespace aws
         theUrl(aUrl){}
 
         const std::string& getErrorCode() const {return theErrorCode;}
-        const void setErrorCode(std::string& value){theErrorCode = value;};
+        void setErrorCode(std::string& value){theErrorCode = value;};
         const std::string& getErrorMessage() const {return theErrorMessage;}
-        const void setErrorMessage(std::string& value){theErrorMessage = value;};
+        void setErrorMessage(std::string& value){theErrorMessage = value;};
         const std::string& getRequestId() const {return theRequestId;}
-        const void setRequestId(std::string& value){theRequestId = value;};
+        void setRequestId(std::string& value){theRequestId = value;};
         const std::string& getUrl() const {return theUrl;}
-        const void setUrl(std::string& value){theUrl = value;};
+        void setUrl(std::string& value){theUrl = value;};
   };
 
 }//namespace aws

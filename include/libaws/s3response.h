@@ -198,7 +198,7 @@ namespace aws {
       virtual std::istream&
       getInputStream() const;
 
-      virtual const long long
+      virtual long long
       getContentLength() const;
 
       virtual const std::string&
@@ -229,7 +229,7 @@ namespace aws {
       virtual const std::map<std::string, std::string>&
       getMetaData() const;
 
-      virtual const long long
+      virtual long long
       getContentLength() const;
 
       virtual const std::string&

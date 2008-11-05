@@ -43,12 +43,12 @@ namespace aws {
 	}
   
   template <class T>
-  const double SDBTemplateResponse<T>::getKBOutTransfer() const {
+  double SDBTemplateResponse<T>::getKBOutTransfer() const {
     return  theSDBResponse->getOutTransfer() / 1024;
   }
   
   template <class T>
-  const double SDBTemplateResponse<T>::getKBInTransfer() const {
+  double SDBTemplateResponse<T>::getKBInTransfer() const {
     return  ((double)theSDBResponse->getInTransfer()) / 1024;
     }
 

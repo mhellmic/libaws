@@ -16,6 +16,8 @@
 #ifndef AWS_AWSQUERYCALLBACK_H
 #define AWS_AWSQUERYCALLBACK_H
 
+#include <string.h>
+
 #include <libxml/parser.h>
 #include "awsqueryresponse.h"
 

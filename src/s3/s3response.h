@@ -284,7 +284,7 @@ public:
     std::istream&
     getInputStream() const {  return *theInputStream; }
 
-    const long long 
+    long long 
     getContentLength() const {  return theContentLength; }
 
     const std::string&
@@ -318,7 +318,7 @@ public:
     const std::string&
     getBucketName() const { return theBucketName; }
 
-    const long long 
+    long long 
     getContentLength() const {  return theContentLength; }
 
     const std::string&

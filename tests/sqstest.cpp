@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <libaws/aws.h>
+#include <stdlib.h>
 #include <../src/logging/logging.hh> //HACK 
 
 using namespace aws;

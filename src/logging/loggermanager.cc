@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include <cassert>
+#include <limits.h>
+#include <stdlib.h>
 
 
 #include "logging/loggerconfig.hh"

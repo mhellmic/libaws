@@ -16,6 +16,8 @@
 #include <ostream>
 #include <cassert>
 #include <iostream>
+#include <string.h>
+#include <stdlib.h>
 #include <libaws/awstime.h>
 
 namespace aws {

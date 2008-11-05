@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <iostream>
+#include <stdlib.h>
 #include <libaws/aws.h>
 
 using namespace aws;

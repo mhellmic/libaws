@@ -16,6 +16,7 @@
 #include "curlstreambuf.h"
 
 #include <iostream>
+#include <cstdlib>
 #include <curl/curl.h>
 
 namespace aws { namespace s3 {

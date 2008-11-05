@@ -96,7 +96,7 @@ namespace aws {
 
 		virtual const std::string& getErrorMessage() { return theErrorMessage; }
 
-    virtual const ErrorCode getErrorCode() { return theErrorCode; }
+    virtual ErrorCode getErrorCode() { return theErrorCode; }
 
     virtual const std::string& getOrigErrorCode() { return theOrigErrorCode; }
 

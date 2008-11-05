@@ -46,6 +46,9 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
+#include <memory>
+#include <cassert>
 
 #include <libaws/aws.h>
 

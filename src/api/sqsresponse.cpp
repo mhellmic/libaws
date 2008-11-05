@@ -40,12 +40,12 @@ namespace aws {
   }
   
   template <class T>
-  const double SQSResponse<T>::getKBOutTransfer() const{
+  double SQSResponse<T>::getKBOutTransfer() const{
     return theSQSResponse->getOutTransfer() / 1024;
   }
       
   template <class T>
-      const double SQSResponse<T>::getKBInTransfer() const{
+  double SQSResponse<T>::getKBInTransfer() const{
     return  theSQSResponse->getInTransfer() / 1024;
   }
 

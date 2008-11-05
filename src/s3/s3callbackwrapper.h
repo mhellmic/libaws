@@ -16,6 +16,8 @@
 #ifndef AWS_S3_S3CALLBACKWRAPPER_H
 #define AWS_S3_S3CALLBACKWRAPPER_H
 
+#include <string.h>
+
 #include <libxml/parser.h>
 
 #include "s3/s3response.h"

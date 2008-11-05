@@ -21,6 +21,7 @@
 
 
 #include <map>
+#include <algorithm>
 
 struct curl_slist;
 

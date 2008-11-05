@@ -241,7 +241,7 @@ namespace aws {
     return theS3Response->getInputStream();
   }
 
-  const long long
+  long long
   GetResponse::getContentLength() const
   {
     return theS3Response->getContentLength();
@@ -289,7 +289,7 @@ namespace aws {
     return theS3Response->getMetaData();
   }
 
-  const long long
+  long long
   HeadResponse::getContentLength() const
   {
     return theS3Response->getContentLength();
