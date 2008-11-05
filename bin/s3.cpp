@@ -129,7 +129,7 @@ bool deleteBucket ( S3ConnectionPtr aS3, const std::string& aBucketName) {
   return true;
 }
 
-bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string aFileName, const std::string aKey )
+bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aFileName, const std::string& aKey )
 {
   try {
     std::ifstream lInStream(aFileName.c_str());
@@ -139,6 +139,23 @@ bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
     }
     PutResponsePtr lPut = aS3->put(aBucketName, aKey.length()==0?aFileName:aKey, lInStream, "text/plain");
   } catch (PutException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool get ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aKey )
+{
+  try {
+    GetResponsePtr lGet = aS3->get(aBucketName, aKey);
+    char buf[512];
+    std::istream& lIn = lGet->getInputStream();
+    while (lIn.good()) {
+      lIn.read(buf, 512);
+      std::cout.write(buf, lIn.gcount());
+    }
+  } catch (GetException &e) {
     std::cerr << e.what() << std::endl;
     return false;
   }
@@ -208,6 +225,7 @@ main ( int argc, char** argv )
         std::cout << "             entries: list all objects in a bucket" << std::endl;
         std::cout << "             delete-all-entries: delete all entries in a bucket" << std::endl;
         std::cout << "             put: put a file on s3" << std::endl;
+        std::cout << "             get: get an object from s3" << std::endl;
         std::cout << "  -n name: name of bucket"  << std::endl;
         std::cout << "  -p prefix: prefix for entries to list "  << std::endl;
         std::cout << "  -m marker: marker for entries to list"  << std::endl;
@@ -298,6 +316,23 @@ main ( int argc, char** argv )
       exit(1);
     }
     put(lS3Rest, lBucketName, lFileName, lKey==0?"":lKey);
+  } else if ( lActionString.compare ( "get" ) == 0) {
+    if (!lBucketName) {
+      std::cerr << "No bucket name parameter specified." << std::endl;
+      std::cerr << "Use -n as a command line argument" << std::endl;
+      exit(1);
+    }
+    if (!lBucketName) {
+      std::cerr << "No bucket name parameter specified." << std::endl;
+      std::cerr << "Use -n as a command line argument" << std::endl;
+      exit(1);
+    }
+    if (lKey==0) {
+      std::cerr << "No key parameter specified." << std::endl;
+      std::cerr << "Use -k as a command line argument" << std::endl;
+      exit(1);
+    }
+    get(lS3Rest, lBucketName, lKey);
   }
 
 }
