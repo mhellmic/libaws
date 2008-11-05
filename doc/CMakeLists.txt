@@ -13,3 +13,11 @@
 # limitations under the License.
 #
 INCLUDE(${CMAKE_SOURCE_DIR}/cmake_modules/CMakeUseDoxygen.cmake)
+
+#install the documentation
+IF(DOXYGEN_FOUND)
+IF(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/html)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+        DESTINATION share/doc/libaws-${LIBAWS-MAJOR}.${LIBAWS_MINOR}.${ZORBA_PATCH_NUMBER})
+ENDIF(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/html)
+ENDIF(DOXYGEN_FOUND)
