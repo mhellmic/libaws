@@ -170,9 +170,10 @@ namespace aws {
 	{
 	public:
 		virtual ~DeleteMessageException() throw();
+    DeleteMessageException(const QueryErrorResponse&);
 	private:
 		friend class sqs::SQSConnection;
-		DeleteMessageException(const QueryErrorResponse&);
+		
 	};
 } /* namespace aws */
 
