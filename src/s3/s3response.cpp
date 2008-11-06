@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "common.h"
+#include <iostream>
 
 #include "curlstreambuf.h"
 #include "s3/s3response.h"
@@ -153,6 +154,12 @@ namespace aws { namespace s3 {
         return true;
       }
       return false;
+    }
+
+    bool
+    ListBucketResponse::hasNext()
+    {
+      return theIterator != theKeys.end();
     }
 
     void

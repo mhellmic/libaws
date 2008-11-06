@@ -516,7 +516,7 @@ S3Connection::deleteAll(const std::string& aBucketName, const std::string& aPref
   std::string lMarker;
   try {
     do {
-      lListBucket.reset(listBucket(aBucketName, "", lMarker, -1));
+      lListBucket.reset(listBucket(aBucketName, aPrefix, lMarker, -1));
       lListBucket->open();
       while (lListBucket->next(lKey)) {
         lDelete.reset(del(aBucketName, lKey.KeyValue));

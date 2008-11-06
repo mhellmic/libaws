@@ -45,6 +45,7 @@ namespace aws {
 		virtual float getBoxUsage() const = 0;
     virtual double getKBOutTransfer() const = 0;
     virtual double getKBInTransfer() const = 0;
+
 	};
 
 	template<class T>
@@ -59,6 +60,9 @@ namespace aws {
     
     virtual double getKBOutTransfer() const;
     virtual double getKBInTransfer() const;
+    
+    virtual T*
+    get() const { return theSDBResponse; }
 
 	protected:
 		T* theSDBResponse;

@@ -46,6 +46,9 @@ namespace aws {
       
       virtual double getKBInTransfer() const;
 
+      virtual T*
+      get() const { return theSQSResponse; }
+
     protected:
       T* theSQSResponse;
       SQSResponse(T*);

@@ -196,6 +196,9 @@ public:
     virtual bool
     next(Key& aKey);
 
+    virtual bool
+    hasNext();
+
     virtual void
     close();
     

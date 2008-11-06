@@ -58,6 +58,9 @@ namespace aws {
       virtual const std::string&
       getAmazonId() const;
 
+      virtual T*
+      get() const { return theS3Response; }
+
     protected:
       T* theS3Response;
       S3Response(T*);
@@ -143,6 +146,9 @@ namespace aws {
 
       virtual bool
       next(Object&);
+
+      virtual bool
+      hasNext();
 
       virtual void
       close();

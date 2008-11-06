@@ -157,6 +157,12 @@ namespace aws {
     return false;
   }
 
+  bool
+  ListBucketResponse::hasNext()
+  {
+    return theS3Response->hasNext();
+  }
+
   void
   ListBucketResponse::close() 
   {
