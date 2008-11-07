@@ -15,6 +15,8 @@
 SET(API_SRCS
     awsconnectionfactory.cpp 
     awsconnectionfactoryimpl.cpp
+    connectionpool.cpp
+    mutex.cpp
     s3connectionimpl.cpp
     sqsconnectionimpl.cpp
     s3response.cpp
