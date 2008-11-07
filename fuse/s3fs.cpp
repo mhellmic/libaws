@@ -258,7 +258,7 @@ get_Memcached_struct()
 
     if (!(temp= getenv("MEMCACHED_SERVERS")))
     {
-      std::cerr << "Unabel to use memcached client functionality. Please specify the MEMCACHED_SERVERS environment variable" << std::endl;
+      std::cerr << "Unable to use memcached client functionality. Please specify the MEMCACHED_SERVERS environment variable" << std::endl;
       exit(4);
     }
 
