@@ -83,13 +83,16 @@ static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string BUCKETNAME("msb");
 
+static std::string DELIMITER_FOLDER_ENTRIES=",";
+
+#ifdef USE_MEMCACHED
 static std::string PREFIX_EXISTS("ex");
 static std::string PREFIX_STAT_ATTR("attr");
 static std::string PREFIX_DIR_LS("ls");
 static std::string PREFIX_FILE("file");
 
-static std::string DELIMITER_FOLDER_ENTRIES=",";
 static unsigned int FILE_CACHING_UPPER_LIMIT=50000; // 1000 (means approx. 1kb)
+#endif // USE_MEMCACHED
 
 static std::map<int,struct FileHandle*> tempfilemap;
 
@@ -198,6 +201,26 @@ to_string(T i)
   return s.str();
 }
 
+
+
+#ifdef USE_MEMCACHED
+/*******************
+ * MEMCACHED HELPERS
+ *******************
+ */
+
+static std::string
+getParentFolder(const std::string& path)
+{
+  size_t pos;
+  pos=path.find_last_of("/");
+  if(pos==std::string::npos){
+    return "";
+  }else{
+    return path.substr(0,pos);
+  }
+}
+
 static void
 to_vector(std::vector<std::string>& result, std::string to_split, const std::string& delimiter){
   size_t pos;
@@ -219,25 +242,6 @@ to_vector(std::vector<std::string>& result, std::string to_split, const std::str
      }
   }
 }
-
-static std::string
-getParentFolder(const std::string& path)
-{
-  size_t pos;
-  pos=path.find_last_of("/");
-  if(pos==std::string::npos){
-    return "";
-  }else{
-    return path.substr(0,pos);
-  }
-}
-
-
-#ifdef USE_MEMCACHED
-/*******************
- * MEMCACHED HELPERS
- *******************
- */
 
 static memcached_st *
 get_Memcached_struct()
@@ -860,9 +864,8 @@ s3_rmdir(const char *path)
     }
     else 
     {
-#endif
+#endif // USE_MEMCACHED
   std::string lentries="";
-  S3ConnectionPtr lCon = getConnection();
   ListBucketResponsePtr lRes;
   if(lpath.length()>0 && lpath.at(lpath.length()-1)!='/') lpath.append("/");
   S3FS_TRY
@@ -911,7 +914,10 @@ s3_rmdir(const char *path)
 
      S3FS_EXIT(result);
    }
+
+#ifdef USE_MEMCACHED
  }
+#endif // USE_MEMCACHED
 
   // folder is empty -> can be deleted
   if(lpath.length()>0 && lpath.at(lpath.length()-1)=='/') lpath=lpath.substr(0,lpath.length()-1);
