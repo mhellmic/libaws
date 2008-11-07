@@ -19,6 +19,7 @@
 #include <libaws/awsconnectionfactory.h>
 
 #include <libaws/s3connection.h>
+#include <libaws/connectionpool.h>
 #include <libaws/s3response.h>
 #include <libaws/s3exception.h>
 #include <libaws/sqsconnection.h>
