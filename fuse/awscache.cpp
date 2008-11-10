@@ -15,6 +15,7 @@
  */
 #include "awscache.h"
 #include <cassert>
+#include <memory>
 
 #ifndef NDEBUG
 static int S3CACHE_DEBUG=0;
