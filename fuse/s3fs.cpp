@@ -81,7 +81,7 @@ static unsigned int CONNECTION_POOL_SIZE=5;
 static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
-static std::string BUCKETNAME("msb");
+static std::string theBucketname("");
 
 static std::string DELIMITER_FOLDER_ENTRIES=",";
 
@@ -91,7 +91,7 @@ static std::string PREFIX_STAT_ATTR("attr");
 static std::string PREFIX_DIR_LS("ls");
 static std::string PREFIX_FILE("file");
 
-static unsigned int FILE_CACHING_UPPER_LIMIT=50000; // 1000 (means approx. 1kb)
+static unsigned int FILE_CACHING_UPPER_LIMIT=0; // 1000 (means approx. 1kb)
 #endif // S3FS_USE_MEMCACHED
 
 static std::map<int,struct FileHandle*> tempfilemap;
@@ -608,7 +608,7 @@ s3_getattr(const char *path, struct stat *stbuf)
 
           // check if we have that path without first /
           HeadResponsePtr lRes;
-          lRes = lCon->head(BUCKETNAME, lpath.substr(1));
+          lRes = lCon->head(theBucketname, lpath.substr(1));
           map_t lMap = lRes->getMetaData();
 #ifndef NDEBUG
           S3_LOG(S3_DEBUG,location,"  requested metadata for " << lpath.substr(1));
@@ -773,7 +773,7 @@ s3_mkdir(const char *path, mode_t mode)
     lDirMap.insert(pair_t("uid", to_string(getuid())));
     lDirMap.insert(pair_t("mode", to_string(mode)));
     lDirMap.insert(pair_t("mtime", to_string(time(NULL))));
-    PutResponsePtr lRes = lCon->put(BUCKETNAME, lpath.substr(1), 0, "text/plain", 0, &lDirMap);
+    PutResponsePtr lRes = lCon->put(theBucketname, lpath.substr(1), 0, "text/plain", 0, &lDirMap);
 
     // success
 
@@ -817,7 +817,7 @@ s3_rmdir(const char *path)
 
   try {
     HeadResponsePtr lRes;
-    lRes = lCon->head(BUCKETNAME, lpath.substr(1));
+    lRes = lCon->head(theBucketname, lpath.substr(1));
     map_t lMap = lRes->getMetaData();
     if (lMap.count("dir") == 0) {
 #ifndef NDEBUG
@@ -873,9 +873,9 @@ s3_rmdir(const char *path)
     do {
       // get object without first /
 #ifndef NDEBUG
-      S3_LOG(S3_DEBUG,location,"  list bucket: "<<BUCKETNAME<<" prefix: "<<lpath.substr(1));
+      S3_LOG(S3_DEBUG,location,"  list bucket: "<<theBucketname<<" prefix: "<<lpath.substr(1));
 #endif
-      lRes = lCon->listBucket(BUCKETNAME, lpath.substr(1), lMarker, "/", -1);
+      lRes = lCon->listBucket(theBucketname, lpath.substr(1), lMarker, "/", -1);
       lRes->open();
       ListBucketResponse::Object o;
       while (lRes->next(o)) {
@@ -922,7 +922,7 @@ s3_rmdir(const char *path)
   // folder is empty -> can be deleted
   if(lpath.length()>0 && lpath.at(lpath.length()-1)=='/') lpath=lpath.substr(0,lpath.length()-1);
   S3FS_TRY
-    DeleteResponsePtr lRes = lCon->del(BUCKETNAME, lpath.substr(1));
+    DeleteResponsePtr lRes = lCon->del(theBucketname, lpath.substr(1));
   S3FS_CATCH(Put)
 
 #ifdef S3FS_USE_MEMCACHED
@@ -1024,9 +1024,9 @@ s3_readdir(const char *path,
     do {
       // get object without first /
 #ifndef NDEBUG
-      S3_LOG(S3_DEBUG,location,"  list bucket: "<<BUCKETNAME<<" prefix: "<<lPath.substr(1));
+      S3_LOG(S3_DEBUG,location,"  list bucket: "<<theBucketname<<" prefix: "<<lPath.substr(1));
 #endif
-      lRes = lCon->listBucket(BUCKETNAME, lPath.substr(1), lMarker, "/", -1);
+      lRes = lCon->listBucket(theBucketname, lPath.substr(1), lMarker, "/", -1);
       lRes->open();
       ListBucketResponse::Object o;
       while (lRes->next(o)) {
@@ -1176,7 +1176,7 @@ s3_unlink(const char * path)
 
   try {
     HeadResponsePtr lRes;
-    lRes = lCon->head(BUCKETNAME, lpath.substr(1));
+    lRes = lCon->head(theBucketname, lpath.substr(1));
     map_t lMap = lRes->getMetaData();
   } catch (HeadException &e) {
     if (e.getErrorCode() == aws::S3Exception::NoSuchKey) {
@@ -1192,7 +1192,7 @@ s3_unlink(const char * path)
   }
 
   S3FS_TRY
-    DeleteResponsePtr lRes = lCon->del(BUCKETNAME, lpath.substr(1));
+    DeleteResponsePtr lRes = lCon->del(theBucketname, lpath.substr(1));
   S3FS_CATCH(Put)
 
 #ifdef S3FS_USE_MEMCACHED
@@ -1300,7 +1300,7 @@ s3_open(const char *path,
   S3FS_TRY
 
     std::string lpath(path);
-    GetResponsePtr lGet = lCon->get(BUCKETNAME, lpath.substr(1));
+    GetResponsePtr lGet = lCon->get(theBucketname, lpath.substr(1));
     std::istream& lInStream = lGet->getInputStream();
 
 #ifndef NDEBUG
@@ -1441,7 +1441,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
         S3_LOG(S3_DEBUG,location,"mode is "<<to_string(fileHandle->mode));
 #endif
                  lDirMap.insert(pair_t("mtime", to_string(fileHandle->mtime)));
-                 PutResponsePtr lRes = lCon->put(BUCKETNAME, fileHandle->s3key, *(fileHandle->filestream), "text/plain", &lDirMap);
+                 PutResponsePtr lRes = lCon->put(theBucketname, fileHandle->s3key, *(fileHandle->filestream), "text/plain", &lDirMap);
 
 #ifdef S3FS_USE_MEMCACHED
                  // determine file size
@@ -1566,7 +1566,7 @@ s3_read(const char *path,
 #if 0
   GetResponsePtr lRes;
   S3FS_TRY
-    lRes = lCon->get(BUCKETNAME, path);
+    lRes = lCon->get(theBucketname, path);
     S3FS_EXIT(0);
   S3FS_CATCH(Put)
 #endif
@@ -1622,6 +1622,44 @@ main(int argc, char **argv)
   // initialization
   theFactory = AWSConnectionFactory::getInstance();
   
+  // parse args
+  std::vector<std::string> argv_fuse_vector;
+  std::cerr << "argc: "<< argc << " argv: " << *argv << std::endl;
+
+  for(int argindex=0;argindex<argc;argindex++){
+     std::string arg(argv[argindex]);
+     if(arg.compare("--bucket")==0){
+        if(argv[argindex+1][0]=='-'){
+           std::cerr << "Bucketname missing after '--bucket'" << std::endl;
+           return 5;
+        }else{
+           theBucketname=std::string(argv[argindex+1]);
+           argindex++;
+        }
+     }else{
+        // standardbehaviour: dont know the arg, so pass it on to fuse
+        argv_fuse_vector.push_back(arg);
+     }   
+  }
+  std::cerr << "3" << std::endl;
+  char** argv_fuse=new char*[ argv_fuse_vector.size()];
+  std::cerr << "4" << std::endl;
+  for (unsigned int i=0;i<argv_fuse_vector.size();i++ )
+  {
+     argv_fuse[i]= const_cast<char*>(argv_fuse_vector[i].c_str());
+     std::cerr << "5" << std::endl;
+  }
+
+  std::cerr << "5" << std::endl;
+  if(theBucketname.length()==0){
+    std::cerr << "Please provide a bucketname that you would like to mount (use --bucket option)." << std::endl;
+    return 6; 
+  }else
+  {
+    std::cerr << "Bucketname is " << theBucketname << std::endl;
+  }
+
+  std::cerr << "6" << std::endl;
   if(getenv("S3FS_TEMP")!=NULL){
     theS3FSTempFolder = getenv("S3FS_TEMP");
     theS3FSTempFolder.append("/s3fs_file_XXXXXX");
@@ -1660,5 +1698,6 @@ main(int argc, char **argv)
 
 
   // let's get started
-  return fuse_main(argc, argv, &s3_filesystem_operations, NULL);
+  return fuse_main(argv_fuse_vector.size(), argv_fuse, &s3_filesystem_operations, NULL);
 }
+
