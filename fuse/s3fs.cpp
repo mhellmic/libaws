@@ -35,8 +35,8 @@
  */
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION  26
-#define USE_MEMCACHED 1
 
+#include <config.h>
 
 #include <fuse.h>
 #include <errno.h>
@@ -55,7 +55,7 @@
 
 #include <libaws/aws.h>
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
 #include <memcached.h>
 #endif
 
@@ -85,14 +85,14 @@ static std::string BUCKETNAME("msb");
 
 static std::string DELIMITER_FOLDER_ENTRIES=",";
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
 static std::string PREFIX_EXISTS("ex");
 static std::string PREFIX_STAT_ATTR("attr");
 static std::string PREFIX_DIR_LS("ls");
 static std::string PREFIX_FILE("file");
 
 static unsigned int FILE_CACHING_UPPER_LIMIT=50000; // 1000 (means approx. 1kb)
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
 static std::map<int,struct FileHandle*> tempfilemap;
 
@@ -203,7 +203,7 @@ to_string(T i)
 
 
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
 /*******************
  * MEMCACHED HELPERS
  *******************
@@ -479,7 +479,7 @@ read_cached_stat(struct stat* stbuf,std::string path)
   free_Memcached_struct(memc);
 
 }
-#endif //#ifdef USE_MEMCACHED
+#endif //#ifdef S3FS_USE_MEMCACHED
 
 /* END: Memcached helpers
  *************************/
@@ -577,7 +577,7 @@ s3_getattr(const char *path, struct stat *stbuf)
 
        std::string lpath(path);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
    std::string value;
 
    // get memc
@@ -624,7 +624,7 @@ s3_getattr(const char *path, struct stat *stbuf)
           fill_stat(lMap, stbuf, lRes->getContentLength());
        S3FS_CATCH(Head)
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
        if(result==-ENOENT){ 
 
          // remember in cache that file does not exist
@@ -640,7 +640,7 @@ s3_getattr(const char *path, struct stat *stbuf)
 
        S3FS_EXIT(result);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
        }
        free_Memcached_struct(memc);
 #endif
@@ -777,7 +777,7 @@ s3_mkdir(const char *path, mode_t mode)
 
     // success
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   // get memc
   memcached_st* memc=get_Memcached_struct();
 
@@ -792,7 +792,7 @@ s3_mkdir(const char *path, mode_t mode)
 
   //cleanup
   free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
     S3FS_EXIT(result);
   S3FS_CATCH(Put)
@@ -839,7 +839,7 @@ s3_rmdir(const char *path)
   }
 
   // now we have to check if the folder is empty
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
    std::string value;
 
    // get memc
@@ -864,7 +864,7 @@ s3_rmdir(const char *path)
     }
     else 
     {
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
   std::string lentries="";
   ListBucketResponsePtr lRes;
   if(lpath.length()>0 && lpath.at(lpath.length()-1)!='/') lpath.append("/");
@@ -903,21 +903,21 @@ s3_rmdir(const char *path)
      // folder not empty
      result=-ENOTEMPTY;
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
      //remember successfully retrieved entries in cache
      key=getkey(PREFIX_DIR_LS,lpath.substr(1),"").c_str();
      save_cache_key(memc, key, lentries);
 
      //cleanup
      free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
      S3FS_EXIT(result);
    }
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
  }
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   // folder is empty -> can be deleted
   if(lpath.length()>0 && lpath.at(lpath.length()-1)=='/') lpath=lpath.substr(0,lpath.length()-1);
@@ -925,7 +925,7 @@ s3_rmdir(const char *path)
     DeleteResponsePtr lRes = lCon->del(BUCKETNAME, lpath.substr(1));
   S3FS_CATCH(Put)
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
 
   // delete data from cache
   key=getkey(PREFIX_EXISTS,lpath.substr(1),"").c_str();
@@ -941,7 +941,7 @@ s3_rmdir(const char *path)
 
   //cleanup
   free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   S3FS_EXIT(result);
 }
@@ -986,7 +986,7 @@ s3_readdir(const char *path,
   if (lPath.at(lPath.length()-1) != '/')
     lPath += "/";
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
    std::string value;
 
    // get memc
@@ -1038,11 +1038,11 @@ s3_readdir(const char *path,
 #endif
         std::string lTmp = o.KeyValue.replace(0, lPath.length()-1, "");
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
         // remember entries to store in cache
         if(lentries.length()>0) lentries.append(DELIMITER_FOLDER_ENTRIES);
         lentries.append(lTmp);
-#endif //USE_MEMCACHED
+#endif //S3FS_USE_MEMCACHED
 
         filler(buf, lTmp.c_str(), &lStat, 0);
         lMarker = o.KeyValue;
@@ -1052,7 +1052,7 @@ s3_readdir(const char *path,
 
   S3FS_CATCH(ListBucket);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
      if(result==-ENOENT){ 
 
          // remember in cache that no entries exist in folder
@@ -1066,7 +1066,7 @@ s3_readdir(const char *path,
 
        S3FS_EXIT(result);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   }
   free_Memcached_struct(memc);
 #endif
@@ -1126,7 +1126,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   int lTmpPointer = fileHandle->id;
   tempfilemap.insert( std::pair<int,struct FileHandle*>(lTmpPointer,fileHandle.release()) );
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   // get memc
   memcached_st* memc=get_Memcached_struct();
 
@@ -1151,7 +1151,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   delete_cache_key(memc, key);
 
   free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   return result;
 }
@@ -1195,7 +1195,7 @@ s3_unlink(const char * path)
     DeleteResponsePtr lRes = lCon->del(BUCKETNAME, lpath.substr(1));
   S3FS_CATCH(Put)
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   // get memc
   memcached_st* memc=get_Memcached_struct();
 
@@ -1210,7 +1210,7 @@ s3_unlink(const char * path)
 
   //cleanup
   free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   S3FS_EXIT(result);
 }
@@ -1246,7 +1246,7 @@ s3_open(const char *path,
   int result=0;
   memset(fileinfo, 0, sizeof(struct fuse_file_info));
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   //init
   std::string lpath(path);
   std::string key;
@@ -1255,7 +1255,7 @@ s3_open(const char *path,
   // get memc
   memcached_st* memc=get_Memcached_struct();
   memcached_return rc;
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   // generate temp file and open it
   int ltempsize=theS3FSTempFolder.length();
@@ -1269,7 +1269,7 @@ s3_open(const char *path,
   std::auto_ptr<std::fstream> tempfile(new std::fstream());
   tempfile->open(ltempfile);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
    unsigned int filesize=(unsigned int)stbuf.st_size;
 
    // file can only be in cach if content is not too big
@@ -1292,7 +1292,7 @@ s3_open(const char *path,
    }
 
   if(!got_file_cont_from_cache){
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   // now lets get the data and save it into the temp file
   S3ConnectionPtr lCon = getConnection();
@@ -1327,11 +1327,11 @@ s3_open(const char *path,
 
   S3FS_CATCH(Get)
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
   }
   //cleanup
   free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
   return result;
 }
@@ -1413,7 +1413,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
       if(foundtempfile!=tempfilemap.end()){
          std::auto_ptr<FileHandle> fileHandle(foundtempfile->second);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
       //init
       std::string lpath(path);
       std::string key;
@@ -1421,7 +1421,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
       // get memc
       memcached_st* memc=get_Memcached_struct();
 
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
          // check if we have to send changes to s3
          if(fileHandle->is_write){
@@ -1443,7 +1443,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
                  lDirMap.insert(pair_t("mtime", to_string(fileHandle->mtime)));
                  PutResponsePtr lRes = lCon->put(BUCKETNAME, fileHandle->s3key, *(fileHandle->filestream), "text/plain", &lDirMap);
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
                  // determine file size
                  /*unsigned int filesize;
                  fileHandle->filestream->seekg (0, std::ios::end);
@@ -1457,11 +1457,11 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
                  key=getkey(PREFIX_FILE,lpath.substr(1),"").c_str();
                  delete_cache_key(memc,key);
 
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
                S3FS_CATCH(Put)
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
                if(result==-ENOENT){ 
 #ifndef NDEBUG
                   S3_LOG(S3_ERROR,location,"saving file on s3 failed");
@@ -1476,7 +1476,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 
          }else{ // we have to send no changes to s3 -> readonly
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
            // determine file size
            unsigned int filesize;
            fileHandle->filestream->seekg (0, std::ios::end);
@@ -1488,7 +1488,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
               save_cache_key_file(memc,key,dynamic_cast<std::fstream*>(fileHandle->filestream),filesize); 
            }
 
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
             //close file stream if still open
             if(fileHandle->filestream && fileHandle->filestream->is_open()){
@@ -1497,10 +1497,10 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 
          }
 
-#ifdef USE_MEMCACHED
+#ifdef S3FS_USE_MEMCACHED
          //cleanup
          free_Memcached_struct(memc);
-#endif // USE_MEMCACHED
+#endif // S3FS_USE_MEMCACHED
 
       }else{
 #ifndef NDEBUG

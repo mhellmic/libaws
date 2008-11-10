@@ -66,6 +66,16 @@ ELSE(LIBXML2_FOUND)
   MESSAGE(FATAL_ERROR "Could not find the libxml2 library and development files.")
 ENDIF(LIBXML2_FOUND)
 
+INCLUDE (CheckIncludeFiles)
+SET(CMAKE_REQUIRED_LIBRARIES pthread)
+CHECK_INCLUDE_FILES(pthread.h LIBAWS_HAVE_PTHREAD_H)
+
+if(NOT LIBAWS_HAVE_PTHREAD_H)
+  MESSAGE(FATAL_ERROR "Could not find pthread development headers.")
+ELSEIF(NOT LIBAWS_HAVE_PTHREAD_H)
+    SET(requiredlibs ${requiredlibs} pthread) 
+ENDIF(NOT LIBAWS_HAVE_PTHREAD_H)
+
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 INCLUDE(CMakeConfiguration.txt)
@@ -79,14 +89,6 @@ SET(LIBAWS_PATCH_VERSION "0")
 # note that there also some generated headers files in the build directory
 INCLUDE_DIRECTORIES(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/include)
 INCLUDE_DIRECTORIES(AFTER ${CMAKE_CURRENT_BINARY_DIR}/include)
-
-FIND_PACKAGE(Memcached)
-IF(MEMCACHED_FOUND)
-  INCLUDE_DIRECTORIES(${MEMCACHED_INCLUDE_DIR})
-  SET(requiredlibs ${requiredlibs} ${MEMCACHED_LIBRARY} )
-ELSE(MEMCACHED_FOUND)
-  MESSAGE(FATAL_ERROR "Could not find the MEMCACHED library and development files.")
-ENDIF(MEMCACHED_FOUND)
 
 FIND_PACKAGE(Fuse)
 IF(FUSE_FOUND)
@@ -115,8 +117,6 @@ CONFIGURE_FILE(
 MESSAGE(STATUS "configured ${CMAKE_CURRENT_SOURCE_DIR}/CMakeUninstall.cmake.in --> ${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake")
 ADD_CUSTOM_TARGET(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake")
-
-INCLUDE(InstallRequiredSystemLibraries)
 
 # configure the cmake script to create a source package
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CPackSourceConfig.cmake.in 

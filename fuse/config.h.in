@@ -1,0 +1,1 @@
+#cmakedefine S3FS_USE_MEMCACHED
