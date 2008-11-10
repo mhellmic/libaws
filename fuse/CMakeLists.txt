@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(FUSE_SRCS s3fs.cpp) 
+SET(FUSE_SRCS s3fs.cpp
+          awscache.cpp) 
 
 SET(s3fs_required_libs aws ${FUSE_LIBRARY})
 
@@ -27,7 +28,9 @@ ENDIF(MEMCACHED_FOUND)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_EXECUTABLE(s3fs ${FUSE_SRCS})
 TARGET_LINK_LIBRARIES(s3fs ${s3fs_required_libs})
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/s3fs DESTINATION bin)
+
