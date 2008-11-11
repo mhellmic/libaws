@@ -219,10 +219,10 @@ to_string(T i)
 static void
 fill_stat(map_t& aMap, struct stat* stbuf, long long aContentLength)
 {
-  stbuf->st_mode |= to_int(aMap["mode"]);
-  stbuf->st_gid  |= to_int(aMap["gid"]);
-  stbuf->st_uid  |= to_int(aMap["oid"]);
-  stbuf->st_mtime  |= to_long(aMap["mtime"]);
+  stbuf->st_mode = to_int(aMap["mode"]);
+  stbuf->st_gid  = to_int(aMap["gid"]);
+  stbuf->st_uid  = to_int(aMap["oid"]);
+  stbuf->st_mtime  = to_long(aMap["mtime"]);
   
   if (aMap.count("dir") != 0) {
     stbuf->st_mode |= S_IFDIR;
@@ -497,7 +497,9 @@ s3_mkdir(const char *path, mode_t mode)
     lDirMap.insert(pair_t("dir", "1"));
     lDirMap.insert(pair_t("gid", to_string(getgid())));
     lDirMap.insert(pair_t("uid", to_string(getuid())));
-    lDirMap.insert(pair_t("mode", to_string(mode)));
+    //lDirMap.insert(pair_t("mode", to_string(mode)));
+    //TODO hack
+    lDirMap.insert(pair_t("mode", "511"));
     lDirMap.insert(pair_t("mtime", to_string(time(NULL))));
     PutResponsePtr lRes = lCon->put(theBucketname, lpath.substr(1), 0, "text/plain", 0, &lDirMap);
 
