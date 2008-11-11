@@ -228,7 +228,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
        save_key(memc, key,to_string(stbuf->st_uid));
 
        key=getkey(PREFIX_STAT_ATTR,path,"mtime").c_str();
-       save_key(memc, key,to_string(stbuf->st_mtime));
+       save_key(memc, key,time_to_string(stbuf->st_mtime));
 
        key=getkey(PREFIX_STAT_ATTR,path,"size").c_str();
        save_key(memc, key,to_string(stbuf->st_size));
@@ -348,7 +348,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
        stbuf->st_uid=atoi(read_key(memc, key, &rc).c_str());
 
        key=getkey(PREFIX_STAT_ATTR,path,"mtime");
-       stbuf->st_mtime=atol(read_key(memc, key, &rc).c_str());
+       stbuf->st_mtime=AWSCache::string_to_time(read_key(memc, key, &rc).c_str());
 
        key=getkey(PREFIX_STAT_ATTR,path,"size");
        stbuf->st_size=atol(read_key(memc, key, &rc).c_str());
@@ -421,8 +421,31 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     return (mode_t) atoi(s.c_str());
   }
 
-  long AWSCache::to_long(const std::string s){
-    return strtol(s.c_str(),NULL,10);
+  time_t AWSCache::string_to_time(std::string timestring){
+    int yy, mm, dd, hour, min, sec;
+    struct tm timeinfo;
+    time_t tme;
+
+    sscanf(timestring.c_str(), "%d/%d/%d %d:%d:%d", &mm, &dd, &yy, &hour, &min, &sec);
+
+    time(&tme);
+    timeinfo = *localtime(&tme);
+    timeinfo.tm_year = yy; 
+    timeinfo.tm_mon = mm-1; 
+    timeinfo.tm_mday = dd;
+    timeinfo.tm_hour = hour; 
+    timeinfo.tm_min = min; 
+    timeinfo.tm_sec = sec;
+    return( mktime(&timeinfo) );
+  }
+
+  std::string AWSCache::time_to_string(time_t rawtime){
+    struct tm timeinfo;
+    timeinfo = *localtime ( &rawtime );
+    std::stringstream converter;
+    converter << (timeinfo.tm_mon+1) << "/" << timeinfo.tm_mday << "/" << timeinfo.tm_year << " "
+         << timeinfo.tm_hour << ":" << timeinfo.tm_min << ":" << timeinfo.tm_sec;
+    return converter.str();
   }
 
   template <class T>
@@ -432,4 +455,6 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     s << i;
     return s.str();
   }
+
 }//namespace aws
+

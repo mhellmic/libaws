@@ -25,6 +25,7 @@
 #include <fstream>
 #include <fuse.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <memcached.h>
 
@@ -94,12 +95,14 @@ public:
 
   static mode_t to_int(const std::string s);
 
-  static long to_long(const std::string s);
+  static time_t string_to_time(std::string timestring);
+
+  static std::string time_to_string(time_t rawtime);
 
   template <class T>
   static std::string to_string(T i);
 
-};
+  };
 
 }//namespace aws
 
