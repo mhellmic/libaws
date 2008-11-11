@@ -1,7 +1,9 @@
-libaws has been developed by 28msec, Inc.
+libaws has been developed by 28msec GmbH and ETH Zurich.
 
 The primary authors are:
 
   * Matthias Brantner
   * David Graf
   * Tim Kraska
+  * Martin Hentschel
+  * Dennis Knochenwefel
