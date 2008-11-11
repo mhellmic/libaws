@@ -1026,7 +1026,9 @@ s3_open(const char *path,
 #ifdef S3FS_USE_MEMCACHED
     }
 #endif // S3FS_USE_MEMCACHED
-
+    if (result==-ENOENT){
+      fileinfo->fh = 0;
+    }
     return result;
   }catch(...){
     S3_LOG(S3_ERROR,"s3_open(...)","An Error occured while trying to open a file.");
@@ -1068,19 +1070,26 @@ s3_write(const char * path, const char * data, size_t size, off_t offset, struct
 #endif // S3FS_USE_MEMCACHED
 
   try{
-    FileHandle* fileHandle=tempfilemap.find((int)fileinfo->fh)->second;
-    std::string tempfilename=fileHandle->filename;
-    std::fstream* tempfile=fileHandle->filestream;
+    if( 
+       (((int)fileinfo->fh)!=0) && 
+       (tempfilemap.find((int)fileinfo->fh)!=tempfilemap.end())
+      ){
+      FileHandle* fileHandle=tempfilemap.find((int)fileinfo->fh)->second;
+      std::string tempfilename=fileHandle->filename;
+      std::fstream* tempfile=fileHandle->filestream;
 
-    // write data to temp file
-    tempfile->seekp(offset,std::ios_base::beg);
-    tempfile->write(data,size);
+      // write data to temp file
+      tempfile->seekp(offset,std::ios_base::beg);
+      tempfile->write(data,size);
 
-    // flag to update file on s3
-    fileHandle->is_write = true;
+      // flag to update file on s3
+      fileHandle->is_write = true;
 
-    result=size;
-
+      result=size;
+    }else{
+      S3_LOG(S3_ERROR,"s3_write(...)","No temporary file handle exists.");
+      return -EIO;
+    }
     return result;
   }catch(...){
     S3_LOG(S3_ERROR,"s3_write(...)","An Error occured while trying write data to a file.");
@@ -1130,7 +1139,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 
   try{
     if(fileinfo!=NULL
-        && (int)fileinfo->fh){
+        && (int)fileinfo->fh!=0){
 
       // get filehandle struct
       std::map<int,struct FileHandle*>::iterator foundtempfile=tempfilemap.find((int)fileinfo->fh);
