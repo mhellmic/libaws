@@ -267,7 +267,7 @@ s3_getattr(const char *path, struct stat *stbuf)
 
     // set the meta data in the stat struct
     map_t lMap;
-    lMap["mode"]="493";
+    lMap["mode"]="511";//"493";
     lMap["gid"]=to_string(getgid());
     lMap["uid"]=to_string(getuid());
     lMap["dir"]="1";
@@ -805,7 +805,8 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   fileHandle->filename = std::string(ltempfile);
   fileHandle->size = 0;
   fileHandle->s3key = lpath.substr(1);// cut off the first slash
-  fileHandle->mode = mode;
+  //TODO this is a hack
+  fileHandle->mode = S_IFREG | 0777;
   fileHandle->filestream = tempfile.release();
   fileHandle->is_write = true;
   fileHandle->mtime = time(NULL);
@@ -819,7 +820,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 
   // init stat
   struct stat stbuf;
-  stbuf.st_mode = S_IFREG | 0644;
+  stbuf.st_mode = fileHandle->mode;
   stbuf.st_gid = getgid();
   stbuf.st_uid = getuid();
   stbuf.st_mtime = time(NULL);
