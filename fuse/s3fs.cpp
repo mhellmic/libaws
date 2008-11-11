@@ -820,7 +820,8 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 
   // init stat
   struct stat stbuf;
-  stbuf.st_mode = fileHandle->mode;
+  //TODO this is a hack
+  stbuf.st_mode = S_IFREG | 0777;
   stbuf.st_gid = getgid();
   stbuf.st_uid = getuid();
   stbuf.st_mtime = time(NULL);
