@@ -56,6 +56,15 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
         std::cout << "   Key: " << lObject.KeyValue << " | Last Modified: " << lObject.LastModified;
         std::cout <<  " | ETag: " << lObject.ETag << " | Size: " << lObject.Size << std::endl;
         lMarker = lObject.KeyValue;
+        HeadResponsePtr lHead = aS3->head(aBucketName, lObject.KeyValue);
+        std::map<std::string, std::string> lMeta = lHead->getMetaData();
+        std::map<std::string, std::string>::const_iterator lIter = lMeta.begin();
+        if (lMeta.size() != 0) {
+          std::cout << "   Custom Metadata:" << std::endl;
+          for (; lIter != lMeta.end(); ++lIter) {
+            std::cout << "     Key: " << (*lIter).first << "; Value: " << (*lIter).second << std::endl;
+          }
+        }
       }
       lListBucket->close();
       std::vector<std::string> lCommonPrefixes = lListBucket->getCommonPrefixes();
@@ -64,7 +73,7 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
         std::cout << "CommonPrefix " << *lIter << std::endl;
       }
     } while (lListBucket->isTruncated());
-  } catch (ListBucketException &e) {
+  } catch (S3Exception &e) {
     std::cerr << e.what() << std::endl;
     return false;
   }
