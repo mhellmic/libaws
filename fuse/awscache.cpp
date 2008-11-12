@@ -101,14 +101,15 @@ namespace aws {
  */
   void AWSCache::delete_key(const std::string& key)
   {
-    memcached_st* memc;
+    memcached_st* memc=NULL;
     try{
       memc=get_Memcached_struct();
       delete_key(memc,key);
+      free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::delete_key(...)","error invalidating key: '" << key << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 
@@ -148,14 +149,15 @@ namespace aws {
 
   void AWSCache::save_key(const std::string& key, const std::string& value)
   {
-    memcached_st* memc;
+    memcached_st* memc=NULL;
     try{
       memc=get_Memcached_struct();
       save_key(memc,key,value);
+      free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_key(...)","error saving key: '" << key << "' with value: '" << value << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 
@@ -191,7 +193,7 @@ namespace aws {
 
 void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t size)
   {
-    memcached_st* memc;
+    memcached_st* memc=NULL;
     try{
       memc=get_Memcached_struct();
 
@@ -213,10 +215,11 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
       }else{
         S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
       }
+      free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_file(...)","error saving file: '" << key << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 
@@ -226,7 +229,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
   void AWSCache::save_stat(struct stat* stbuf, const std::string& path)
   {
     // get memc
-    memcached_st* memc;
+    memcached_st* memc=NULL;
 
     try{
        memc=get_Memcached_struct();
@@ -248,10 +251,12 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
 
        key=getkey(PREFIX_STAT_ATTR,path,"nlink").c_str();
        save_key(memc, key,to_string(stbuf->st_nlink));
+
+       free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_stat(...)","error saving file stat for file: '" << path << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 
@@ -284,15 +289,16 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
 
   std::string AWSCache::read_key(const std::string& key, memcached_return* rc)
   {
-    memcached_st* memc;
+    memcached_st* memc=NULL;
     std::string result;
     try{
       memc=get_Memcached_struct();
       result=read_key(memc, key, rc);
+      free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::read_key(...)","error reading key: '" << key << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
     return result;
   }
 
@@ -329,14 +335,15 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
 
   void AWSCache::read_file(const std::string& key, std::fstream* fstream, memcached_return* rc)
   {
-    memcached_st* memc;
+    memcached_st* memc=NULL;
     try{
       memc=get_Memcached_struct();
       read_file(memc, key, fstream, rc);
+      free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::read_file(...)","error reading file: '" << key << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 /*
@@ -345,7 +352,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
   void AWSCache::read_stat(struct stat* stbuf,const std::string& path)
   {
     // get memc
-    memcached_st* memc;
+    memcached_st* memc=NULL;
 
     try{
        memc=get_Memcached_struct();
@@ -369,10 +376,11 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
        key=getkey(PREFIX_STAT_ATTR,path,"nlink");
        stbuf->st_nlink=atol(read_key(memc, key, &rc).c_str());
 
+       free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::read_stat(...)","error reading file stat for: '" << path << "'");
+      if(memc)free_Memcached_struct(memc);
     }
-    free_Memcached_struct(memc);
   }
 
 /*******************
