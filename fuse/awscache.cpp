@@ -206,6 +206,8 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
         save_file(memc, key, fstream, size);
       }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".fcgi")==0){
         save_file(memc, key, fstream, size);
+      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".cgi")==0){
+        save_file(memc, key, fstream, size);
       }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".html")==0){
         save_file(memc, key, fstream, size);
       }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".htm")==0){
