@@ -76,6 +76,8 @@ static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string theBucketname("");
 
+static std::string DELIMITER_FOLDER_ENTRIES=",";
+
 static std::map<int,struct FileHandle*> tempfilemap;
 
 #ifndef NDEBUG
@@ -592,6 +594,9 @@ s3_rmdir(const char *path)
 
   int result=0;
   std::string lpath(path);
+  bool haserror=false;
+  unsigned int trycounter=0;
+  S3ConnectionPtr lCon=NULL;
 
   // now we have to check if the folder is empty
 #ifdef S3FS_USE_MEMCACHED
@@ -613,14 +618,12 @@ s3_rmdir(const char *path)
    {
 #endif // S3FS_USE_MEMCACHED
 
-     S3ConnectionPtr lCon = getConnection();
+     lCon = getConnection();
 
      // we need a slash at the end because otherwise we would read files that start with the folder name,
      // but are not actually in the folder
      if(lpath.length()>0 && lpath.at(lpath.length()-1)!='/') lpath.append("/");
 
-     bool haserror=false;
-     unsigned int trycounter=0;
      std::string lentries="";
 
      do{
@@ -644,7 +647,7 @@ s3_rmdir(const char *path)
 #ifdef S3FS_USE_MEMCACHED
              // remember entries
              if(lentries.length()>0) {
-               lentries.append(AWSCache::DELIMITER_FOLDER_ENTRIES);
+               lentries.append(DELIMITER_FOLDER_ENTRIES);
              }
 #endif
              lentries.append(lTmp);
@@ -680,9 +683,9 @@ s3_rmdir(const char *path)
     lpath=lpath.substr(0,lpath.length()-1);
   }
 #ifdef S3FS_USE_MEMCACHED
-  bool haserror=false;
-  unsigned int trycounter=0;
-  S3ConnectionPtr lCon = getConnection();
+  haserror=false;
+  trycounter=0;
+  lCon = getConnection();
 #else
   haserror=false;
   trycounter=0;
@@ -1427,12 +1430,13 @@ main(int argc, char **argv)
   if(theBucketname.length()==0) {
     std::cerr << "Please provide a bucketname that you would like to mount (use --bucket option)." << std::endl;
     return 6; 
-  } 
+  }
 #ifdef S3FS_USE_MEMCACHED
-  else {
+  else
+  {
     theCache = new AWSCache(theBucketname);
   }
-#endif
+#endif //S3FS_USE_MEMCACHED
 
   if(getenv("TMP")!=NULL){
     theS3FSTempFolder = getenv("TMP");
