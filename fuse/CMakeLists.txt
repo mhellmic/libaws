@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(FUSE_SRCS s3fs.cpp
-          awscache.cpp) 
+SET(FUSE_SRCS s3fs.cpp)
 
 SET(s3fs_required_libs aws ${FUSE_LIBRARY})
 
 FIND_PACKAGE(Memcached)
 IF(MEMCACHED_FOUND)
+  SET(FUSE_SRCS ${FUSE_SRCS} awscache.cpp)
   INCLUDE_DIRECTORIES(${MEMCACHED_INCLUDE_DIR})
   SET(S3FS_USE_MEMCACHED "1")
   SET(s3fs_required_libs ${s3fs_required_libs} ${MEMCACHED_LIBRARY})

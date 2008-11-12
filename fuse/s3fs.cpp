@@ -641,8 +641,12 @@ s3_rmdir(const char *path)
              S3_LOG(S3_DEBUG,"s3_rmdir(...)","result: " << o.KeyValue);
              std::string lTmp = o.KeyValue.replace(0, lpath.length()-1, "");
 
+#ifdef S3FS_USE_MEMCACHED
              // remember entries
-             if(lentries.length()>0) lentries.append(AWSCache::DELIMITER_FOLDER_ENTRIES);
+             if(lentries.length()>0) {
+               lentries.append(AWSCache::DELIMITER_FOLDER_ENTRIES);
+             }
+#endif
              lentries.append(lTmp);
 
              lMarker = o.KeyValue;
@@ -672,10 +676,18 @@ s3_rmdir(const char *path)
 #endif // S3FS_USE_MEMCACHED
 
   // folder is empty -> can be deleted
-  if(lpath.length()>0 && lpath.at(lpath.length()-1)=='/') lpath=lpath.substr(0,lpath.length()-1);
+  if(lpath.length()>0 && lpath.at(lpath.length()-1)=='/') {
+    lpath=lpath.substr(0,lpath.length()-1);
+  }
+#ifdef S3FS_USE_MEMCACHED
   bool haserror=false;
   unsigned int trycounter=0;
   S3ConnectionPtr lCon = getConnection();
+#else
+  haserror=false;
+  trycounter=0;
+  lCon = getConnection();
+#endif
 
   do{
     trycounter++;
@@ -1412,13 +1424,15 @@ main(int argc, char **argv)
      argv_fuse[i]= const_cast<char*>(argv_fuse_vector[i].c_str());
   }
 
-  if(theBucketname.length()==0){
+  if(theBucketname.length()==0) {
     std::cerr << "Please provide a bucketname that you would like to mount (use --bucket option)." << std::endl;
     return 6; 
-  }else
-  {
-    theCache=new AWSCache(theBucketname);
+  } 
+#ifdef S3FS_USE_MEMCACHED
+  else {
+    theCache = new AWSCache(theBucketname);
   }
+#endif
 
   if(getenv("TMP")!=NULL){
     theS3FSTempFolder = getenv("TMP");
