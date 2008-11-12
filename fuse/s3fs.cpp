@@ -1360,7 +1360,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
         if(fileHandle->is_write){
 
           // reset filestream
-          fileHandle->filestream->seekg(0);
+          fileHandle->filestream->seekg(0,std::ios_base::beg);
 
           // transfer temp file to s3
           lCon = getConnection();
@@ -1381,7 +1381,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 #ifdef S3FS_USE_MEMCACHED
               // invalidate cached data of file
               key=theCache->getkey(AWSCache::PREFIX_FILE,lpath.substr(1),"").c_str();
-              theCache->delete_key(key);
+              theCache->save_file(key,dynamic_cast<std::fstream*>(fileHandle->filestream),fileHandle->size); 
               key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"").c_str();
               theCache->delete_key(key);
 #endif // S3FS_USE_MEMCACHED
@@ -1389,7 +1389,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
             S3FS_CATCH(Put)
           }while(haserror && trycounter<AWS_TRIES_ON_ERROR);
 
-          if(result==-ENOENT){ 
+          if(result!=0){ 
             S3_LOG(S3_ERROR,"s3_release(...)","saving file on s3 failed");
           }
 
@@ -1470,7 +1470,7 @@ s3_read(const char *path,
       readsize=size;
     }
 
-    tempfile->seekg(offset);
+    tempfile->seekg(offset,std::ios_base::beg);
     memset(buf, 0, readsize); 
     tempfile->read(buf,readsize);
     S3_LOG(S3_DEBUG,"s3_read(...)","readsize: " << readsize << " tempfile->gcount(): " << tempfile->gcount());

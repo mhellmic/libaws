@@ -56,7 +56,7 @@ namespace aws {
   std::string AWSCache::PREFIX_DIR_LS("ls");
   std::string AWSCache::PREFIX_FILE("file");
 
-  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=0; // 1000 (means approx. 1kb)
+  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=200000; // 1000 (means approx. 1kb)
   std::string AWSCache::DELIMITER_FOLDER_ENTRIES=",";
 
   AWSCache::AWSCache(std::string bucketname):
@@ -168,9 +168,10 @@ namespace aws {
     std::auto_ptr<char> memblock(new char [size]);
 
     ASSERT(fstream);
-    fstream->seekg(0);
+    fstream->seekg(0,std::ios_base::beg);
 
     fstream->read(memblock.get(),size);
+    ASSERT((unsigned int)fstream->gcount()==size);
 
     if(size==0){
       rc=memcached_set(memc, key.c_str(), strlen(key.c_str()), "", 0,(time_t)0, (uint32_t)0);
@@ -181,7 +182,7 @@ namespace aws {
 #ifndef NDEBUG
     if (rc == MEMCACHED_SUCCESS){
       std::string lvalue(memblock.get());
-      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_cache_key_file(...)","   successfully stored file: '" << key << "' value: '"<<lvalue<<"'");
+      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_cache_key_file(...)","   successfully stored file: '" << key << "'");// value: '"<<lvalue<<"'");
     }else{
       S3CACHE_LOG(S3CACHE_INFO,"AWSCache::save_cache_key_file(...)","    [ERROR] could not store file: '" << key << "' in cache (rc=" << (int) rc << ": "<< memcached_strerror(memc,rc) <<")");
     }
@@ -196,6 +197,18 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
 
       // check if file type is known
       if(key.length()>3 && key.substr(key.length()-3,key.length()).compare(".xq")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".xml")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".txt")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".fcgi")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".html")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".htm")==0){
+        save_file(memc, key, fstream, size);
+      }else if(key.length()==9 && key.compare(".htaccess")==0){
         save_file(memc, key, fstream, size);
       }else{
         S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
