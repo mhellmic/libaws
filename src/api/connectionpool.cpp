@@ -50,7 +50,7 @@ namespace aws {
     template<class T>
     T ConnectionPool<T>::getConnection() { 
       theConnectionPoolMutex.lock(); 
-      if(theSize>std::queue<T>::size()>0){
+      if(std::queue<T>::size()>0){
 
          // there are still connections in the queue, so return one of them
          T connection = std::queue<T>::front(); 
