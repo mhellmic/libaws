@@ -66,12 +66,25 @@ namespace aws {
        }
     }
 
-   template<class T>
-    T ConnectionPool<T>::createConnection ( const std::string& aAccessKeyId,
-      const std::string& aSecretAccessKey ){
-         return theFactory->createS3Connection(theAccessKeyId, theSecretAccessKey);
-    }
+   template<> S3ConnectionPtr 
+   ConnectionPool<S3ConnectionPtr>::createConnection ( const std::string& aAccessKeyId,
+                                         const std::string& aSecretAccessKey ) {
+     return theFactory->createS3Connection(theAccessKeyId, theSecretAccessKey);
+   }
 
-    template class ConnectionPool<S3ConnectionPtr>;
+   template<> SQSConnectionPtr
+   ConnectionPool<SQSConnectionPtr>::createConnection ( const std::string& aAccessKeyId,
+                                         const std::string& aSecretAccessKey ) {
+    return theFactory->createSQSConnection(theAccessKeyId, theSecretAccessKey);
+   }
+
+   template<> SDBConnectionPtr
+   ConnectionPool<SDBConnectionPtr>::createConnection ( const std::string& aAccessKeyId,
+                                         const std::string& aSecretAccessKey ) {
+    return theFactory->createSDBConnection(theAccessKeyId, theSecretAccessKey);
+   }
+
+   template class ConnectionPool<S3ConnectionPtr>;
+   template class ConnectionPool<SQSConnectionPtr>;
 
 }//namespace aws
