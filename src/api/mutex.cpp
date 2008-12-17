@@ -20,7 +20,7 @@ namespace aws {
   AWSMutex::AWSMutex()
   {
       //(void) pthread_mutexattr_init(theMutexAttr);
-      pthread_mutex_init(&theMutex, &theMutexAttr);
+      pthread_mutex_init(&theMutex, 0);
   }
 
   void AWSMutex::lock()

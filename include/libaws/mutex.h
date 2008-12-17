@@ -23,7 +23,6 @@ namespace aws {
 class AWSMutex
 {
      pthread_mutex_t theMutex;
-     pthread_mutexattr_t theMutexAttr;
 
 public:
      AWSMutex();
