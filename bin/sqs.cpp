@@ -207,7 +207,7 @@ main (int argc, char** argv) {
           std::cout << "             list-message: Receive messages" << std::endl;
           std::cout << "             delete-message: Delete messages" << std::endl;
           std::cout << "             delete-all-messages: Delete all messages retrieved" << std::endl;
-          std::cout << "  -o: host name"  << std::endl;
+          std::cout << "  -o host name"  << std::endl;
           std::cout << "  -n name: A Queue Name/URL"  << std::endl;
           std::cout << "  -p prefix: Prefix for listing queues"  << std::endl;
           std::cout << "  -x #messages: Number of messages to return"  << std::endl;
