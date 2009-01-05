@@ -717,7 +717,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, lSList);
 
-//  curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+  //curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
 
   if (++theNumberOfRequests >= MAX_REQUESTS) {
     curl_easy_setopt(theCurl, CURLOPT_FRESH_CONNECT, "TRUE");
@@ -823,14 +823,14 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
       Time t(lTmp.c_str()+15);
       lGetResponse->theLastModified = t;
 
-    } else if ( lTmp.find("304") != std::string::npos ) {
-      // not modified (returned when using If-Modified-Since or If-Non-Match)
-      lGetResponse->theIsSuccessful = true;
-      lGetResponse->theIsModified = false;
     } else if ( lTmp.find("Content-Length:") != std::string::npos) {
       lGetResponse->theContentLength = atoll(lTmp.c_str() + 16);
     } else if ( lTmp.find("Content-Type:") != std::string::npos) {
       lGetResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
+    } else if ( lTmp.find("304 N") != std::string::npos ) {
+      // not modified (returned when using If-Modified-Since or If-Non-Match)
+      lGetResponse->theIsSuccessful = true;
+      lGetResponse->theIsModified = false;
     }
   } else if ((lHeadResponse = dynamic_cast<HeadResponse*>(lRes))) {
     if ( lTmp.find("Content-Length:") != std::string::npos) {
