@@ -915,11 +915,11 @@ s3_readdir(const char *path,
        }while(haserror && trycounter<AWS_TRIES_ON_ERROR);
 
 #ifdef S3FS_USE_MEMCACHED
-       if(result==-ENOENT){ 
+       if(result==-ENOENT && !haserror){ 
 
          // remember in cache that no entries exist in folder
          theCache->save_key(key, "");
-       }else{
+       }else if (!haserror){
 
          //remember successfully retrieved entries in cache
          theCache->save_key(key, lentries);
@@ -1464,7 +1464,7 @@ s3_read(const char *path,
     unsigned int filelength = (unsigned int) fileHandle->size;
 
     int readsize = 0;
-    if(size>filelength || (size-offset)>filelength){
+    if(size>(filelength-offset)){
       readsize=filelength-offset;
     }else{
       readsize=size;
@@ -1575,7 +1575,14 @@ main(int argc, char **argv)
   }
 #endif //S3FS_USE_MEMCACHED
 
-  if(getenv("TMP")!=NULL){
+  if(getenv("S3FS_TEMP")!=NULL){
+    theS3FSTempFolder = getenv("S3FS_TEMP");
+    if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
+      theS3FSTempFolder.append("s3fs_file_XXXXXX");
+    }else{
+      theS3FSTempFolder.append("/s3fs_file_XXXXXX");
+    }
+  }else if(getenv("TMP")!=NULL){
     theS3FSTempFolder = getenv("TMP");
     if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
       theS3FSTempFolder.append("s3fs_file_XXXXXX");
@@ -1584,13 +1591,6 @@ main(int argc, char **argv)
     }
   }else if(getenv("TMPDIR")!=NULL){
     theS3FSTempFolder = getenv("TMPDIR");
-    if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
-      theS3FSTempFolder.append("s3fs_file_XXXXXX");
-    }else{
-      theS3FSTempFolder.append("/s3fs_file_XXXXXX");
-    }
-  }else if(getenv("S3FS_TEMP")!=NULL){
-    theS3FSTempFolder = getenv("S3FS_TEMP");
     if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
       theS3FSTempFolder.append("s3fs_file_XXXXXX");
     }else{
