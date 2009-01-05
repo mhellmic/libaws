@@ -414,10 +414,10 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey,
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
+    throw e;
   }
 
   lWrapper.destroyParser();
-
   curl_free(lEscapedKeyChar);
 
   if ( ! lRes->isSuccessful() )
@@ -456,6 +456,7 @@ S3Connection::get(const std::string& aBucketName, const std::string& aKey,
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
+    throw e;
   }
 
   lWrapper.destroyParser();
@@ -493,6 +494,7 @@ S3Connection::del(const std::string& aBucketName, const std::string& aKey)
   } catch (AWSException& e) {
     lWrapper.destroyParser();
     curl_free(lEscapedKeyChar);
+    throw e;
   }
 
   lWrapper.destroyParser();
@@ -556,7 +558,9 @@ S3Connection::head(const std::string& aBucketName, const std::string& aKey)
   try {
     makeRequest(aBucketName, HEAD, &lWrapper, 0, 0, lEscapedKey, 0);
   } catch (AWSException& e) {
-    std::cerr << "[S3Connection::head] caught AWSException: " << e.what() << std::endl;
+    lWrapper.destroyParser();
+    curl_free(lEscapedKeyChar);
+    throw e;
   }
 
   lWrapper.destroyParser();
