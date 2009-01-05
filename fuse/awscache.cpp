@@ -56,7 +56,7 @@ namespace aws {
   std::string AWSCache::PREFIX_DIR_LS("ls");
   std::string AWSCache::PREFIX_FILE("file");
 
-  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=200000; // 1000 (means approx. 1kb)
+  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=0; // 1000 (means approx. 1kb)
   std::string AWSCache::DELIMITER_FOLDER_ENTRIES=",";
 
   AWSCache::AWSCache(std::string bucketname):
