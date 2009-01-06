@@ -35,6 +35,7 @@
  */
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION  26
+#define S3FS_LOG_SYSLOG 1
 
 #include "config.h"
 
@@ -47,6 +48,7 @@
 #include <sys/stat.h>
 #include <map>
 #include <sstream>
+#include <syslog.h>
 #include <fstream>
 #include <cassert>
 #include <stdlib.h>
@@ -191,21 +193,44 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
 
 #ifndef NDEBUG
 
-#define S3_LOG(level,location2,message) \
-   if(S3_LOGGING_LEVEL <= level) \
-   { \
-	std::ostringstream logMessage; \
-	std::string levelstr=""; \
-	if (level==S3_DEBUG){ \
-		levelstr="DEBUG"; \
-	}else if (level==S3_INFO){ \
-		levelstr="INFO"; \
-	}else if (level==S3_ERROR){ \
-		levelstr="ERROR"; \
-	} \
-	logMessage << "[" << levelstr << "] " << location2 << " ## " << message << " ##";  \
-	std::cerr << logMessage.str() << std::endl; \
-   } 
+#  ifdef S3FS_LOG_SYSLOG
+#    define S3_LOG(level,location2,message) \
+       if(S3_LOGGING_LEVEL <= level) \
+       { \
+	    std::ostringstream logMessage; \
+	    std::string levelstr=""; \
+      std::string outMessage="S3FS(bucket:"; \
+      outMessage.append(theBucketname); \
+      outMessage.append(") "); \
+	    outMessage.append(location2); \
+      outMessage.append(" ## "); \
+	    outMessage.append(message); \
+      outMessage.append(" ## "); \
+	    if (level==S3_DEBUG){ \
+		    syslog( LOG_DEBUG, outMessage ); \
+	    }else if (level==S3_INFO){ \
+		    syslog( LOG_NOTICE, outMessage ); \
+	    }else if (level==S3_ERROR){ \
+		    syslog( LOG_ERR, outMessage ); \
+	    } \
+	    } 
+#  else
+#    define S3_LOG(level,location2,message) \
+       if(S3_LOGGING_LEVEL <= level) \
+       { \
+	    std::ostringstream logMessage; \
+	    std::string levelstr=""; \
+	    if (level==S3_DEBUG){ \
+		    levelstr="DEBUG"; \
+	    }else if (level==S3_INFO){ \
+		    levelstr="INFO"; \
+	    }else if (level==S3_ERROR){ \
+		    levelstr="ERROR"; \
+	    } \
+	    logMessage << "[" << levelstr << "] " << location2 << " ## " << message << " ##";  \
+	    std::cerr << logMessage.str() << std::endl; \
+       } 
+#  endif
 #else
 #define S3_LOG(level,location2,message)
 #endif
