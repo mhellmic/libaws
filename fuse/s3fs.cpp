@@ -199,19 +199,13 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
        { \
 	    std::ostringstream logMessage; \
 	    std::string levelstr=""; \
-      std::string outMessage="S3FS(bucket:"; \
-      outMessage.append(theBucketname); \
-      outMessage.append(") "); \
-	    outMessage.append(location2); \
-      outMessage.append(" ## "); \
-	    outMessage.append(message); \
-      outMessage.append(" ## "); \
-	    if (level==S3_DEBUG){ \
-		    syslog( LOG_DEBUG, outMessage ); \
+            logMessage << "S3FS(bucket:" << theBucketname << ") " << location2 << " ## " << message << " ## "; \
+            if (level==S3_DEBUG){ \
+		    syslog( LOG_DEBUG, logMessage.str().c_str() ); \
 	    }else if (level==S3_INFO){ \
-		    syslog( LOG_NOTICE, outMessage ); \
+		    syslog( LOG_NOTICE, logMessage.str().c_str() ); \
 	    }else if (level==S3_ERROR){ \
-		    syslog( LOG_ERR, outMessage ); \
+		    syslog( LOG_ERR, logMessage.str().c_str() ); \
 	    } \
 	    } 
 #  else
