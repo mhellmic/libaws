@@ -803,6 +803,19 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
   std::string lTmp(static_cast<char*>(ptr), size*nmemb);
   trim(lTmp);
 
+  if ((lHeadResponse = dynamic_cast<HeadResponse*>(lRes))) {
+    if (lTmp.find("404 Not") != std::string::npos) {
+
+      lHeadResponse->theIsSuccessful = false;
+      lHeadResponse->theS3ResponseError.theErrorCode=S3Exception::NoSuchKey;
+      lHeadResponse->theS3ResponseError.theErrorMessage="NOT FOUND";
+    }else if ( lTmp.find("Content-Length:") != std::string::npos) {
+      lHeadResponse->theContentLength = atoll(lTmp.c_str() + 16);
+    } else if ( lTmp.find("Content-Type:") != std::string::npos) {
+      lHeadResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
+    }
+  }
+
   if (lTmp.find("200 OK") != std::string::npos ||
       lTmp.find("204 No Content") != std::string::npos) {
     // if we got a 20x header, the request was successful
@@ -835,12 +848,6 @@ S3Connection::getHeaderData(void *ptr, size_t size, size_t nmemb, void *stream)
       // not modified (returned when using If-Modified-Since or If-Non-Match)
       lGetResponse->theIsSuccessful = true;
       lGetResponse->theIsModified = false;
-    }
-  } else if ((lHeadResponse = dynamic_cast<HeadResponse*>(lRes))) {
-    if ( lTmp.find("Content-Length:") != std::string::npos) {
-      lHeadResponse->theContentLength = atoll(lTmp.c_str() + 16);
-    } else if ( lTmp.find("Content-Type:") != std::string::npos) {
-      lHeadResponse->theContentType = lTmp.substr(14, lTmp.length() -14);
     }
   } else if ((lCreateResponse = dynamic_cast<CreateBucketResponse*>(lRes))) {
     if (lTmp.find("Location:") != std::string::npos) {

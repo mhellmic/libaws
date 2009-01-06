@@ -164,6 +164,8 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
       S3_LOG(S3_ERROR,location, "S3Exception(ERRORCODE="<<((int)s3Exception.getErrorCode())<<"):"<<s3Exception.what()); \
       if (s3Exception.getErrorCode() != aws::S3Exception::NoSuchKey) { \
          haserror=true; \
+      } else{ \
+         haserror=false; \
       } \
       result=-ENOENT;\
     } catch (AWSConnectionException & conException) { \
@@ -180,6 +182,8 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
     } catch (kind ## Exception & s3Exception) { \
       if (s3Exception.getErrorCode() != aws::S3Exception::NoSuchKey) { \
          haserror=true; \
+      } else{ \
+         haserror=false; \
       } \
       result=-ENOENT;\
     } catch (AWSConnectionException & conException) { \
@@ -410,7 +414,7 @@ s3_getattr(const char *path, struct stat *stbuf)
          lCon=NULL;
 
 #ifdef S3FS_USE_MEMCACHED
-         if(result==-ENOENT){ 
+         if(result==-ENOENT && !haserror){ 
 
            // remember in cache that file does not exist
            key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"").c_str();
