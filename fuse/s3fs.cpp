@@ -86,7 +86,7 @@ static std::map<int,struct FileHandle*> tempfilemap;
 static int S3_DEBUG=0;
 static int S3_INFO=1;
 static int S3_ERROR=2;
-static int S3_LOGGING_LEVEL=S3_DEBUG;
+static int S3_LOGGING_LEVEL=S3_INFO;
 #endif
 
 /**
@@ -161,17 +161,17 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
 #ifndef NDEBUG
 #  define S3FS_CATCH(kind) \
     } catch (kind ## Exception & s3Exception) { \
-      S3_LOG(S3_ERROR,location, s3Exception.what()); \
+      S3_LOG(S3_ERROR,location, "S3Exception(ERRORCODE="<<((int)s3Exception.getErrorCode())<<"):"<<s3Exception.what()); \
       if (s3Exception.getErrorCode() != aws::S3Exception::NoSuchKey) { \
          haserror=true; \
       } \
       result=-ENOENT;\
     } catch (AWSConnectionException & conException) { \
-     S3_LOG(S3_ERROR,location,conException.what()); \
+     S3_LOG(S3_ERROR,location,"AWSConnectionException: "<<conException.what()); \
       haserror=true; \
       result=-ECONNREFUSED; \
     }catch (AWSException & awsException) { \
-      S3_LOG(S3_ERROR,location,"AWSException: " << awsException.what()); \
+      S3_LOG(S3_ERROR,location,"AWSException: "<<awsException.what()); \
       haserror=true; \
       result=-ENOENT;\
     }
@@ -198,13 +198,14 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
        if(S3_LOGGING_LEVEL <= level) \
        { \
 	    std::ostringstream logMessage; \
-	    std::string levelstr=""; \
-            logMessage << "S3FS(bucket:" << theBucketname << ") " << location2 << " ## " << message << " ## "; \
             if (level==S3_DEBUG){ \
+                    logMessage << "S3FS(bucket:" << theBucketname << ") " << location2 << " [DEBUG] ## " << message << " ## "; \
 		    syslog( LOG_DEBUG, logMessage.str().c_str() ); \
 	    }else if (level==S3_INFO){ \
+                    logMessage << "S3FS(bucket:" << theBucketname << ") " << location2 << " [INFO] ## " << message << " ## "; \
 		    syslog( LOG_NOTICE, logMessage.str().c_str() ); \
 	    }else if (level==S3_ERROR){ \
+                    logMessage << "S3FS(bucket:" << theBucketname << ") " << location2 << " [ERROR] ## " << message << " ## "; \
 		    syslog( LOG_ERR, logMessage.str().c_str() ); \
 	    } \
 	    } 

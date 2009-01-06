@@ -16,16 +16,36 @@
 #include "awscache.h"
 #include <cassert>
 #include <memory>
+#include <syslog.h>
+
+#define S3FS_LOG_SYSLOG 1
 
 #ifndef NDEBUG
 static int S3CACHE_DEBUG=0;
 static int S3CACHE_INFO=1;
 static int S3CACHE_ERROR=2;
-static int S3CACHE_LOGGING_LEVEL=S3CACHE_DEBUG;
+static int S3CACHE_LOGGING_LEVEL=S3CACHE_INFO;
 
-#define S3CACHE_LOG(level,location,message) \
-   if(S3CACHE_LOGGING_LEVEL <= level) \
-   { \
+#  ifdef S3FS_LOG_SYSLOG
+#    define S3CACHE_LOG(level,location,message) \
+      if(S3CACHE_LOGGING_LEVEL <= level) \
+      { \
+	    std::ostringstream logMessage; \
+            if (level==S3CACHE_DEBUG){ \
+                    logMessage << "AWSCache(bucket:" << theBucketname << ") " << location << " [DEBUG] ## " << message << " ## "; \
+		    syslog( LOG_DEBUG, logMessage.str().c_str() ); \
+	    }else if (level==S3CACHE_INFO){ \
+                    logMessage << "AWSCache(bucket:" << theBucketname << ") " << location << " [INFO] ## " << message << " ## "; \
+		    syslog( LOG_NOTICE, logMessage.str().c_str() ); \
+	    }else if (level==S3CACHE_ERROR){ \
+                    logMessage << "AWSCache(bucket:" << theBucketname << ") " << location << " [ERROR] ## " << message << " ## "; \
+		    syslog( LOG_ERR, logMessage.str().c_str() ); \
+	    } \
+      }
+#  else
+#    define S3CACHE_LOG(level,location,message) \
+      if(S3CACHE_LOGGING_LEVEL <= level) \
+      { \
 	std::stringstream logMessage; \
 	std::string levelstr=""; \
 	if (level==S3CACHE_DEBUG){ \
@@ -37,7 +57,8 @@ static int S3CACHE_LOGGING_LEVEL=S3CACHE_DEBUG;
 	} \
 	logMessage << "[" << levelstr << "] " << location << " ## " << message << " ##";  \
 	std::cerr << logMessage.str() << std::endl; \
-   } 
+      }
+#  endif 
 #else
 #define S3CACHE_LOG(level,location,message)
 #endif
