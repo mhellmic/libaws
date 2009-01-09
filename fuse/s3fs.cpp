@@ -70,7 +70,7 @@ static AWSCache* theCache;
 
 static AWSConnectionFactory* theFactory;
 static ConnectionPool<S3ConnectionPtr>* theS3ConnectionPool;
-static unsigned int CONNECTION_POOL_SIZE=5;
+static unsigned int CONNECTION_POOL_SIZE=0;
 static unsigned int AWS_TRIES_ON_ERROR=3;
 
 static std::string theAccessKeyId;
@@ -122,6 +122,7 @@ FileHandle::~FileHandle()
 {
   if(id!=-1){
      tempfilemap.erase(id);
+     close(id);
   }
   if(filestream){
      delete filestream;filestream=0;
@@ -1473,6 +1474,7 @@ s3_read(const char *path,
         struct fuse_file_info *fileinfo)
 {
   S3_LOG(S3_DEBUG,"s3_read(...)","path: " << path << " offset: " << offset << " size: " << size);
+  S3_LOG(S3_DEBUG,"s3_read(...)","size of the tempfilemap " << tempfilemap.size());
 
   std::string lpath(path);
 #ifdef S3FS_USE_MEMCACHED
@@ -1646,7 +1648,7 @@ main(int argc, char **argv)
   }
 
 
-  theS3ConnectionPool=new ConnectionPool<S3ConnectionPtr>(CONNECTION_POOL_SIZE,theAccessKeyId,theSecretAccessKey);
+  theS3ConnectionPool = new ConnectionPool<S3ConnectionPtr>(CONNECTION_POOL_SIZE,theAccessKeyId,theSecretAccessKey);
 
   std::cerr << "####################" << std::endl;
   std::cerr << "####################" << std::endl;
@@ -1655,8 +1657,15 @@ main(int argc, char **argv)
   std::cerr << "####################" << std::endl;
   std::cerr << "Mounted Bucket is >>" << theBucketname << "<<" << std::endl;
 
+  int lRes = fuse_main(argv_fuse_vector.size(), argv_fuse, &s3_filesystem_operations, NULL);
 
-  // let's get started
-  return fuse_main(argv_fuse_vector.size(), argv_fuse, &s3_filesystem_operations, NULL);
+  delete[] argv_fuse;
+#ifdef S3FS_USE_MEMCACHED
+  delete theCache;
+#endif //S3FS_USE_MEMCACHED
+  delete theS3ConnectionPool;
+  theFactory->shutdown();
+
+  return lRes;
 }
 

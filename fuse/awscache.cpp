@@ -100,7 +100,7 @@ namespace aws {
 
     memcached_server_st *servers;
     memcached_st * memc=memcached_create(NULL);
-    servers= memcached_servers_parse(strdup(theServers));
+    servers= memcached_servers_parse(theServers);
 
     // tell memc where the memcached servers are
     memcached_server_push(memc, servers);
@@ -296,6 +296,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     value=memcached_get(memc, key.c_str(), strlen(key.c_str()),&value_length, &flags, rc);
     if (value!=NULL){
        lvalue=std::string(value);
+       free(value);
     }
 
 #ifndef NDEBUG
