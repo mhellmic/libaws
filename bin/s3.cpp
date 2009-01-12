@@ -171,6 +171,16 @@ bool get ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
   return true;
 }
 
+bool del ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aKey )
+{
+  try {
+    DeleteResponsePtr lDel = aS3->del(aBucketName, aKey);
+  } catch (DeleteException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
 int
 main ( int argc, char** argv )
 {
@@ -235,6 +245,7 @@ main ( int argc, char** argv )
         std::cout << "             delete-all-entries: delete all entries in a bucket" << std::endl;
         std::cout << "             put: put a file on s3" << std::endl;
         std::cout << "             get: get an object from s3" << std::endl;
+        std::cout << "             del: delete an object from s3" << std::endl;
         std::cout << "  -n name: name of bucket"  << std::endl;
         std::cout << "  -p prefix: prefix for entries to list "  << std::endl;
         std::cout << "  -m marker: marker for entries to list"  << std::endl;
@@ -331,6 +342,13 @@ main ( int argc, char** argv )
       std::cerr << "Use -n as a command line argument" << std::endl;
       exit(1);
     }
+    if (lKey==0) {
+      std::cerr << "No key parameter specified." << std::endl;
+      std::cerr << "Use -k as a command line argument" << std::endl;
+      exit(1);
+    }
+    get(lS3Rest, lBucketName, lKey);
+  } else if ( lActionString.compare ( "del" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;
       std::cerr << "Use -n as a command line argument" << std::endl;
@@ -341,7 +359,7 @@ main ( int argc, char** argv )
       std::cerr << "Use -k as a command line argument" << std::endl;
       exit(1);
     }
-    get(lS3Rest, lBucketName, lKey);
+    del(lS3Rest, lBucketName, lKey);
   }
 
 }
