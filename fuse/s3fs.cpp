@@ -70,7 +70,7 @@ static AWSCache* theCache;
 
 static AWSConnectionFactory* theFactory;
 static ConnectionPool<S3ConnectionPtr>* theS3ConnectionPool;
-static unsigned int CONNECTION_POOL_SIZE=0;
+static unsigned int CONNECTION_POOL_SIZE=5;
 static unsigned int AWS_TRIES_ON_ERROR=3;
 
 static std::string theAccessKeyId;

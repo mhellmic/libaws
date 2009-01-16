@@ -24,9 +24,6 @@ namespace aws {
       theSecretAccessKey(secretaccesskey),
       theSize(size)
     {
-      //if(typeid(T)==typeid(S3ConnectionPtr)){
-       //   createConnection=theFactory->createS3Connection;
-      //};
       for(unsigned int i=1;i<=size;i++){
          push(createConnection(theAccessKeyId, theSecretAccessKey));
       }
