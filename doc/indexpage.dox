@@ -1,0 +1,87 @@
+/*! \mainpage LIBAWS++ - A C++ Library for Interfacing with Amazon Web Services
+
+Libaws is an easy-to-use code library that helps you programming C++ applications that communicate with Amazon Web Services.
+In more detail, it supports communication with the following Amazon Services:
+
+<ul>
+  <li><a href="http://aws.amazon.com/s3/">Amazon Simple Storage Service (Amazon S3)</a>
+  <li><a href="http://aws.amazon.com/simpledb/">Amazon SimpleDB (Amazon SDB)</a>
+  <li><a href="http://aws.amazon.com/sqs/">Amazon Simple Queue Service (Amazon SQS)</a>
+</ul>
+
+As an extra feature, libaws comes with S3FS, a Filesystem to mount an S3-Bucket to a folder on your linux system. 
+S3FS is based on <a href="http://fuse.sourceforge.net/">Fuse</a>, and therefore only running in userspace.
+
+<ul>
+  <li> \ref build
+  <li> \ref examples
+  <li> \ref limitations
+</ul>
+
+\page build Build Instructions
+
+\section requirements Requirements
+In order to build Zorba, you need the Cross-Platform Make CMake 2.6 or higher. You can download it from http://www.cmake.org/.
+LIBAWS++ is tested with GNU Compilers: GCC 3.4.x (32bit & 64bit) and GCC 4.x.x
+
+\subsection required_packages Packages
+
+In order to build LIBAWS++ you need to have the following libraries and their development headers installed.
+
+<ul>
+  <li>libxml2 2.2.16 or higher (http://xmlsoft.org/)
+  <li>CURL 7.12 (http://curl.haxx.se/)
+  <li>OpenSSL (http://www.openssl.org/)
+  <li>pthread 
+  <li>libfuse is needed if you want to compile the S3 filesystem (http://fuse.sourceforge.net/)
+  <li>libmemcached is needed if you want the S3 filesystem to enable caching using memcached 
+</ul>
+
+\section build_instructions Building and Installing LIBAWS++
+
+In order to build and install LIBAWS++ you need to do the following:
+
+<ul>
+  <li>Checkout the sources as described at <a href="http://aws.28msec.com/?page_id=5">http://aws.28msec.com/?page_id=5</a>
+  <li>Change the working directory into the source directory (usually libaws).
+        This directory is named [LIBAWS] in the following
+  <li>The recommended way to build LIBAWS++ is by creating and out-of-source build. 
+      We suggest to create the directory [LIBAWS]/build and refer to this directory as [LIBAWSBUILD] in the following.
+  <li>Change the working directory into the [LIBAWSBUILD] directory and execute cmake as follows: cmake [LIBAWS].
+  In case the [LIBAWSBUILD] is located directly within the [LIBAWS] directory just type cmake .. .
+    This command should configure LIBAWS and prepare for the build.
+    CMake will tell you if your installation is missing some of the required libraries or development headers.
+  If CMake was executed successfully, you should be able to run make.
+  Running make will take some time. If make finished successfully, you're ready to install LIBAWS.
+  <li>To install LIBAWS on your system type make install. This will install all required libraries, development headers, and the command line utilities in the directory specified as CMAKE_INSTALL_PREFIX. Usually, this points to /usr/local/. You can change this by executing the cmake command described in step four as follows:
+   cmake -D CMAKE_INSTALL_PREFIX=mydirectory [LIBAWS]
+</ul>
+
+\page examples Examples
+
+In order to get started, we provide three brief examples that show how to work with each of the three C++ AWS language bindings, i.e. S3, SQS, and SDB.
+Each example is a small command line utility that allows you to use each service on the command line.
+
+  
+<ul>
+  <li> \ref s3cmd
+  <li> \ref sqscmd
+  <li> \ref sdbcmd
+</ul>
+
+
+\page s3cmd S3 Command Line Utility
+\include s3.cpp
+
+\page sqscmd SQS Command Line Utility
+\include sqs.cpp
+
+\page sdbcmd SDB Command Line Utility
+\include sdb.cpp
+
+\page limitations  Limitations
+<ul>
+  <li> LIBAWS++ only works on Unix systems (e.g. Linux or Mac OS X)
+  <li> S3FS currently only works on Linux (not on Mac OS X using MacFuse)
+</ul>
+*/

@@ -31,13 +31,13 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = "@PROJECT_NAME@"
+PROJECT_NAME           = "LIBAWS++"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = @LIBAWS_MAJOR_VERSIONR@.@LIBAWS_MINOR_VERSION@.@LIBAWS_PATCH_VERSION@
+PROJECT_NUMBER         = @LIBAWS_MAJOR_VERSION@.@LIBAWS_MINOR_VERSION@.@LIBAWS_PATCH_VERSION@
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -464,7 +464,7 @@ WARN_LOGFILE           = Doc/doxy.log
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @CMAKE_SOURCE_DIR@/include
+INPUT                  = @CMAKE_SOURCE_DIR@/include @CMAKE_SOURCE_DIR@/doc
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -511,7 +511,7 @@ EXCLUDE_PATTERNS       = */.svn \
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@/samples
+EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@/samples @CMAKE_SOURCE_DIR@/bin
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
