@@ -171,11 +171,28 @@ bool get ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
   return true;
 }
 
-bool del ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aKey )
+bool
+del(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix, 
+           std::string aMarker, std::string aDelimiter, int aMaxKeys)
 {
+  ListBucketResponsePtr lListBucket;
+  ListBucketResponse::Object lObject;
+
+  std::string lMarker;
   try {
-    DeleteResponsePtr lDel = aS3->del(aBucketName, aKey);
-  } catch (DeleteException &e) {
+    do
+    {
+      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker, aDelimiter, aMaxKeys);
+      lListBucket->open();
+      while (lListBucket->next(lObject)) {
+        std::cout << "   Key: " << lObject.KeyValue << " | Last Modified: " << lObject.LastModified;
+        std::cout <<  " | ETag: " << lObject.ETag << " | Size: " << lObject.Size << std::endl;
+        lMarker = lObject.KeyValue;
+        DeleteResponsePtr lDel = aS3->del(aBucketName, lObject.KeyValue);
+      }
+      lListBucket->close();
+    } while (lListBucket->isTruncated());
+  } catch (S3Exception &e) {
     std::cerr << e.what() << std::endl;
     return false;
   }
@@ -354,12 +371,8 @@ main ( int argc, char** argv )
       std::cerr << "Use -n as a command line argument" << std::endl;
       exit(1);
     }
-    if (lKey==0) {
-      std::cerr << "No key parameter specified." << std::endl;
-      std::cerr << "Use -k as a command line argument" << std::endl;
-      exit(1);
-    }
-    del(lS3Rest, lBucketName, lKey);
+    del(lS3Rest, lBucketName, lPrefix==0?"":lPrefix, lMarker==0?"":lMarker,  
+               lDelimiter==0?"":lDelimiter, lMaxKeys==0?-1:lMaxKeys);
   }
 
 }
