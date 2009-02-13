@@ -59,7 +59,7 @@
 #include "properties.h"
 
 #ifdef S3FS_USE_MEMCACHED
-#  include <memcached.h>
+#  include <libmemcached/memcached.h>
 #  include "awscache.h"
 #endif //USE_MEMCACHED
 
