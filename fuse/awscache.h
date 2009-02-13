@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <memcached.h>
+#include <libmemcached/memcached.h>
 
 namespace aws { 
 
