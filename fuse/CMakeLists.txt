@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(FUSE_SRCS s3fs.cpp)
+SET(FUSE_SRCS 
+  s3fs.cpp
+  properties.cpp
+)
 
 SET(s3fs_required_libs aws ${FUSE_LIBRARY})
 

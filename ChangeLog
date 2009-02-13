@@ -1,5 +1,8 @@
 A Amazon Web Services C++ Library
 
+version 0.9.x
+  * Introduced property files to pass bucket-name, aws-access-key, aws-secret-access-key to the s3fs executable
+
 version 0.9.0
   * Full-fledged S3, SQS, and SDB support
   * A S3 fuse module (read and write access)

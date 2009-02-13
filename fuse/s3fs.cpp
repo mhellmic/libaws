@@ -56,6 +56,7 @@
 #include <cassert>
 
 #include <libaws/aws.h>
+#include "properties.h"
 
 #ifdef S3FS_USE_MEMCACHED
 #  include <memcached.h>
@@ -77,6 +78,7 @@ static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
 static std::string theBucketname("");
+static std::string thePropertyFile("");
 
 static std::string DELIMITER_FOLDER_ENTRIES=",";
 
@@ -1571,19 +1573,62 @@ main(int argc, char **argv)
 
   for(int argindex=0;argindex<argc;argindex++){
      std::string arg(argv[argindex]);
-     if(arg.compare("--bucket")==0){
-        if(argv[argindex+1][0]=='-'){
+     if(arg.compare("--bucket")==0) {
+        if(argv[argindex+1][0]=='-') {
            std::cerr << "Bucketname missing after '--bucket'" << std::endl;
            return 5;
-        }else{
-           theBucketname=std::string(argv[argindex+1]);
-           argindex++;
+        } 
+        else {
+           theBucketname = std::string(argv[argindex+1]);
+           ++argindex;
         }
-     }else{
+     } 
+     else if(arg.compare("--property-file")==0) {
+        if(argv[argindex+1][0]=='-') {
+           std::cerr << "Property file missing after '--propery-file'" << std::endl;
+           return 5;
+        }
+        else {
+           thePropertyFile = std::string(argv[argindex+1]);
+           ++argindex;
+        }
+     }
+     else {
         // standardbehaviour: dont know the arg, so pass it on to fuse
         argv_fuse_vector.push_back(arg);
      }
   }
+
+  if (thePropertyFile != "") {
+    s3fs::utils::PropertyUtil::PropertyMapT lProperties;
+    s3fs::utils::PropertyUtil::read(thePropertyFile.c_str(), lProperties);       
+    if (theBucketname == "")
+      theBucketname = lProperties[s3fs::utils::Properties::BUCKET_NAME];
+    theAccessKeyId = lProperties[s3fs::utils::Properties::AWS_ACCESS_KEY];
+    theSecretAccessKey = lProperties[s3fs::utils::Properties::AWS_SECRET_ACCESS_KEY];
+  } else {
+    if(getenv("AWS_ACCESS_KEY")!=NULL){
+      theAccessKeyId = getenv("AWS_ACCESS_KEY");
+    }else{
+      theAccessKeyId = "";
+    }
+    if(getenv("AWS_SECRET_ACCESS_KEY")!=NULL){
+      theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
+    }else{
+      theSecretAccessKey = "";
+    }
+  }
+
+  if (theAccessKeyId.length() == 0) {
+    std::cerr << "Please specify the AWS_ACCESS_KEY environment variable" << std::endl;
+    return 1;
+  }
+  if (theSecretAccessKey.length() == 0) {
+    std::cerr << "Please specify the AWS_SECRET_ACCESS_KEY environment variable" << std::endl;
+    return 2;
+  }
+
+
   char** argv_fuse=new char*[ argv_fuse_vector.size()];
   for (unsigned int i=0;i<argv_fuse_vector.size();i++ )
   {
@@ -1625,26 +1670,6 @@ main(int argc, char **argv)
   }else{
     std::cerr << "Please specify the S3FS_TEMP environment variable. It should point to a folder where you have write access." << std::endl;
     return 3;
-  }
-
-  if(getenv("AWS_ACCESS_KEY")!=NULL){
-    theAccessKeyId = getenv("AWS_ACCESS_KEY");
-  }else{
-    theAccessKeyId = "";
-  }
-  if(getenv("AWS_SECRET_ACCESS_KEY")!=NULL){
-    theSecretAccessKey = getenv("AWS_SECRET_ACCESS_KEY");
-  }else{
-    theSecretAccessKey = "";
-  }
-
-  if (theAccessKeyId.length() == 0) {
-    std::cerr << "Please specify the AWS_ACCESS_KEY environment variable" << std::endl;
-    return 1;
-  }
-  if (theSecretAccessKey.length() == 0) {
-    std::cerr << "Please specify the AWS_SECRET_ACCESS_KEY environment variable" << std::endl;
-    return 2;
   }
 
 
