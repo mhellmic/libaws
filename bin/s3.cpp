@@ -216,7 +216,7 @@ main ( int argc, char** argv )
 
   AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
 
-  while ((c = getopt (argc, argv, "hik:a:n:f:p:mx:d:s:")) != -1)
+  while ((c = getopt (argc, argv, "hi:k:a:n:f:p:mx:d:s:")) != -1)
     switch (c)
     {
       case 'i':
