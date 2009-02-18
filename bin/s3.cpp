@@ -198,6 +198,35 @@ del(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
   }
   return true;
 }
+
+void
+usage(AWSConnectionFactory* lFactory)
+{
+  std::cout << "libaws version " << lFactory->getVersion() << std::endl;
+  std::cout << "Usage: s3 <options>" << std::endl;
+  std::cout << "  -i AWS Access Key Id"  << std::endl;
+  std::cout << "  -s AWS Secret Access Key"  << std::endl;
+  std::cout << "  -a <action>: action to perform" << std::endl;
+  std::cout << "      action is one of the following:" << std::endl;
+  std::cout << "          \"list\": list all buckets" << std::endl;
+  std::cout << "          \"create\": create a bucket" << std::endl;
+  std::cout << "          \"delete\": delete a bucket" << std::endl;
+  std::cout << "          \"entries\": list all objects in a bucket" <<
+      std::endl;
+  std::cout << "          \"delete-all-entries\": delete all entries in "
+      "a bucket" << std::endl;
+  std::cout << "          \"put\": put a file on s3" << std::endl;
+  std::cout << "          \"get\": get an object from s3" << std::endl;
+  std::cout << "          \"del\": delete an object from s3" << std::endl;
+  std::cout << "  -f filename: name of file"  << std::endl;
+  std::cout << "  -n name: name of bucket"  << std::endl;
+  std::cout << "  -p prefix: prefix for entries to list "  << std::endl;
+  std::cout << "  -m marker: marker for entries to list"  << std::endl;
+  std::cout << "  -d delimiter: delimiter of keys to list" << std::endl;
+  std::cout << "  -x maxkeys: maximum number of keys to list" << std::endl;
+  std::cout << "  -k key: key of the object" << std::endl;
+}
+
 int
 main ( int argc, char** argv )
 {
@@ -250,25 +279,8 @@ main ( int argc, char** argv )
         lKey = optarg;
         break;
       case 'h': {
-        std::cout << "libaws version " << lFactory->getVersion() << std::endl;
-        std::cout << "Usage: s3 <options>" << std::endl;
-        std::cout << "  -i: AWS Access Key Id"  << std::endl;
-        std::cout << "  -s: AWS Secret Access Key"  << std::endl;
-        std::cout << "  -a action: action to perform" << std::endl;
-        std::cout << "             list: list all buckets" << std::endl;
-        std::cout << "             create: create a bucket" << std::endl;
-        std::cout << "             delete: delete a bucket" << std::endl;
-        std::cout << "             entries: list all objects in a bucket" << std::endl;
-        std::cout << "             delete-all-entries: delete all entries in a bucket" << std::endl;
-        std::cout << "             put: put a file on s3" << std::endl;
-        std::cout << "             get: get an object from s3" << std::endl;
-        std::cout << "             del: delete an object from s3" << std::endl;
-        std::cout << "  -n name: name of bucket"  << std::endl;
-        std::cout << "  -p prefix: prefix for entries to list "  << std::endl;
-        std::cout << "  -m marker: marker for entries to list"  << std::endl;
-        std::cout << "  -d delimiter: delimiter of keys to list" << std::endl;
-        std::cout << "  -x maxkeys: maximum number of keys to list" << std::endl;
-        std::cout << "  -k key: key of the object" << std::endl;
+        usage(lFactory);
+        exit(1);
         exit(1);
       }
       case '?':
@@ -332,8 +344,9 @@ main ( int argc, char** argv )
       std::cerr << "Use -n as a command line argument" << std::endl;
       exit(1);
     }
-    listBucket(lS3Rest, lBucketName, lPrefix==0?"":lPrefix, lMarker==0?"":lMarker,  
-               lDelimiter==0?"":lDelimiter, lMaxKeys==0?-1:lMaxKeys);
+    listBucket(lS3Rest, lBucketName, lPrefix==0?"":lPrefix,
+               lMarker==0?"":lMarker,  lDelimiter==0?"":lDelimiter,
+               lMaxKeys==0?-1:lMaxKeys);
   } else if ( lActionString.compare ( "delete-all-entries" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;
@@ -373,7 +386,7 @@ main ( int argc, char** argv )
     }
     del(lS3Rest, lBucketName, lPrefix==0?"":lPrefix, lMarker==0?"":lMarker,  
                lDelimiter==0?"":lDelimiter, lMaxKeys==0?-1:lMaxKeys);
+  } else {
+    std::cerr << "Invalid action: \"" << lActionString << "\"." << std::endl;
   }
-
 }
-
