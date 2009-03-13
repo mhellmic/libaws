@@ -50,7 +50,8 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
   try {
     do
     {
-      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker, aDelimiter, aMaxKeys);
+      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker,
+                                    aDelimiter, aMaxKeys);
       lListBucket->open();
       while (lListBucket->next(lObject)) {
         std::cout << "   Key: " << lObject.KeyValue << " | Last Modified: " << lObject.LastModified;
@@ -73,6 +74,22 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
         std::cout << "CommonPrefix " << *lIter << std::endl;
       }
     } while (lListBucket->isTruncated());
+  } catch (S3Exception &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool
+del(S3ConnectionPtr aS3, std::string aBucketName, std::string aKey)
+{
+  ListBucketResponsePtr lListBucket;
+  ListBucketResponse::Object lObject;
+
+  std::string lMarker;
+  try {
+    DeleteResponsePtr lDel = aS3->del(aBucketName, aKey);
   } catch (S3Exception &e) {
     std::cerr << e.what() << std::endl;
     return false;
@@ -154,6 +171,22 @@ bool put ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
   return true;
 }
 
+bool putbin ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aFileName, const std::string& aKey )
+{
+  try {
+    std::ifstream lInStream(aFileName.c_str());
+    if (!lInStream) {
+      std::cerr << "file not found or accessible: " << aFileName << std::endl;
+      return false;
+    }
+    PutResponsePtr lPut = aS3->put(aBucketName, aKey.length()==0?aFileName:aKey, lInStream, "application/octet-stream");
+  } catch (PutException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
+
 bool get ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::string& aKey )
 {
   try {
@@ -165,34 +198,6 @@ bool get ( S3ConnectionPtr aS3, const std::string& aBucketName, const std::strin
       std::cout.write(buf, lIn.gcount());
     }
   } catch (GetException &e) {
-    std::cerr << e.what() << std::endl;
-    return false;
-  }
-  return true;
-}
-
-bool
-del(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix, 
-           std::string aMarker, std::string aDelimiter, int aMaxKeys)
-{
-  ListBucketResponsePtr lListBucket;
-  ListBucketResponse::Object lObject;
-
-  std::string lMarker;
-  try {
-    do
-    {
-      lListBucket = aS3->listBucket(aBucketName, aPrefix, lMarker, aDelimiter, aMaxKeys);
-      lListBucket->open();
-      while (lListBucket->next(lObject)) {
-        std::cout << "   Key: " << lObject.KeyValue << " | Last Modified: " << lObject.LastModified;
-        std::cout <<  " | ETag: " << lObject.ETag << " | Size: " << lObject.Size << std::endl;
-        lMarker = lObject.KeyValue;
-        DeleteResponsePtr lDel = aS3->del(aBucketName, lObject.KeyValue);
-      }
-      lListBucket->close();
-    } while (lListBucket->isTruncated());
-  } catch (S3Exception &e) {
     std::cerr << e.what() << std::endl;
     return false;
   }
@@ -216,8 +221,9 @@ usage(AWSConnectionFactory* lFactory)
   std::cout << "          \"delete-all-entries\": delete all entries in "
       "a bucket" << std::endl;
   std::cout << "          \"put\": put a file on s3" << std::endl;
-  std::cout << "          \"get\": get an object from s3" << std::endl;
-  std::cout << "          \"del\": delete an object from s3" << std::endl;
+  std::cout << "          \"putbin\": put a binary file on s3" << std::endl;
+  std::cout << "          \"get\": get a file from s3" << std::endl;
+  std::cout << "          \"del\": delete a file from s3" << std::endl;
   std::cout << "  -f filename: name of file"  << std::endl;
   std::cout << "  -n name: name of bucket"  << std::endl;
   std::cout << "  -p prefix: prefix for entries to list "  << std::endl;
@@ -366,6 +372,18 @@ main ( int argc, char** argv )
       exit(1);
     }
     put(lS3Rest, lBucketName, lFileName, lKey==0?"":lKey);
+  } else if ( lActionString.compare ( "putbin" ) == 0) {
+    if (!lBucketName) {
+      std::cerr << "No bucket name parameter specified." << std::endl;
+      std::cerr << "Use -n as a command line argument" << std::endl;
+      exit(1);
+    }
+    if (!lFileName) {
+      std::cerr << "No file specified." << std::endl;
+      std::cerr << "Use -f as a command line argument" << std::endl;
+      exit(1);
+    }
+    putbin(lS3Rest, lBucketName, lFileName, lKey==0?"":lKey);
   } else if ( lActionString.compare ( "get" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;
@@ -381,12 +399,17 @@ main ( int argc, char** argv )
   } else if ( lActionString.compare ( "del" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;
-      std::cerr << "Use -n as a command line argument" << std::endl;
+      std::cerr << "Use -n as a command line argument." << std::endl;
       exit(1);
     }
-    del(lS3Rest, lBucketName, lPrefix==0?"":lPrefix, lMarker==0?"":lMarker,  
-               lDelimiter==0?"":lDelimiter, lMaxKeys==0?-1:lMaxKeys);
-  } else {
+    if (!lKey) {
+      std::cerr << "No key parameter specified." << std::endl;
+      std::cerr << "Use -k as a command line argument." << std::endl;
+      exit(1);
+    }
+    del(lS3Rest, lBucketName, lKey);
+  }
+  else {
     std::cerr << "Invalid action: \"" << lActionString << "\"." << std::endl;
   }
 }
