@@ -104,6 +104,10 @@ namespace aws {
           const std::map<std::string, std::string>* aMetaDataMap,
           long aSize);
 
+      std::string
+      queryString(ActionType aActionType, const std::string& aBucketName,
+                  const std::string& aKey, time_t aExpiration);
+
       GetResponse*
       get(const std::string& aBucketName, const std::string& aKey, 
           const std::string& aOldEtag);

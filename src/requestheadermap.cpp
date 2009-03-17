@@ -84,6 +84,7 @@ RequestHeaderMap::getHeaderStringToSign(std::stringstream* aStringToSign)
         if ((lHashKey.find(AWSConnection::AMAZON_HEADER_PREFIX) == 0) // key starts with amazon_header_prefix
             || (lHashKey.compare("content-type") == 0)
             || (lHashKey.compare("content-md5") == 0)
+            || (lHashKey.compare("expires") == 0)
             || (lHashKey.compare("date") == 0))
         {
             std::stringstream lConcatenatedList;
@@ -105,7 +106,8 @@ RequestHeaderMap::getHeaderStringToSign(std::stringstream* aStringToSign)
     }
     
     
-    if (lInterestMap.count(AWSConnection::ALTERNATIVE_DATE_HEADER) != 0) { // contains key
+    if ((lInterestMap.count(AWSConnection::ALTERNATIVE_DATE_HEADER) != 0) &&
+        (lInterestMap.count("expires") != 0)) {  // contains key
         lInterestMap.insert(stringpair_t("date", ""));
     }
 

@@ -70,6 +70,15 @@ namespace aws {
     return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize));
   }
 
+  std::string
+  S3ConnectionImpl::getQueryString(const std::string& aBucketName,
+                                   const std::string& aKey,
+                                   time_t aExpiration)
+  {
+    return theConnection->queryString(s3::S3Connection::GET, aBucketName,
+                                      aKey, aExpiration);
+  }
+
   GetResponsePtr
   S3ConnectionImpl::get(const std::string& aBucketName,
                         const std::string& aKey,

@@ -75,6 +75,28 @@ AWSConnection::~AWSConnection()
 }
 
 std::string
+AWSConnection::urlEncode(const std::string& aContent)
+{
+  std::string encoded;
+  unsigned char c;
+  unsigned char low, high;
+
+  for (size_t i = 0; i < aContent.size(); i++) {
+    c = aContent[i];
+    if (isalnum(c))
+       encoded += c;
+    else {
+       high = c / 16;
+       low = c % 16;
+       encoded += '%';
+       encoded += (high < 10 ? '0' + high : 'A' + high - 10);
+       encoded += (low < 10 ? '0' + low : 'A' + low - 10);
+    }
+  }
+  return encoded;
+}
+
+std::string
 AWSConnection::base64Encode(const char* aContent, size_t aContentSize,
                             long& aBase64EncodedStringLength)
 {

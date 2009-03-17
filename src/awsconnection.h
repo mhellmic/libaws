@@ -32,6 +32,9 @@ class AWSConnection {
 
 public:
   static
+  std::string urlEncode(const std::string& aContent);
+
+  static
   std::string base64Encode(const char* aContent, size_t aContentSize,
                            long &aBase64EncodedStringLength);
 

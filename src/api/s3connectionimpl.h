@@ -59,6 +59,11 @@ namespace aws {
           long aSize,
           const std::map<std::string, std::string>* aMetaDataMap = 0);
 
+      std::string
+      getQueryString(const std::string& aBucket,
+                     const std::string& aKey,
+                     time_t aExpiration);
+
       GetResponsePtr
       get(const std::string& aBucketName,
           const std::string& aKey,

@@ -140,6 +140,25 @@ namespace aws {
            long aSize,
            const std::map<std::string, std::string>* aMetaDataMap = 0) = 0;
 
+      /*! \brief Create a get query string for encoding in a web page.
+       *
+       * This function creates a query string (URL) that will allow a file
+       * with the given key to be retrieved from the given bucket.  The URL is
+       * only valid until the expiration time provided.
+       *
+       * @param aBucketName The name of the bucket in which the object is
+       *   stored.
+       * @param aKey The key for which the object should be retrieved.
+       * @param aExpiration The time at which the URL expires (seconds since
+       *   the Epoch)
+       *
+       * \throws aws::AWSConnectionException if a connection error occured.
+       */
+      virtual std::string
+      getQueryString(const std::string& aBucketName,
+                     const std::string& aKey,
+                     time_t aExpiration) = 0;
+
       /*! \brief Receive an object from S3.
        *
        * This function receives and object from S3. The object is retrieved from the
