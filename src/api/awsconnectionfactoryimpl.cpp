@@ -50,39 +50,42 @@ namespace aws {
 
   S3ConnectionPtr
   AWSConnectionFactoryImpl::createS3Connection ( const std::string& aAccessKeyId,
-      const std::string& aSecretAccessKey )
+      const std::string& aSecretAccessKey,
+      const std::string& aCustomHost )
   {
 
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-    return new S3ConnectionImpl ( aAccessKeyId, aSecretAccessKey );
+    return new S3ConnectionImpl ( aAccessKeyId, aSecretAccessKey, aCustomHost );
   }
 
   SQSConnectionPtr
   AWSConnectionFactoryImpl::createSQSConnection ( const std::string &aAccessKeyId,
-      const std::string &aSecretAccessKey )
+      const std::string &aSecretAccessKey,
+      const std::string& aCustomHost )
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-    return new SQSConnectionImpl ( aAccessKeyId, aSecretAccessKey );
+    return new SQSConnectionImpl ( aAccessKeyId, aSecretAccessKey, aCustomHost );
   }
 
   SQSConnectionPtr
   AWSConnectionFactoryImpl::createSQSConnection ( const std::string &aAccessKeyId,
-      const std::string &aSecretAccessKey, const std::string& aHost, int aPort, bool aIsSecure )
+      const std::string &aSecretAccessKey, const std::string& aCustomHost, int aPort, bool aIsSecure)
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-    return new SQSConnectionImpl ( aAccessKeyId, aSecretAccessKey, aHost, aPort, aIsSecure );
+    return new SQSConnectionImpl ( aAccessKeyId, aSecretAccessKey, aCustomHost, aPort, aIsSecure );
   }
 
   SDBConnectionPtr
   AWSConnectionFactoryImpl::createSDBConnection ( const std::string &aAccessKeyId,
-      const std::string &aSecretAccessKey )
+      const std::string &aSecretAccessKey,
+      const std::string& aCustomHost )
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
-    return new SDBConnectionImpl ( aAccessKeyId, aSecretAccessKey );
+    return new SDBConnectionImpl ( aAccessKeyId, aSecretAccessKey, aCustomHost );
   }
 
   AWSConnectionFactoryImpl::~AWSConnectionFactoryImpl()

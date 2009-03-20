@@ -113,9 +113,10 @@ namespace aws {
   }
 
   S3ConnectionImpl::S3ConnectionImpl(const std::string& aAccessKeyId, 
-                                     const std::string& aSecretAccessKey)
+                                     const std::string& aSecretAccessKey,
+                                     const std::string& aCustomHost)
   {
-    theConnection = new s3::S3Connection(aAccessKeyId, aSecretAccessKey);
+    theConnection = new s3::S3Connection(aAccessKeyId, aSecretAccessKey, aCustomHost);
   }
 
   S3ConnectionImpl::~S3ConnectionImpl() 

@@ -35,8 +35,10 @@ namespace aws {
     const std::string SDBConnection::DEFAULT_HOST = "sdb.amazonaws.com";
 
     SDBConnection::SDBConnection ( const std::string& aAccessKeyId,
-                                   const std::string& aSecretAccessKey )
-        : AWSQueryConnection ( aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, DEFAULT_VERSION )
+                                   const std::string& aSecretAccessKey,
+                                   const std::string& aCustomHost )
+        : AWSQueryConnection ( aAccessKeyId, aSecretAccessKey, aCustomHost.size()==0?DEFAULT_HOST:aCustomHost,
+                               DEFAULT_VERSION )
     {
     }
 

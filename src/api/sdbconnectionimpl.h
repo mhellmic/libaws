@@ -30,7 +30,8 @@ namespace aws {
 		// only the factory can create us
 		friend class AWSConnectionFactoryImpl;
 		SDBConnectionImpl(const std::string& aAccessKeyId,
-				const std::string& aSecretAccessKey);
+				const std::string& aSecretAccessKey,
+        const std::string& aCustomHost);
 
 		sdb::SDBConnection* theConnection;
 

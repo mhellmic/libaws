@@ -35,19 +35,20 @@ namespace aws {
 
   AWSQueryConnection::AWSQueryConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,
-      const std::string& aHost,
+      const std::string& aCustomHost,
       const std::string& aVersion,
       int aPort,
       bool aIsSecure) :
-      AWSConnection ( aAccessKeyId,aSecretAccessKey, aHost, aPort, aIsSecure ), theVersion ( aVersion ), theSList(NULL)  {
+      AWSConnection ( aAccessKeyId,aSecretAccessKey, aCustomHost, aPort, aIsSecure ),
+      theVersion ( aVersion ),
+      theSList(NULL)
+  {
     // always use a content-type text/plain as required by amazon
     theSList = curl_slist_append ( theSList, "Content-Type: text/plain" );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPHEADER, theSList );
     curl_easy_setopt ( theCurl, CURLOPT_WRITEFUNCTION,  AWSQueryConnection::dataReceiver );
     curl_easy_setopt ( theCurl, CURLOPT_ERRORBUFFER, theCurlErrorBuffer );
     curl_easy_setopt ( theCurl, CURLOPT_HTTPGET, 1);
-    
-    
   };
 
   AWSQueryConnection::~AWSQueryConnection()

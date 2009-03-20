@@ -79,7 +79,8 @@ namespace aws {
      * @return A smart pointer to a aws::s3::S3Connection instance.
      */
     virtual S3ConnectionPtr
-    createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey) = 0;
+    createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey,
+                       const std::string& aCustomHost = "") = 0;
 
     /*! \brief Retrieve a smart pointer to a aws::sqs::SQSConnection instance.
      *
@@ -105,7 +106,8 @@ namespace aws {
      * @return A smart pointer to a aws::sqs::SQSConnection instance.
      */
     virtual SQSConnectionPtr
-    createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey) = 0;
+    createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                        const std::string& aCustomHost = "") = 0;
 
 
     /*! \brief Retrieve a smart pointer to a aws::sqs::SQSConnection instance.
@@ -132,7 +134,8 @@ namespace aws {
      * @return A smart pointer to a aws::sdb::SDBConnection instance.
      */
     virtual SDBConnectionPtr
-    createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey) = 0;
+    createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                        const std::string& aCustomHost = "") = 0;
 
     /*! \brief Release all resources that have been allocated by libaws or any library it uses.
      *
@@ -185,7 +188,7 @@ namespace aws {
      */
     virtual SQSConnectionPtr
     createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-    		const std::string& aHost, int aPort, bool aIsSecure) = 0;
+    		const std::string& aCustomHost, int aPort, bool aIsSecure) = 0;
   };
 
 } /* namespace aws */

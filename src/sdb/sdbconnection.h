@@ -43,7 +43,8 @@ namespace aws {
 			static const std::string DEFAULT_HOST;
 
 			SDBConnection(const std::string& aAccessKeyId,
-					const std::string& aSecretAccessKey);
+					const std::string& aSecretAccessKey,
+          const std::string& aCustomHost);
 
 			CreateDomainResponse*
 			createDomain(const std::string& aQueueName);

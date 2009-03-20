@@ -40,10 +40,10 @@ namespace aws {
         static const std::string DEFAULT_VERSION;
         static const std::string DEFAULT_HOST;
 
-
       public:
         SQSConnection(const std::string& aAccessKeyId,
-                      const std::string& aSecretAccessKey);
+                      const std::string& aSecretAccessKey,
+                      const std::string& aCustomHost);
 
         SQSConnection(const std::string& aAccessKeyId,
                       const std::string& aSecretAccessKey,
@@ -76,7 +76,6 @@ namespace aws {
 
         virtual DeleteMessageResponse*
         deleteMessage( const std::string &aQueueUrl, const std::string &aReceiptHandle);
-
     };
 
   } /* namespace sqs  */

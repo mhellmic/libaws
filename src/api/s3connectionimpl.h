@@ -84,7 +84,8 @@ namespace aws {
     protected:
       // only the factory can create us
       friend class AWSConnectionFactoryImpl;
-      S3ConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      S3ConnectionImpl(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                       const std::string& aCustomHost);
 
       s3::S3Connection* theConnection;
   }; /* class S3ConnectionImpl */

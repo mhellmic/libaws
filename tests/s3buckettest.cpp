@@ -156,15 +156,15 @@ s3buckettest(int argc, char** argv)
     return 1;
   }
 	
-  S3ConnectionPtr lS3Rest = lFactory->createS3Connection(lAccessKeyId, lSecretAccessKey);
 
   int lReturnCode;
   try {
+    S3ConnectionPtr lS3Rest = lFactory->createS3Connection(lAccessKeyId, lSecretAccessKey);
+
     lReturnCode = createbuckettest(lS3Rest.get());
     if (lReturnCode != 0)
       return lReturnCode;
 
-#if 0
     lReturnCode = listallbuckets(lS3Rest.get());
     if (lReturnCode != 0)
       return lReturnCode;
@@ -176,11 +176,13 @@ s3buckettest(int argc, char** argv)
     lReturnCode = deletebuckettest(lS3Rest.get());
     if (lReturnCode != 0)
       return lReturnCode;
-#endif
 
   } catch (AWSConnectionException& e) {
     std::cerr << e.what() << std::endl;
     return 2;
+  } catch (AWSException& awse) {
+    std::cerr << awse.what() << std::endl;
+    return 3;
   }
 
   lFactory->shutdown();

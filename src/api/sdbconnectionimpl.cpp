@@ -22,8 +22,9 @@
 namespace aws {
 
 	SDBConnectionImpl::SDBConnectionImpl(const std::string& aAccessKeyId,
-			const std::string& aSecretAccessKey) {
-		theConnection = new sdb::SDBConnection(aAccessKeyId, aSecretAccessKey);
+			const std::string& aSecretAccessKey,
+      const std::string& aCustomHost) {
+		theConnection = new sdb::SDBConnection(aAccessKeyId, aSecretAccessKey, aCustomHost);
 	}
 
 	SDBConnectionImpl::~SDBConnectionImpl() {

@@ -54,12 +54,15 @@ namespace aws { namespace s3 {
   try {
 
 #define REQUEST_EPILOG(REQUESTNAME)                                \
+  } catch (AWSConnectionException& ce) {                           \
+    lWrapper.destroyParser();                                      \
+    throw ce;                                                      \
   } catch (AWSException& e) {                                      \
     lWrapper.destroyParser();                                      \
-    throw e;                                                      \
+    throw e;                                                       \
   }                                                                \
   lWrapper.destroyParser();                                        \
-                                                                  \
+                                                                   \
   if ( ! lRes->isSuccessful() )                                    \
     throw REQUESTNAME ## Exception( lRes->theS3ResponseError );
 
@@ -67,8 +70,9 @@ namespace aws { namespace s3 {
 
 std::string S3Connection::DEFAULT_HOST = "s3.amazonaws.com";
 
-S3Connection::S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey)
-  : AWSConnection(aAccessKeyId, aSecretAccessKey, DEFAULT_HOST, -1, true),
+S3Connection::S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                           const std::string& aCustomHost)
+  : AWSConnection(aAccessKeyId, aSecretAccessKey, aCustomHost.size()==0?DEFAULT_HOST:aCustomHost, -1, true),
     theEncryptedResultSize(0),
     theBase64EncodedString(0)
 {
@@ -691,7 +695,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
 
   lResponse = aCallBackWrapper->theResponse;
   lCallingFormat = aws::CallingFormat::getRegularCallingFormat();
-  std::string lUrl = lCallingFormat->getUrl(theIsSecure, DEFAULT_HOST, thePort,
+  std::string lUrl = lCallingFormat->getUrl(theIsSecure, theHost, thePort,
                                             aBucketName, aKey, aPathArgsMap);
 
   // set the request url

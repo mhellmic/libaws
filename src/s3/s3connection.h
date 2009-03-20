@@ -46,7 +46,8 @@ namespace aws {
 
     private:
       //! Instance of this class are only created by the aws::AWSConnectionFactory
-      S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      S3Connection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                   const std::string& aCustomHost);
 
     protected:
       static std::string DEFAULT_HOST; // the amazon s3 default hostname

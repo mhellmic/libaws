@@ -64,18 +64,19 @@ namespace aws {
   }
 
   SQSConnectionImpl::SQSConnectionImpl(const std::string& aAccessKeyId,
-                                       const std::string& aSecretAccessKey)
+                                       const std::string& aSecretAccessKey,
+                                       const std::string& aCustomHost)
   {
-    theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey);
+    theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey, aCustomHost);
   }
 
   SQSConnectionImpl::SQSConnectionImpl(const std::string& aAccessKeyId,
                                        const std::string& aSecretAccessKey,
-                                       const std::string& aHost,
+                                       const std::string& aCustomHost,
                                        int aPort,
                                        bool aIsSecure)
   {
-    theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey, aHost, aPort, aIsSecure);
+    theConnection = new sqs::SQSConnection(aAccessKeyId, aSecretAccessKey, aCustomHost, aPort, aIsSecure);
   }
 
   SQSConnectionImpl::~SQSConnectionImpl()

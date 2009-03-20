@@ -35,17 +35,20 @@ namespace aws {
       virtual ~AWSConnectionFactoryImpl();
 
       virtual S3ConnectionPtr
-      createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey);
-
-      virtual SQSConnectionPtr
-      createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey,
+                         const std::string& aCustomHost);
 
       virtual SQSConnectionPtr
       createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-      		const std::string& aHost, int aPort, bool aIsSecure);
+                          const std::string& aCustomHost);
+
+      virtual SQSConnectionPtr
+      createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                      		const std::string& aHost, int aPort, bool aIsSecure);
 
       virtual SDBConnectionPtr
-      createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey);
+      createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
+                          const std::string& aCustomHost);
 
       virtual void
       shutdown();
