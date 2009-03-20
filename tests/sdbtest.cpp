@@ -39,7 +39,7 @@ int createDomain(SDBConnection* lCon) {
 		std::cout << "Domain created successfully." << std::endl;
 		printBoxUsage(*lPtr);
 	}
-	catch (CreateBucketException& e) {
+	catch (CreateDomainException& e) {
 		std::cerr << "Couldn't create domain" << std::endl;
 		std::cerr << e.what() << std::endl;
 		return 1;
