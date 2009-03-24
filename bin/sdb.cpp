@@ -240,7 +240,7 @@ main (int argc, char** argv) {
         break;
       case 'h': {
           std::cout << "libaws version " << lFactory->getVersion() << std::endl;
-          std::cout << "Usage: sqs <options>" << std::endl;
+          std::cout << "Usage: sdb <options>" << std::endl;
           std::cout << "  -i: AWS Access Key Id"  << std::endl;
           std::cout << "  -s: AWS Secret Access Key"  << std::endl;
           std::cout << "  -a action: Action to perform" << std::endl;
