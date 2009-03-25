@@ -27,7 +27,10 @@ namespace aws {
     
 
     protected:
-      void checkParameters(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey);
+      void
+      checkParameters(const std::string& aAccessKeyId,
+                      const std::string& aSecretAccessKey) const;
+
       AWSConnectionFactoryImpl();
       
     public:
@@ -35,20 +38,25 @@ namespace aws {
       virtual ~AWSConnectionFactoryImpl();
 
       virtual S3ConnectionPtr
-      createS3Connection(const std::string& aAccessKeyId,  const std::string& aSecretAccessKey,
-                         const std::string& aCustomHost);
+      createS3Connection(const std::string& aAccessKeyId,
+                         const std::string& aSecretAccessKey,
+                         const std::string& aCustomHost) const;
 
       virtual SQSConnectionPtr
-      createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-                          const std::string& aCustomHost);
+      createSQSConnection(const std::string& aAccessKeyId,
+                          const std::string& aSecretAccessKey,
+                          const std::string& aCustomHost) const;
 
       virtual SQSConnectionPtr
-      createSQSConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-                      		const std::string& aHost, int aPort, bool aIsSecure);
+      createSQSConnection(const std::string& aAccessKeyId,
+                          const std::string& aSecretAccessKey,
+                      		const std::string& aHost, int aPort,
+                          bool aIsSecure) const;
 
       virtual SDBConnectionPtr
-      createSDBConnection(const std::string& aAccessKeyId, const std::string& aSecretAccessKey,
-                          const std::string& aCustomHost);
+      createSDBConnection(const std::string& aAccessKeyId,
+                          const std::string& aSecretAccessKey,
+                          const std::string& aCustomHost) const;
 
       virtual void
       shutdown();

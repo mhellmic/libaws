@@ -36,7 +36,8 @@ namespace aws {
   { }
 
   void
-  AWSConnectionFactoryImpl::checkParameters ( const std::string& aAccessKeyId,  const std::string& aSecretAccessKey )
+  AWSConnectionFactoryImpl::checkParameters ( const std::string& aAccessKeyId,
+                                              const std::string& aSecretAccessKey ) const
   {
     if ( theInitializationFailed )
       throw AWSInitializationException ( theInitializationErrorMessage );
@@ -51,7 +52,7 @@ namespace aws {
   S3ConnectionPtr
   AWSConnectionFactoryImpl::createS3Connection ( const std::string& aAccessKeyId,
       const std::string& aSecretAccessKey,
-      const std::string& aCustomHost )
+      const std::string& aCustomHost ) const
   {
 
     checkParameters ( aAccessKeyId, aSecretAccessKey );
@@ -62,7 +63,7 @@ namespace aws {
   SQSConnectionPtr
   AWSConnectionFactoryImpl::createSQSConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,
-      const std::string& aCustomHost )
+      const std::string& aCustomHost ) const
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
@@ -71,7 +72,7 @@ namespace aws {
 
   SQSConnectionPtr
   AWSConnectionFactoryImpl::createSQSConnection ( const std::string &aAccessKeyId,
-      const std::string &aSecretAccessKey, const std::string& aCustomHost, int aPort, bool aIsSecure)
+      const std::string &aSecretAccessKey, const std::string& aCustomHost, int aPort, bool aIsSecure) const
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
@@ -81,7 +82,7 @@ namespace aws {
   SDBConnectionPtr
   AWSConnectionFactoryImpl::createSDBConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,
-      const std::string& aCustomHost )
+      const std::string& aCustomHost ) const
   {
     checkParameters ( aAccessKeyId, aSecretAccessKey );
 
