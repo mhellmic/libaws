@@ -34,6 +34,7 @@ namespace aws {
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
+		class SDBQueryWithAttributesResponse;
 	} /* namespace sqs */
 
 	class SDBResponse: public SmartObject {
@@ -154,14 +155,39 @@ namespace aws {
 		bool next(std::string& aItemName);
 		void close();
 		const std::string& getNextToken();
-		virtual ~SDBQueryResponse() {
-		}
-		;
+		virtual ~SDBQueryResponse() {}
 
 	protected:
 		friend class SDBConnectionImpl;
 		SDBQueryResponse(sdb::SDBQueryResponse*);
 	};
+
+  class SDBQueryWithAttributesResponse : public SDBTemplateResponse<sdb::SDBQueryWithAttributesResponse> {
+  public:
+    class ResponseElement {
+    public:
+      std::string ItemName;
+      std::vector<AttributePair> Attributes;
+    };
+  public:
+		virtual ~SDBQueryWithAttributesResponse() {}
+
+    void
+    open();
+
+		bool
+    next(ResponseElement& aResponseElement);
+
+		void
+    close();
+
+    const std::string&
+    getNextToken();
+
+	protected:
+		friend class SDBConnectionImpl;
+		SDBQueryWithAttributesResponse(sdb::SDBQueryWithAttributesResponse*);
+  };
 
 } /* namespace aws */
 #endif

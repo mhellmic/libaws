@@ -169,9 +169,11 @@ namespace aws {
     }
 
     SDBQueryResponse*
-    SDBConnection::query ( const std::string& aDomainName, const std::string& aQueryExpression,
-    		int aMaxNumberOfItems, const std::string& aNextToken ) {
-
+    SDBConnection::query (const std::string& aDomainName,
+                          const std::string& aQueryExpression,
+    		                  int aMaxNumberOfItems,
+                          const std::string& aNextToken )
+    {
       ParameterMap lMap;
       lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
       lMap.insert ( ParameterPair ( "QueryExpression", aQueryExpression ) );
@@ -188,6 +190,45 @@ namespace aws {
       makeQueryRequest ( "Query", &lMap, &lHandler );
       if ( lHandler.isSuccessful() ) {
       	SDBQueryResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
+        return lPtr;
+      }
+			else {
+				throw QueryException(lHandler.getQueryErrorResponse());
+      }
+    }
+
+    SDBQueryWithAttributesResponse*
+    SDBConnection::queryWithAttributes(const std::string& aDomainName,
+                                       const std::string& aQueryExpression,
+                                       const std::vector<std::string>& aAttributeNames,
+                                       int aMaxNumberOfItems,
+                                       const std::string& aNextToken)
+    {
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      lMap.insert ( ParameterPair ( "QueryExpression", aQueryExpression ) );
+
+      // if empty all attributes are returned
+      for (std::vector<std::string>::const_iterator lIter = aAttributeNames.begin();
+           lIter != aAttributeNames.end(); ++lIter) {
+        lMap.insert ( ParameterPair ( "AttributeName", *lIter ) );
+      }
+
+      if (aMaxNumberOfItems > 0 ) {
+        std::stringstream s;
+        s << aMaxNumberOfItems;
+        lMap.insert ( ParameterPair ( "MaxNumberOfItems", s.str() ) );
+      }
+
+      if (aNextToken != std::string("") ) {
+        lMap.insert ( ParameterPair ( "NextToken", aNextToken ) );
+      }
+
+      QueryWithAttributesHandler lHandler;
+      makeQueryRequest ( "QueryWithAttributes", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	SDBQueryWithAttributesResponse* lPtr = lHandler.theResponse;
         setCommons(lHandler, lPtr);
         return lPtr;
       }

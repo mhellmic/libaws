@@ -97,6 +97,36 @@ namespace aws {
 			}
 		};
 
+		class SDBQueryWithAttributesResponse: public SDBResponse {
+			friend class QueryWithAttributesHandler;
+
+    public:
+      struct ResponseElement {
+      public:
+        std::string ItemName;
+        std::vector<AttributePair> Attributes;
+      };
+		private:
+      std::vector<ResponseElement>                 theResponseElements;
+			std::vector<ResponseElement>::const_iterator theIter;
+			std::string                                  theNextToken;
+
+		public:
+			void
+      open();
+
+			bool
+      next(ResponseElement& aResponseElement);
+
+			void
+      close();
+
+			const std::string&
+      getNextToken() {
+				return theNextToken;
+			}
+		};
+
 	}
 }//namespaces
 

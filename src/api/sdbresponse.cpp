@@ -125,4 +125,30 @@ namespace aws {
 		return theSDBResponse->getNextToken();
 	}
 
+	SDBQueryWithAttributesResponse::SDBQueryWithAttributesResponse(sdb::SDBQueryWithAttributesResponse* r) :
+		SDBTemplateResponse<sdb::SDBQueryWithAttributesResponse> (r) {
+	}
+
+	void SDBQueryWithAttributesResponse::open() {
+		theSDBResponse->open();
+	}
+
+	bool SDBQueryWithAttributesResponse::next(ResponseElement& aResponseElement) {
+    sdb::SDBQueryWithAttributesResponse::ResponseElement lElem;
+    if (theSDBResponse->next(lElem)) {
+      aResponseElement.ItemName = lElem.ItemName;
+      aResponseElement.Attributes = lElem.Attributes;
+      return true;
+    }
+    return false;
+	}
+
+	void SDBQueryWithAttributesResponse::close() {
+		theSDBResponse->close();
+	}
+
+	const std::string& SDBQueryWithAttributesResponse::getNextToken() {
+		return theSDBResponse->getNextToken();
+	}
+
 } /* namespace aws */

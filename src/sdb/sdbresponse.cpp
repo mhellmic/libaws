@@ -75,5 +75,21 @@ namespace aws {
 			theIter = theItemNames.begin();
 		}
 
+		void SDBQueryWithAttributesResponse::open() {
+			theIter = theResponseElements.begin();
+		}
+
+		bool SDBQueryWithAttributesResponse::next(ResponseElement& aResponseElement) {
+			if (theIter != theResponseElements.end()) {
+				aResponseElement = *theIter++;
+				return true;
+			}
+			return false;
+		}
+
+		void SDBQueryWithAttributesResponse::close() {
+			theIter = theResponseElements.begin();
+		}
+
 	}
 }//namespaces

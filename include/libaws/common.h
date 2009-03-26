@@ -114,6 +114,9 @@ namespace aws {
   class SDBQueryResponse;
   typedef SmartPtr<SDBQueryResponse> SDBQueryResponsePtr;
 
+  class SDBQueryWithAttributesResponse;
+  typedef SmartPtr<SDBQueryWithAttributesResponse> SDBQueryWithAttributesResponsePtr;
+
 } /* namespace aws */
 
 #endif

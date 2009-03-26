@@ -29,6 +29,7 @@ namespace aws {
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
+    class SDBQueryWithAttributesResponse;
 
 		template<class T>
 		class SDBHandler: public SimpleQueryCallBack {
@@ -53,7 +54,11 @@ namespace aws {
 				NextToken = 1 << 6,
 				Name = 1 << 7,
 				Value = 1 << 8,
-				ItemName = 1 << 9
+				Item = 1 << 9,
+				Attribute = 1 << 10, 
+				AttributeName = 1 << 11,
+				ItemName = 1 << 12,
+				AttributeValue = 1 << 13
 			};
 
 			SDBHandler() : theResponse(0) {
@@ -139,6 +144,21 @@ namespace aws {
 					int nb_attributes, const xmlChar ** attributes);
 			virtual void responseCharacters(const xmlChar * value, int len);
 			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class QueryWithAttributesHandler: public SDBHandler<SDBQueryWithAttributesResponse> {
+		protected:
+
+		public:
+			virtual void
+      responseStartElement(const xmlChar * localname, int nb_attributes, const xmlChar ** attributes);
+
+			virtual void
+      responseCharacters(const xmlChar * value, int len);
+
+			virtual void
+      responseEndElement(const xmlChar * localname);
 
 		};
 

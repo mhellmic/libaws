@@ -35,6 +35,7 @@ namespace aws {
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
+		class SDBQueryWithAttributesResponse;
 
 		class SDBConnection: public AWSQueryConnection {
 
@@ -53,8 +54,7 @@ namespace aws {
 			deleteDomain(const std::string& aDomainName);
 
 			ListDomainsResponse*
-			listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken =
-					"");
+			listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken = "");
 
 			PutAttributesResponse*
 			putAttributes(const std::string& aDomainName,
@@ -74,6 +74,13 @@ namespace aws {
 			query(const std::string& aDomainName,
 					const std::string& aQueryExpression, int aMaxNumberOfItems = 0,
 					const std::string& aNextToken = "");
+
+      SDBQueryWithAttributesResponse*
+      queryWithAttributes(const std::string& aDomainName,
+                          const std::string& aQueryExpression,
+                          const std::vector<std::string>& aAttributeNames,
+                          int aMaxNumberOfItems,
+                          const std::string& aNextToken);
 
 		private:
 			void insertAttParameter(ParameterMap& aMap,

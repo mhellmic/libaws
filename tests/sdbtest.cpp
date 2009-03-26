@@ -156,6 +156,31 @@ int query(SDBConnection* lCon) {
 	return 0;
 }
 
+int queryWithAttributes(SDBConnection* lCon) {
+	try {
+		std::string query("['amount'<'6']");
+
+    std::vector<std::string> lAttributes;
+    lAttributes.push_back("amount");
+
+		SDBQueryWithAttributesResponsePtr lPtr = lCon->queryWithAttributes("testDomain", query, lAttributes);
+		std::cout << "Query result for queryWithAttributes " << query << ": " << std::endl;
+		lPtr->open();
+    SDBQueryWithAttributesResponse::ResponseElement lRes;
+		while (lPtr->next(lRes)) {
+			std::cout << lRes.ItemName << std::endl;
+			std::cout << lRes.Attributes.size() << std::endl;
+		}
+		printBoxUsage(*lPtr);
+	}
+	catch (QueryException& e) {
+		std::cerr << "Couldn't query the queryWithAttributes" << std::endl;
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
+	return 0;
+}
+
 int sdbtest(int argc, char** argv) {
 	AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
 
@@ -194,6 +219,9 @@ int sdbtest(int argc, char** argv) {
 			return 1;
 		}
 		if (query(lCon) != 0) {
+			return 1;
+		}
+		if (queryWithAttributes(lCon) != 0) {
 			return 1;
 		}
 		if (deleteDomain(lCon) != 0) {

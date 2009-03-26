@@ -168,17 +168,17 @@ bool query (SDBConnectionPtr aSDB, const std::string& aDomainName, const std::st
             const std::string & aNextToken = "") {
   try {
     SDBQueryResponsePtr lRes = aSDB->query (aDomainName, aQueryExpression, aMaxNumberOfItems, aNextToken);
-      std::cout << "query successfully" << std::endl;
-      lRes->open();
-      std::string lItem;
-      while (lRes->next (lItem)) {
-          std::cout << "   Item: " << lItem << std::endl;
-        }
-      lRes->close();
-    } catch (PutAttributesException &e) {
-      std::cerr << e.what() << std::endl;
-      return false;
+    std::cout << "query successfully" << std::endl;
+    lRes->open();
+    std::string lItem;
+    while (lRes->next (lItem)) {
+        std::cout << "   Item: " << lItem << std::endl;
     }
+    lRes->close();
+  } catch (PutAttributesException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
   return true;
 }
 

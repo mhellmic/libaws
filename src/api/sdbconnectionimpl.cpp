@@ -23,56 +23,75 @@ namespace aws {
 
 	SDBConnectionImpl::SDBConnectionImpl(const std::string& aAccessKeyId,
 			const std::string& aSecretAccessKey,
-      const std::string& aCustomHost) {
+      const std::string& aCustomHost)
+  {
 		theConnection = new sdb::SDBConnection(aAccessKeyId, aSecretAccessKey, aCustomHost);
 	}
 
-	SDBConnectionImpl::~SDBConnectionImpl() {
+	SDBConnectionImpl::~SDBConnectionImpl()
+  {
 		delete theConnection;
 	}
 
-	CreateDomainResponsePtr SDBConnectionImpl::createDomain(
-			const std::string &aDomainName) {
+	CreateDomainResponsePtr
+  SDBConnectionImpl::createDomain(const std::string &aDomainName)
+  {
 		return new CreateDomainResponse(theConnection->createDomain(aDomainName));
 	}
 
-	DeleteDomainResponsePtr SDBConnectionImpl::deleteDomain(
-			const std::string &aDomainName) {
+	DeleteDomainResponsePtr
+  SDBConnectionImpl::deleteDomain(const std::string &aDomainName)
+  {
 		return new DeleteDomainResponse(theConnection->deleteDomain(aDomainName));
 	}
 
-	ListDomainsResponsePtr SDBConnectionImpl::listDomains(
-			int aMaxNumberOfDomains, const std::string& aNextToken) {
-		return new ListDomainsResponse(theConnection->listDomains(
-				aMaxNumberOfDomains, aNextToken));
+	ListDomainsResponsePtr
+  SDBConnectionImpl::listDomains(int aMaxNumberOfDomains, const std::string& aNextToken)
+  {
+		return new ListDomainsResponse(theConnection->listDomains(aMaxNumberOfDomains, aNextToken));
 	}
 
-	PutAttributesResponsePtr SDBConnectionImpl::putAttributes(
-			const std::string& aDomainName, const std::string& aItemName,
-			const std::vector<aws::Attribute>& attributes) {
-		return new PutAttributesResponse(theConnection->putAttributes(aDomainName,
-				aItemName, attributes));
+	PutAttributesResponsePtr
+  SDBConnectionImpl::putAttributes(const std::string& aDomainName, const std::string& aItemName,
+                                   const std::vector<aws::Attribute>& attributes)
+  {
+		return new PutAttributesResponse(theConnection->putAttributes(aDomainName, aItemName,
+        attributes));
 	}
 
-	DeleteAttributesResponsePtr SDBConnectionImpl::deleteAttributes(
-			const std::string& aDomainName, const std::string& aItemName,
-			const std::vector<aws::Attribute>& attributes) {
+	DeleteAttributesResponsePtr
+  SDBConnectionImpl::deleteAttributes(const std::string& aDomainName, const std::string& aItemName,
+                                      const std::vector<aws::Attribute>& attributes)
+  {
 		return new DeleteAttributesResponse(theConnection->deleteAttributes(
 				aDomainName, aItemName, attributes));
 	}
 
-	GetAttributesResponsePtr SDBConnectionImpl::getAttributes(
-			const std::string& aDomainName, const std::string& aItemName,
-			const std::string& attributeName) {
+	GetAttributesResponsePtr
+  SDBConnectionImpl::getAttributes(const std::string& aDomainName, const std::string& aItemName,
+                                   const std::string& attributeName)
+  {
 		return new GetAttributesResponse(theConnection->getAttributes(aDomainName,
 				aItemName, attributeName));
 	}
 
-	SDBQueryResponsePtr SDBConnectionImpl::query(const std::string& aDomainName,
-			const std::string& aQueryExpression, int aMaxNumberOfItems,
-			const std::string& aNextToken) {
+	SDBQueryResponsePtr
+  SDBConnectionImpl::query(const std::string& aDomainName, const std::string& aQueryExpression,
+                           int aMaxNumberOfItems, const std::string& aNextToken)
+  {
 		return new SDBQueryResponse(theConnection->query(aDomainName,
 				aQueryExpression, aMaxNumberOfItems, aNextToken));
-	}
+	} 
+
+  SDBQueryWithAttributesResponsePtr
+  SDBConnectionImpl::queryWithAttributes(const std::string& aDomainName,
+                                         const std::string& aQueryExpression,
+                                         const std::vector<std::string>& aAttributeNames,
+                                         int aMaxNumberOfItems,
+                                         const std::string& aNextToken)
+  {
+    return new SDBQueryWithAttributesResponse(theConnection->queryWithAttributes(aDomainName,
+        aQueryExpression, aAttributeNames, aMaxNumberOfItems, aNextToken));
+  }
 
 }//namespace aws

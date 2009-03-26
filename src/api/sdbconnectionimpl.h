@@ -39,29 +39,35 @@ namespace aws {
 		virtual ~SDBConnectionImpl();
 
 		virtual CreateDomainResponsePtr
-				createDomain(const std::string &aDomainName);
+    createDomain(const std::string &aDomainName);
 
 		virtual DeleteDomainResponsePtr
-				deleteDomain(const std::string &aDomainName);
+    deleteDomain(const std::string &aDomainName);
 
-		virtual ListDomainsResponsePtr listDomains(int aMaxNumberOfDomains = 0,
-				const std::string& aNextToken = "");
+		virtual ListDomainsResponsePtr
+    listDomains(int aMaxNumberOfDomains = 0,
+                const std::string& aNextToken = "");
 
-		virtual PutAttributesResponsePtr putAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::vector <aws::Attribute>& attributes);
+		virtual PutAttributesResponsePtr
+    putAttributes(const std::string& aDomainName, const std::string& aItemName,
+				          const std::vector <aws::Attribute>& attributes);
 
-		virtual DeleteAttributesResponsePtr deleteAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::vector<aws::Attribute>& attributes);
+		virtual DeleteAttributesResponsePtr
+    deleteAttributes(const std::string& aDomainName, const std::string& aItemName,
+                     const std::vector<aws::Attribute>& attributes);
 
-		virtual GetAttributesResponsePtr getAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::string& attributeName = "");
+		virtual GetAttributesResponsePtr
+    getAttributes(const std::string& aDomainName, const std::string& aItemName,
+                  const std::string& attributeName = "");
 
-		virtual SDBQueryResponsePtr query(const std::string& aDomainName,
-				const std::string& aQueryExpression, int aMaxNumberOfItems = 0,
-				const std::string& aNextToken = "");
+		virtual SDBQueryResponsePtr
+    query(const std::string& aDomainName, const std::string& aQueryExpression,
+          int aMaxNumberOfItems = 0, const std::string& aNextToken = "");
+
+    virtual SDBQueryWithAttributesResponsePtr
+    queryWithAttributes(const std::string& aDomainName, const std::string& aQueryExpression,
+                        const std::vector<std::string>& aAttributeNames, int aMaxNumberOfItems = 0,
+                        const std::string& aNextToken = "");
 	};
 } /* namespace aws */
 #endif

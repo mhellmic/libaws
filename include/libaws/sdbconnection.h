@@ -53,29 +53,34 @@ namespace aws {
 		}
 
 		virtual CreateDomainResponsePtr
-				createDomain(const std::string &aDomainName) = 0;
+    createDomain(const std::string &aDomainName) = 0;
 
 		virtual DeleteDomainResponsePtr
-				deleteDomain(const std::string &aDomainName) = 0;
+		deleteDomain(const std::string &aDomainName) = 0;
 
-		virtual ListDomainsResponsePtr listDomains(int aMaxNumberOfDomains = 0,
-				const std::string& aNextToken = "") = 0;
+		virtual ListDomainsResponsePtr
+    listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken = "") = 0;
 
-		virtual PutAttributesResponsePtr putAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::vector<aws::Attribute>& attributes) = 0;
+		virtual PutAttributesResponsePtr
+    putAttributes(const std::string& aDomainName, const std::string& aItemName,
+          				const std::vector<aws::Attribute>& attributes) = 0;
 
-		virtual DeleteAttributesResponsePtr deleteAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::vector<aws::Attribute>& attributes) = 0;
+		virtual DeleteAttributesResponsePtr
+    deleteAttributes(const std::string& aDomainName, const std::string& aItemName,
+                     const std::vector<aws::Attribute>& attributes) = 0;
 
-		virtual GetAttributesResponsePtr getAttributes(
-				const std::string& aDomainName, const std::string& aItemName,
-				const std::string& attributeName = "") = 0;
+		virtual GetAttributesResponsePtr
+    getAttributes(const std::string& aDomainName, const std::string& aItemName,
+                  const std::string& attributeName = "") = 0;
 
-		virtual SDBQueryResponsePtr query(const std::string& aDomainName,
-				const std::string& aQueryExpression, int aMaxNumberOfItems = 0,
-				const std::string& aNextToken = "") = 0;
+		virtual SDBQueryResponsePtr
+    query(const std::string& aDomainName, const std::string& aQueryExpression,
+          int aMaxNumberOfItems = 0, const std::string& aNextToken = "") = 0;
+
+    virtual SDBQueryWithAttributesResponsePtr
+    queryWithAttributes(const std::string& aDomainName, const std::string& aQueryExpression,
+                        const std::vector<std::string>& aAttributeNames, int aMaxNumberOfItems = 0,
+                        const std::string& aNextToken = "") = 0;
 
 	};
 

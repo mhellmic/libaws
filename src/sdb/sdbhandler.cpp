@@ -251,5 +251,76 @@ namespace aws {
 			}
 		}
 
+		void
+    QueryWithAttributesHandler::responseStartElement(const xmlChar * localname,
+	                                     int nb_attributes, const xmlChar **attributes)
+    {
+			if (xmlStrEqual(localname, (xmlChar*) "QueryWithAttributesResponse")) {
+				theResponse = new SDBQueryWithAttributesResponse();
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "Item")) {
+        theResponse->theResponseElements.push_back(SDBQueryWithAttributesResponse::ResponseElement());
+				setState(Item);
+			}
+			else if (isSet(Item) && xmlStrEqual(localname, (xmlChar*) "Name")) {
+				setState(ItemName);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "Attribute")) {
+        AttributePair lPair;
+				theResponse->theResponseElements.back().Attributes.push_back(lPair);
+				setState(Attribute);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeName")) {
+				setState(AttributeName);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValue")) {
+				setState(AttributeValue);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "NextToken")) {
+				setState(NextToken);
+			}
+		}
+
+		void
+    QueryWithAttributesHandler::responseCharacters(const xmlChar * value, int len)
+    {
+			std::string lValue((const char*) value, len);
+			if (isSet(ItemName)) {
+				theResponse->theResponseElements.back().ItemName = lValue;
+			}
+			if (isSet(AttributeName)) {
+				theResponse->theResponseElements.back().Attributes.back().first = lValue;
+			}
+			if (isSet(AttributeValue)) {
+				theResponse->theResponseElements.back().Attributes.back().second = lValue;
+			}
+			else if (isSet(NextToken)) {
+				theResponse->theNextToken = lValue;
+			}
+		}
+
+		void
+    QueryWithAttributesHandler::responseEndElement(const xmlChar * localname)
+    {
+			if (xmlStrEqual(localname, (xmlChar*) "Item")) {
+				unsetState(Item);
+			}
+			else if (isSet(Item) && xmlStrEqual(localname, (xmlChar*) "Name")) {
+				unsetState(ItemName);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "Attribute")) {
+				unsetState(Attribute);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeName")) {
+				unsetState(AttributeName);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValue")) {
+				unsetState(AttributeValue);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "NextToken")) {
+				unsetState(NextToken);
+			}
+		}
+
 	} /* namespace sqs  */
 } /* namespace aws */
