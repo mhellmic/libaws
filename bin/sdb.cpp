@@ -335,7 +335,7 @@ main (int argc, char** argv) {
     }
     
     if (lActionString.compare ("query") == 0) {
-      query (lSDBRest, lDomain, lQuery, lMaxItems, lNextTokenTmp);
+      query (lSDBRest, lDomain, lQuery==0?"":lQuery, lMaxItems, lNextTokenTmp);
       exit(0);
     } 
 
