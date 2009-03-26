@@ -1,7 +1,9 @@
 A Amazon Web Services C++ Library
 
-version 0.9.x
+version 0.9.2 (2009.03.26)
   * Introduced property files to pass bucket-name, aws-access-key, aws-secret-access-key to the s3fs executable
+  * Added a function for queryWithAttributes to the SDBConnection
+  * Fixed some minor bugs and typos
 
 version 0.9.0
   * Full-fledged S3, SQS, and SDB support
