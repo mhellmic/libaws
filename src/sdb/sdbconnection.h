@@ -32,6 +32,7 @@ namespace aws {
 		class DeleteDomainResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
+    class BatchPutAttributesResponse;
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
@@ -61,6 +62,10 @@ namespace aws {
 					const std::string& aItemName,
 					const std::vector<aws::Attribute>& attributes);
 
+      BatchPutAttributesResponse*
+      batchPutAttributes(const std::string& aDomainName,
+                         const aws::SDBBatch& aBatch);
+
 			DeleteAttributesResponse*
 			deleteAttributes(const std::string& aDomainName,
 					const std::string& aItemName,
@@ -86,6 +91,9 @@ namespace aws {
 			void insertAttParameter(ParameterMap& aMap,
 					const std::vector<aws::Attribute>& attributes,
 					bool insertReplaces);
+
+      void insertBatchParameter(ParameterMap& aMap,
+          const SDBBatch& aBatch);
 		};
 
 	} /* namespace sdb  */

@@ -23,6 +23,10 @@
 
 namespace aws {
 
+  namespace sdb {
+    class SDBConnection;
+  }
+
 	class Attribute {
 		std::string name;
 		std::string value;
@@ -47,6 +51,25 @@ namespace aws {
 		}
 	};
 
+  class SDBBatch {
+    protected:
+      friend class sdb::SDBConnection;
+      std::map<std::string, std::vector<Attribute> > theBatch;
+
+    public:
+      void
+      addItem(const std::string& aItem, const std::vector<Attribute>& aAttributes)
+      {
+          theBatch.insert(std::pair<std::string, std::vector<Attribute> >(aItem, aAttributes));
+      }
+
+      void
+      clear() { theBatch.clear(); }
+
+      size_t
+      size() const { return theBatch.size(); }
+  };
+
 	class SDBConnection: public SmartObject {
 	public:
 		virtual ~SDBConnection() {
@@ -64,6 +87,9 @@ namespace aws {
 		virtual PutAttributesResponsePtr
     putAttributes(const std::string& aDomainName, const std::string& aItemName,
           				const std::vector<aws::Attribute>& attributes) = 0;
+
+    virtual BatchPutAttributesResponsePtr
+    batchPutAttributes(const std::string& aDomainName, const SDBBatch& aBatch) = 0;
 
 		virtual DeleteAttributesResponsePtr
     deleteAttributes(const std::string& aDomainName, const std::string& aItemName,

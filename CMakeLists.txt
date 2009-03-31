@@ -83,7 +83,7 @@ INCLUDE(CMakeCompiler.txt)
 
 SET(LIBAWS_MAJOR_VERSION "0")
 SET(LIBAWS_MINOR_VERSION "9")
-SET(LIBAWS_PATCH_VERSION "2")
+SET(LIBAWS_PATCH_VERSION "3")
 
 # set the include path to the API headers
 # note that there also some generated headers files in the build directory

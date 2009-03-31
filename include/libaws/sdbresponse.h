@@ -31,6 +31,7 @@ namespace aws {
 		class DeleteDomainResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
+		class BatchPutAttributesResponse;
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
@@ -120,6 +121,18 @@ namespace aws {
 	protected:
 		friend class SDBConnectionImpl;
 		PutAttributesResponse(sdb::PutAttributesResponse*);
+	};
+
+	class BatchPutAttributesResponse: public SDBTemplateResponse<
+			sdb::BatchPutAttributesResponse> {
+	public:
+		virtual ~BatchPutAttributesResponse() {
+		}
+		;
+
+	protected:
+		friend class SDBConnectionImpl;
+		BatchPutAttributesResponse(sdb::BatchPutAttributesResponse*);
 	};
 
 	class DeleteAttributesResponse: public SDBTemplateResponse<

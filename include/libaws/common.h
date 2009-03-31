@@ -105,6 +105,9 @@ namespace aws {
   class PutAttributesResponse;
   typedef SmartPtr<PutAttributesResponse> PutAttributesResponsePtr;
 
+  class BatchPutAttributesResponse;
+  typedef SmartPtr<BatchPutAttributesResponse> BatchPutAttributesResponsePtr;
+
   class DeleteAttributesResponse;
   typedef SmartPtr<DeleteAttributesResponse> DeleteAttributesResponsePtr;
 

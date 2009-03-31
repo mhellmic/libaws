@@ -67,6 +67,9 @@ namespace aws {
 		class PutAttributesResponse: public SDBResponse {
 		};
 
+		class BatchPutAttributesResponse: public SDBResponse {
+		};
+
 		class DeleteAttributesResponse: public SDBResponse {
 		};
 

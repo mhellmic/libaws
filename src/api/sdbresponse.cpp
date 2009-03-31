@@ -84,6 +84,10 @@ namespace aws {
 		SDBTemplateResponse<sdb::PutAttributesResponse> (r) {
 	}
 
+	BatchPutAttributesResponse::BatchPutAttributesResponse(sdb::BatchPutAttributesResponse* r) :
+		SDBTemplateResponse<sdb::BatchPutAttributesResponse> (r) {
+	}
+
 	DeleteAttributesResponse::DeleteAttributesResponse(
 			sdb::DeleteAttributesResponse* r) :
 		SDBTemplateResponse<sdb::DeleteAttributesResponse> (r) {

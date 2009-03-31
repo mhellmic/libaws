@@ -156,6 +156,15 @@ namespace aws {
 		PutAttributesException(const QueryErrorResponse&);
 	};
 
+  class BatchPutAttributesException : public SDBException
+  {
+  public:
+    virtual ~BatchPutAttributesException() throw();
+  private:
+    friend class sdb::SDBConnection;
+    BatchPutAttributesException(const QueryErrorResponse&);
+  };
+
 	class DeleteAttributesException : public SDBException
 	{
 	public:

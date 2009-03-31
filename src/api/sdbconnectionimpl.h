@@ -52,6 +52,9 @@ namespace aws {
     putAttributes(const std::string& aDomainName, const std::string& aItemName,
 				          const std::vector <aws::Attribute>& attributes);
 
+    virtual BatchPutAttributesResponsePtr
+    batchPutAttributes(const std::string& aDomainName, const SDBBatch& aBatch);
+
 		virtual DeleteAttributesResponsePtr
     deleteAttributes(const std::string& aDomainName, const std::string& aItemName,
                      const std::vector<aws::Attribute>& attributes);

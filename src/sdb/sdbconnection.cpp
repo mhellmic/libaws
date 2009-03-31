@@ -124,6 +124,25 @@ namespace aws {
       }
     }
 
+    BatchPutAttributesResponse*
+    SDBConnection::batchPutAttributes ( const std::string& aDomainName, const SDBBatch& aBatch ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+      insertBatchParameter(lMap, aBatch);
+
+      BatchPutAttributesHandler lHandler;
+      makeQueryRequest ( "BatchPutAttributes", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	BatchPutAttributesResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
+        return lPtr;
+      }
+			else {
+				throw BatchPutAttributesException(lHandler.getQueryErrorResponse());
+      }
+    }
+
     DeleteAttributesResponse*
     SDBConnection::deleteAttributes ( const std::string& aDomainName, const std::string& aItemName,
 			const std::vector<Attribute>& attributes ) {
@@ -252,7 +271,39 @@ namespace aws {
 					c << "Attribute." << lAttNr << ".Replace";
 					aMap.insert(ParameterPair(c.str(), std::string("true")));
       	}
-      	lAttNr++;
+      	++lAttNr;
+      }
+    }
+
+    void
+    SDBConnection::insertBatchParameter(ParameterMap& aMap, const SDBBatch& aBatch ) {
+      int lItemNo = 0;
+      for (std::map<std::string, std::vector<Attribute> >::const_iterator lIter = aBatch.theBatch.begin();
+           lIter != aBatch.theBatch.end(); ++ lIter) {
+        std::stringstream a;
+        // insert the itemname
+        a << "Item." << lItemNo << ".ItemName";
+        aMap.insert(ParameterPair(a.str(), (*lIter).first));
+
+        const std::vector<Attribute>& lAttrs = (*lIter).second;
+        int lAttrNo = 0;
+        for (std::vector<Attribute>::const_iterator lAttrIter = lAttrs.begin();
+             lAttrIter != lAttrs.end(); ++lAttrIter) {
+          std::stringstream b, c;
+          b << "Item." << lItemNo << ".Attribute." << lAttrNo << ".Name";
+          aMap.insert(ParameterPair(b.str(), (*lAttrIter).getName()));
+          
+          c << "Item." << lItemNo << ".Attribute." << lAttrNo << ".Value";
+          aMap.insert(ParameterPair(c.str(), (*lAttrIter).getValue()));
+
+          if ((*lAttrIter).isReplace()) {
+            std::stringstream d;
+            d << "Item." << lItemNo <<  ".Attribute." << lAttrNo << ".Replace";
+            aMap.insert(ParameterPair(d.str(), std::string("true")));
+          }
+          ++lAttrNo; 
+        }
+        ++lItemNo;
       }
     }
 

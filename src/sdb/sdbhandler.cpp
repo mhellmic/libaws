@@ -170,6 +170,20 @@ namespace aws {
 		void PutAttributesHandler::responseEndElement(const xmlChar * localname) {
 		}
 
+		void BatchPutAttributesHandler::responseStartElement(const xmlChar * localname,
+				int nb_attributes, const xmlChar **attributes) {
+			if (xmlStrEqual(localname, (xmlChar*) "BatchPutAttributesResponse")) {
+				theResponse = new BatchPutAttributesResponse();
+			}
+		}
+
+		void BatchPutAttributesHandler::responseCharacters(const xmlChar * value,
+				int len) {
+		}
+
+		void BatchPutAttributesHandler::responseEndElement(const xmlChar * localname) {
+		}
+
 		void DeleteAttributesHandler::responseStartElement(
 				const xmlChar * localname, int nb_attributes,
 				const xmlChar **attributes) {

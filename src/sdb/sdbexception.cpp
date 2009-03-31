@@ -70,6 +70,13 @@ namespace aws {
 	PutAttributesException::~PutAttributesException() throw() {
 	}
 
+	BatchPutAttributesException::BatchPutAttributesException(const QueryErrorResponse& aError) :
+		SDBException(aError) {
+	}
+
+	BatchPutAttributesException::~BatchPutAttributesException() throw() {
+	}
+
 	DeleteAttributesException::DeleteAttributesException(
 			const QueryErrorResponse& aError) :
 		SDBException(aError) {

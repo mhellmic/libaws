@@ -26,6 +26,7 @@ namespace aws {
 		class DeleteDomainResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
+    class BatchPutAttributesResponse;
 		class DeleteAttributesResponse;
 		class GetAttributesResponse;
 		class SDBQueryResponse;
@@ -104,6 +105,17 @@ namespace aws {
 		};
 
 		class PutAttributesHandler: public SDBHandler<PutAttributesResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class BatchPutAttributesHandler: public SDBHandler<BatchPutAttributesResponse> {
 		protected:
 
 		public:

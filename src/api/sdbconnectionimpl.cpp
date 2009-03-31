@@ -59,6 +59,12 @@ namespace aws {
         attributes));
 	}
 
+  BatchPutAttributesResponsePtr
+  SDBConnectionImpl::batchPutAttributes(const std::string& aDomainName, const SDBBatch& aBatch)
+  {
+    return new BatchPutAttributesResponse(theConnection->batchPutAttributes(aDomainName, aBatch));
+  }
+
 	DeleteAttributesResponsePtr
   SDBConnectionImpl::deleteAttributes(const std::string& aDomainName, const std::string& aItemName,
                                       const std::vector<aws::Attribute>& attributes)
