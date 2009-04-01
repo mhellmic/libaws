@@ -99,6 +99,9 @@ namespace aws {
   class DeleteDomainResponse;
   typedef SmartPtr<DeleteDomainResponse> DeleteDomainResponsePtr;
 
+  class DomainMetadataResponse;
+  typedef SmartPtr<DomainMetadataResponse> DomainMetadataResponsePtr;
+
   class ListDomainsResponse;
   typedef SmartPtr<ListDomainsResponse> ListDomainsResponsePtr;
 

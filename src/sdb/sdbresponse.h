@@ -49,6 +49,76 @@ namespace aws {
 		class DeleteDomainResponse: public SDBResponse {
 		};
 
+		class DomainMetadataResponse: public SDBResponse {
+      friend class DomainMetadataHandler;
+    private:
+      long theItemCount;
+      long theItemNamesSizeBytes;
+      int  theAttributeNameCount;
+      long theAttributeNamesSizeBytes;
+      long theAttributeValueCount;
+      long theAttributeValuesSizeBytes;
+      long theTimestamp;
+
+    public:
+      long getItemCount() const {
+        return theItemCount;
+      }
+
+      void setItemCount(long aItemCount) {
+        theItemCount = aItemCount;
+      }
+
+      long getItemNamesSizeBytes() const {
+        return theItemNamesSizeBytes;
+      }
+
+      void setItemNamesSizeBytes(long aItemNamesSizeBytes) {
+        theItemNamesSizeBytes = aItemNamesSizeBytes;
+      }
+
+      int  getAttributeNameCount() const {
+        return theAttributeValueCount;
+      }
+
+      void  setAttributeNameCount(int aAttributeValueCount) {
+        theAttributeValueCount = aAttributeValueCount;
+      }
+
+      long getAttributeNamesSizeBytes() const {
+        return theAttributeNamesSizeBytes;
+      }
+
+      void setAttributeNamesSizeBytes(long aAttributeNamesSizeBytes) {
+        theAttributeNamesSizeBytes = aAttributeNamesSizeBytes;
+      }
+
+      long getAttributeValueCount() const {
+        return theAttributeValueCount;
+      }
+
+      void setAttributeValueCount(long aAttributeValueCount) {
+        theAttributeValueCount = aAttributeValueCount;
+      }
+
+      long getAttributeValuesSizeBytes() const {
+        return theAttributeNamesSizeBytes;
+      }
+
+      void setAttributeValuesSizeBytes(long aAttributeValuesSizeBytes) {
+        theAttributeValuesSizeBytes = aAttributeValuesSizeBytes;
+      }
+
+      long getTimestamp() const {
+        return theTimestamp;
+      }
+
+      void setTimestamp(long aTimestamp) {
+        theTimestamp = aTimestamp;
+      }
+
+		};
+
 		class ListDomainsResponse: public SDBResponse {
 			friend class ListDomainsHandler;
 		private:

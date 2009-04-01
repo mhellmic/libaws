@@ -45,6 +45,12 @@ namespace aws {
 		return new DeleteDomainResponse(theConnection->deleteDomain(aDomainName));
 	}
 
+	DomainMetadataResponsePtr
+  SDBConnectionImpl::domainMetadata(const std::string &aDomainName)
+  {
+		return new DomainMetadataResponse(theConnection->domainMetadata(aDomainName));
+	}
+
 	ListDomainsResponsePtr
   SDBConnectionImpl::listDomains(int aMaxNumberOfDomains, const std::string& aNextToken)
   {

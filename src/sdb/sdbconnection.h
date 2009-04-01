@@ -30,6 +30,7 @@ namespace aws {
 
 		class CreateDomainResponse;
 		class DeleteDomainResponse;
+		class DomainMetadataResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
     class BatchPutAttributesResponse;
@@ -53,6 +54,9 @@ namespace aws {
 
 			DeleteDomainResponse*
 			deleteDomain(const std::string& aDomainName);
+
+			DomainMetadataResponse*
+			domainMetadata(const std::string& aDomainName);
 
 			ListDomainsResponse*
 			listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken = "");

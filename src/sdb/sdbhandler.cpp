@@ -17,6 +17,7 @@
 #include "sdb/sdbhandler.h"
 #include "sdb/sdbresponse.h"
 #include <iostream>
+#include <stdlib.h>
 
 #include <string>
 
@@ -122,6 +123,90 @@ namespace aws {
 		}
 
 		void DeleteDomainHandler::responseEndElement(const xmlChar * localname) {
+		}
+
+		void DomainMetadataHandler::responseStartElement(const xmlChar * localname,
+				int nb_attributes, const xmlChar **attributes) {
+			if (xmlStrEqual(localname, (xmlChar*) "DomainMetadataResponse")) {
+				theResponse = new DomainMetadataResponse();
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "ItemCount")) {
+				setState(ItemCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "ItemNamesSizeBytes")) {
+				setState(ItemNamesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeNameCount")) {
+				setState(AttributeNameCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeNamesSizeBytes")) {
+				setState(AttributeNamesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValueCount")) {
+				setState(AttributeValueCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValuesSizeBytes")) {
+				setState(AttributeValuesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "Timestamp")) {
+				setState(Timestamp);
+			}
+		}
+
+		void DomainMetadataHandler::responseCharacters(const xmlChar * value, int len) {
+			std::string lValue((const char*) value, len);
+			if (isSet(ItemCount)) {
+        long l = atol(lValue.c_str());
+        theResponse->setItemCount(l);
+			}
+			else if (isSet(ItemNamesSizeBytes)) {
+        long l = atol(lValue.c_str());
+        theResponse->setItemNamesSizeBytes(l);
+			}
+			else if (isSet(AttributeNameCount)) {
+        int  i = atoi(lValue.c_str());
+        theResponse->setAttributeNameCount(i);
+			}
+			else if (isSet(AttributeNamesSizeBytes)) {
+        long l = atol(lValue.c_str());
+        theResponse->setAttributeNamesSizeBytes(l);
+			}
+			else if (isSet(AttributeValueCount)) {
+        long l = atol(lValue.c_str());
+        theResponse->setAttributeValueCount(l);
+			}
+			else if (isSet(AttributeValuesSizeBytes)) {
+        long l = atol(lValue.c_str());
+        theResponse->setAttributeValuesSizeBytes(l);
+			}
+			else if (isSet(Timestamp)) {
+        long l = atol(lValue.c_str());
+        theResponse->setTimestamp(l);
+			}
+		}
+
+		void DomainMetadataHandler::responseEndElement(const xmlChar * localname) {
+			if (xmlStrEqual(localname, (xmlChar*) "ItemCount")) {
+				unsetState(ItemCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "ItemNamesSizeBytes")) {
+				unsetState(ItemNamesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeNameCount")) {
+				unsetState(AttributeNameCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeNamesSizeBytes")) {
+				unsetState(AttributeNamesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValueCount")) {
+				unsetState(AttributeValueCount);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "AttributeValuesSizeBytes")) {
+				unsetState(AttributeValuesSizeBytes);
+			}
+			else if (xmlStrEqual(localname, (xmlChar*) "Timestamp")) {
+				unsetState(Timestamp);
+			}
 		}
 
 		void ListDomainsHandler::responseStartElement(const xmlChar * localname,

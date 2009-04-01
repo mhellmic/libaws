@@ -78,6 +78,24 @@ namespace aws {
       }
     }
 
+    DomainMetadataResponse*
+    SDBConnection::domainMetadata ( const std::string& aDomainName ) {
+
+      ParameterMap lMap;
+      lMap.insert ( ParameterPair ( "DomainName", aDomainName ) );
+
+      DomainMetadataHandler lHandler;
+      makeQueryRequest ( "DomainMetadata", &lMap, &lHandler );
+      if ( lHandler.isSuccessful() ) {
+      	DomainMetadataResponse* lPtr = lHandler.theResponse;
+        setCommons(lHandler, lPtr);
+        return lPtr;
+      }
+			else {
+				throw DomainMetadataException(lHandler.getQueryErrorResponse());
+      }
+    }
+
     ListDomainsResponse*
     SDBConnection::listDomains(int aMaxNumberOfDomains, const std::string& aNextToken) {
 

@@ -60,6 +60,52 @@ namespace aws {
 		SDBTemplateResponse<sdb::DeleteDomainResponse> (r) {
 	}
 
+	DomainMetadataResponse::DomainMetadataResponse(sdb::DomainMetadataResponse* r) :
+		SDBTemplateResponse<sdb::DomainMetadataResponse> (r) {
+	}
+
+  const long
+  DomainMetadataResponse::getItemCount() const
+  {
+    return theSDBResponse->getItemCount();
+  }
+
+  const long
+  DomainMetadataResponse::getItemNamesSizeBytes() const
+  {
+    return theSDBResponse->getItemNamesSizeBytes();
+  }
+
+  const int
+  DomainMetadataResponse::getAttributeNameCount() const
+  {
+    return theSDBResponse->getAttributeNameCount();
+  }
+
+  const long
+  DomainMetadataResponse::getAttributeNamesSizeBytes() const
+  {
+    return theSDBResponse->getAttributeNamesSizeBytes();
+  }
+
+  const long
+  DomainMetadataResponse::getAttributeValueCount() const
+  {
+    return theSDBResponse->getAttributeValueCount();
+  }
+
+  const long
+  DomainMetadataResponse::getAttributeValuesSizeBytes() const
+  {
+    return theSDBResponse->getAttributeValuesSizeBytes();
+  }
+
+  const long
+  DomainMetadataResponse::getTimestamp() const
+  {
+    return theSDBResponse->getTimestamp();
+  }
+
 	ListDomainsResponse::ListDomainsResponse(sdb::ListDomainsResponse* r) :
 		SDBTemplateResponse<sdb::ListDomainsResponse> (r) {
 	}

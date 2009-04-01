@@ -138,6 +138,15 @@ namespace aws {
 		DeleteDomainException(const QueryErrorResponse&);
 	};
 
+	class DomainMetadataException : public SDBException
+	{
+	public:
+		virtual ~DomainMetadataException() throw();
+	private:
+		friend class sdb::SDBConnection;
+		DomainMetadataException(const QueryErrorResponse&);
+	};
+
 	class ListDomainsException : public SDBException
 	{
 	public:

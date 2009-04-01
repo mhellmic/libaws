@@ -81,6 +81,9 @@ namespace aws {
 		virtual DeleteDomainResponsePtr
 		deleteDomain(const std::string &aDomainName) = 0;
 
+		virtual DomainMetadataResponsePtr
+		domainMetadata(const std::string &aDomainName) = 0;
+
 		virtual ListDomainsResponsePtr
     listDomains(int aMaxNumberOfDomains = 0, const std::string& aNextToken = "") = 0;
 

@@ -24,6 +24,7 @@ namespace aws {
 		class SDBResponse;
 		class CreateDomainResponse;
 		class DeleteDomainResponse;
+		class DomainMetadataResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
     class BatchPutAttributesResponse;
@@ -59,7 +60,14 @@ namespace aws {
 				Attribute = 1 << 10, 
 				AttributeName = 1 << 11,
 				ItemName = 1 << 12,
-				AttributeValue = 1 << 13
+				AttributeValue = 1 << 13,
+        ItemCount = 1 << 14,
+        ItemNamesSizeBytes = 1 << 15,
+        AttributeNameCount = 1 << 16,
+        AttributeNamesSizeBytes = 1 << 17,
+        AttributeValueCount = 1 << 18,
+        AttributeValuesSizeBytes = 1 << 19,
+        Timestamp = 1 << 20
 			};
 
 			SDBHandler() : theResponse(0) {
@@ -83,6 +91,17 @@ namespace aws {
 		};
 
 		class DeleteDomainHandler: public SDBHandler<DeleteDomainResponse> {
+		protected:
+
+		public:
+			virtual void responseStartElement(const xmlChar * localname,
+					int nb_attributes, const xmlChar ** attributes);
+			virtual void responseCharacters(const xmlChar * value, int len);
+			virtual void responseEndElement(const xmlChar * localname);
+
+		};
+
+		class DomainMetadataHandler: public SDBHandler<DomainMetadataResponse> {
 		protected:
 
 		public:

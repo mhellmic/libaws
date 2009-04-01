@@ -29,6 +29,7 @@ namespace aws {
 	namespace sdb {
 		class CreateDomainResponse;
 		class DeleteDomainResponse;
+		class DomainMetadataResponse;
 		class ListDomainsResponse;
 		class PutAttributesResponse;
 		class BatchPutAttributesResponse;
@@ -93,6 +94,37 @@ namespace aws {
 	protected:
 		friend class SDBConnectionImpl;
 		DeleteDomainResponse(sdb::DeleteDomainResponse*);
+	};
+
+	class DomainMetadataResponse: public SDBTemplateResponse<
+			sdb::DomainMetadataResponse> {
+	public:
+		virtual ~DomainMetadataResponse() { }
+
+    virtual const long
+    getItemCount() const;
+
+    virtual const long
+    getItemNamesSizeBytes() const;
+
+    virtual const int
+    getAttributeNameCount() const;
+
+    virtual const long
+    getAttributeNamesSizeBytes() const;
+
+    virtual const long
+    getAttributeValueCount() const;
+
+    virtual const long
+    getAttributeValuesSizeBytes() const;
+
+    virtual const long
+    getTimestamp() const;
+
+	protected:
+		friend class SDBConnectionImpl;
+		DomainMetadataResponse(sdb::DomainMetadataResponse*);
 	};
 
 	class ListDomainsResponse: public SDBTemplateResponse<

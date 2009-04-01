@@ -44,6 +44,24 @@ bool deleteDomain (SDBConnectionPtr aSDB, const std::string &aDomainName) {
   return true;
 }
 
+bool domainMetadata (SDBConnectionPtr aSDB, const std::string &aDomainName) {
+  try {
+      DomainMetadataResponsePtr lRes = aSDB->domainMetadata (aDomainName);
+      std::cout << "domain metadata retrieved successfully" << std::endl;
+      std::cout << "  ItemCount " << lRes->getItemCount() << std::endl;
+      std::cout << "  ItemNamesSizeBytes " << lRes->getItemNamesSizeBytes() << std::endl;
+      std::cout << "  AttributeNameCount  " << lRes->getAttributeNameCount() << std::endl;
+      std::cout << "  AttributeNamesSizeBytes " << lRes->getAttributeNamesSizeBytes() << std::endl;
+      std::cout << "  AttributeValueCount " << lRes->getAttributeValueCount() << std::endl;
+      std::cout << "  AttributeValuesSizeBytes " << lRes->getAttributeValuesSizeBytes() << std::endl;
+      std::cout << "  Timestamp " << lRes->getTimestamp() << std::endl;
+    } catch (DomainMetadataException &e) {
+      std::cerr << e.what() << std::endl;
+      return false;
+    }
+  return true;
+}
+
 
 bool deleteAllDomains (SDBConnectionPtr aSDB, std::string aPrefix) {
   try {
@@ -246,6 +264,7 @@ main (int argc, char** argv) {
           std::cout << "  -a action: Action to perform" << std::endl;
           std::cout << "             create-domain" << std::endl;
           std::cout << "             delete-domain" << std::endl;
+          std::cout << "             domain-metadata" << std::endl;
           std::cout << "             delete-all-domains" << std::endl;
           std::cout << "             list-domains" << std::endl;
           std::cout << "             put-attribute" << std::endl;
@@ -331,6 +350,11 @@ main (int argc, char** argv) {
 
   if (lActionString.compare ("delete-domain") == 0) {
       deleteDomain (lSDBRest, lDomain);
+      exit (0);
+    }
+
+  if (lActionString.compare ("domain-metadata") == 0) {
+      domainMetadata (lSDBRest, lDomain);
       exit (0);
     }
     

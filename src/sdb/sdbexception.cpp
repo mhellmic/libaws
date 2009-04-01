@@ -63,6 +63,13 @@ namespace aws {
 	DeleteDomainException::~DeleteDomainException() throw() {
 	}
 
+	DomainMetadataException::DomainMetadataException(const QueryErrorResponse& aError) :
+		SDBException(aError) {
+	}
+
+	DomainMetadataException::~DomainMetadataException() throw() {
+	}
+
 	PutAttributesException::PutAttributesException(const QueryErrorResponse& aError) :
 		SDBException(aError) {
 	}
