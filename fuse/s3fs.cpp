@@ -58,6 +58,8 @@
 #include <libaws/aws.h>
 #include "properties.h"
 
+#include "boost/filesystem.hpp"   // includes all needed Boost.Filesystem declarations
+
 #ifdef S3FS_USE_MEMCACHED
 #  include <libmemcached/memcached.h>
 #  include "awscache.h"
@@ -135,6 +137,19 @@ FileHandle::~FileHandle()
     remove(filename.c_str());
   }
 }
+
+/**
+ * getTempFolder()
+ *
+ * checks if the theS3FSTempFolder exists. if it doesn't exist for whatever reason, it is made.
+ */
+static std::string& getTempFolder(){
+	if(!boost::filesystem::exists(theS3FSTempFolder)){
+		boost::filesystem::create_directories(theS3FSTempFolder);
+	}
+	return theS3FSTempFolder;
+}
+
 
 /**
  * accessor and release functions for S3 Connection objects
@@ -392,6 +407,9 @@ s3_getattr(const char *path, struct stat *stbuf)
 
          do{
            trycounter++;
+					 if(haserror){	
+					 	  S3_LOG(S3_INFO,"s3_getattr(...)","trying again: TRY " << trycounter);
+           }
 
            // get metadata from s3
            S3FS_TRY
@@ -429,6 +447,8 @@ s3_getattr(const char *path, struct stat *stbuf)
            theCache->save_stat(stbuf, lpath.substr(1));
          }else{
 
+					 S3_LOG(S3_ERROR,"s3_getattr(...)","finally failed after " << trycounter << " tries");
+           
            // on any other error invalidate the cache to force reload of data
            key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"").c_str();
            theCache->delete_key(key);
@@ -540,9 +560,9 @@ s3_truncate(const char * path, off_t offset)
       std::auto_ptr<FileHandle> fileHandle(new FileHandle);
 
       // generate temp file and open it
-      int ltempsize=theS3FSTempFolder.length();
+      int ltempsize=getTempFolder().length();
       char ltempfile[ltempsize];
-      strcpy(ltempfile,theS3FSTempFolder.c_str());
+      strcpy(ltempfile,getTempFolder().c_str());
       fileHandle->id=mkstemp(ltempfile);
       fileHandle->filename = std::string(ltempfile);
       S3_LOG(S3_DEBUG,"s3_truncate(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
@@ -1011,9 +1031,9 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   try{
 
     // generate temp file and open it
-    int ltempsize=theS3FSTempFolder.length();
+    int ltempsize=getTempFolder().length();
     char ltempfile[ltempsize];
-    strcpy(ltempfile,theS3FSTempFolder.c_str());
+    strcpy(ltempfile,getTempFolder().c_str());
     fileHandle->id=mkstemp(ltempfile);
     S3_LOG(S3_DEBUG,"s3_create(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
     std::auto_ptr<std::fstream> tempfile(new std::fstream());
@@ -1183,9 +1203,9 @@ s3_open(const char *path,
     memset(fileinfo, 0, sizeof(struct fuse_file_info));
 
     // generate temp file and open it
-    int ltempsize=theS3FSTempFolder.length();
+    int ltempsize=getTempFolder().length();
     char ltempfile[ltempsize];
-    strcpy(ltempfile,theS3FSTempFolder.c_str());
+    strcpy(ltempfile,getTempFolder().c_str());
     fileHandle->id=mkstemp(ltempfile);
     fileHandle->filename = std::string(ltempfile);
     S3_LOG(S3_DEBUG,"s3_open(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);

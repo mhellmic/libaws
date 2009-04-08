@@ -144,7 +144,7 @@ namespace aws {
     if (rc == MEMCACHED_SUCCESS){
       S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::delete_key(...)","   successfully invalidated key: '" << key << "'");
     }else{
-      S3CACHE_LOG(S3CACHE_INFO,"AWSCache::delete_key(...)","[WARNING] could not delete key: '" << key << "' from cache (rc=" << (int) rc << ": "<< memcached_strerror(memc,rc) <<")");
+      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::delete_key(...)","[WARNING] could not delete key: '" << key << "' from cache (rc=" << (int) rc << ": "<< memcached_strerror(memc,rc) <<")");
     }
 #endif
   }
@@ -236,7 +236,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
       }else if(key.length()==9 && key.compare(".htaccess")==0){
         save_file(memc, key, fstream, size);
       }else{
-        S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
+        S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
       }
       free_Memcached_struct(memc);
     }catch(...){
@@ -304,7 +304,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     if (*rc == MEMCACHED_SUCCESS){
       S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::read_key(...)","successfully read cached key: '" << lkey << "' value: '" << lvalue << "'");
     }else{
-      S3CACHE_LOG(S3CACHE_INFO,"AWSCache::read_key(...)","[WARNING] could not read key: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
+      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::read_key(...)","[WARNING] could not read key: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
     }
 #endif
 
@@ -351,7 +351,7 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     }
 #ifndef NDEBUG
     else{
-      S3CACHE_LOG(S3CACHE_INFO,"AWSCache::read_file(...)","[WARNING] could not read file: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
+      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::read_file(...)","[WARNING] could not read file: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
     }
 #endif
   }

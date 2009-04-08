@@ -19,6 +19,8 @@ SET(FUSE_SRCS
 
 SET(s3fs_required_libs aws ${FUSE_LIBRARY})
 
+# find MEMCACHED
+################
 FIND_PACKAGE(Memcached)
 IF(MEMCACHED_FOUND)
   SET(FUSE_SRCS ${FUSE_SRCS} awscache.cpp)
@@ -28,6 +30,17 @@ IF(MEMCACHED_FOUND)
 ELSE(MEMCACHED_FOUND)
   MESSAGE(STATUS "Could not find the MEMCACHED library and development files.")
 ENDIF(MEMCACHED_FOUND)
+
+# find Boost
+################
+FIND_PACKAGE(Boost 1.36 COMPONENTS filesystem)
+IF(Boost_FILESYSTEM_FOUND)
+  MESSAGE(STATUS "Found BOOST FILESYSTEM library -- " ${Boost_FILESYSTEM_LIBRARY})
+  SET(s3fs_required_libs ${s3fs_required_libs} ${Boost_FILESYSTEM_LIBRARY})
+ELSE(Boost_FILESYSTEM_FOUND)
+  MESSAGE(FATAL_ERROR "The boost filesystem library is required.")
+ENDIF(Boost_FILESYSTEM_FOUND)
+
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
