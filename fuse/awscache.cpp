@@ -18,13 +18,13 @@
 #include <memory>
 #include <syslog.h>
 
-//#define S3FS_LOG_SYSLOG 1
+#define S3FS_LOG_SYSLOG 1
 
 #ifndef NDEBUG
 static int S3CACHE_DEBUG=0;
 static int S3CACHE_INFO=1;
 static int S3CACHE_ERROR=2;
-static int S3CACHE_LOGGING_LEVEL=S3CACHE_DEBUG;
+static int S3CACHE_LOGGING_LEVEL=S3CACHE_INFO;
 
 #  ifdef S3FS_LOG_SYSLOG
 #    define S3CACHE_LOG(level,location,message) \

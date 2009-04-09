@@ -35,7 +35,7 @@
  */
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION  26
-// #define S3FS_LOG_SYSLOG 1
+#define S3FS_LOG_SYSLOG 1
 
 #include "config.h"
 
@@ -90,7 +90,7 @@ static std::map<int,struct FileHandle*> tempfilemap;
 static int S3_DEBUG=0;
 static int S3_INFO=1;
 static int S3_ERROR=2;
-static int S3_LOGGING_LEVEL=S3_DEBUG;
+static int S3_LOGGING_LEVEL=S3_INFO;
 #endif
 
 /**
@@ -1027,9 +1027,10 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   // we ignore the passed mode
   mode_t lmode;
   if ( (mode & S_IFMT)==S_IFLNK){
-    S3_LOG(S3_DEBUG,"s3_create(...)","########### symbolic link");
+    S3_LOG(S3_DEBUG,"s3_create(...)","creating symbolic link");
     lmode = S_IFLNK | 0777;
   }else{
+    S3_LOG(S3_DEBUG,"s3_create(...)","creating standard file");
     lmode = S_IFREG | 0777;
   }
 
