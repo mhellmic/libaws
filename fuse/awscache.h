@@ -62,6 +62,7 @@ public:
   static std::string PREFIX_STAT_ATTR;
   static std::string PREFIX_DIR_LS;
   static std::string PREFIX_FILE;
+  static std::string PREFIX_SYMLINK;
   static std::string DELIMITER_FOLDER_ENTRIES;
 
   AWSCache(std::string bucketname);

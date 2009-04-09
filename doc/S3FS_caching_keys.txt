@@ -18,19 +18,19 @@ mybucket:attr:mode:folder/folder2/file.txt
 
 the prefixes are:
 
-	- "ex" : remember file/folder existence
-	  attribute: always empty
-	  example: 
-	       mybucket:ex::folder/folder2/file.txt 1|0
-	- "attr": file/folder meta data
-	  attributes:  mode () 
-	               gid () 
-	               oid ()
-	               mtime ("mm/dd/yy hour:min:sec")
-	               size (content length in bytes)
-	               nlink (file: 1, folder: 2 - this is fixed at the moment)
-	  examples:
-         mybucket:attr:mode:folder/folder2/file.txt 1|0
-  - "ls": folder entries
-	- "file": cached temp file
-	
+        - "ex" : remember file/folder existence
+          attribute: always empty
+          example: 
+               mybucket:ex::folder/folder2/file.txt 1|0
+        - "attr": file/folder meta data
+          attributes:  mode () 
+                       gid () 
+                       oid ()
+                       mtime ("mm/dd/yy hour:min:sec")
+                       size (content length in bytes)
+                       nlink (file: 1, folder: 2 - this is fixed at the moment)
+          examples:
+               mybucket:attr:mode:folder/folder2/file.txt 1|0
+        - "ls": folder entries
+        - "file": cached temp file
+        - "symlink": cached symbolic link target

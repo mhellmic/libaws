@@ -35,7 +35,7 @@
  */
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION  26
-#define S3FS_LOG_SYSLOG 1
+// #define S3FS_LOG_SYSLOG 1
 
 #include "config.h"
 
@@ -90,7 +90,7 @@ static std::map<int,struct FileHandle*> tempfilemap;
 static int S3_DEBUG=0;
 static int S3_INFO=1;
 static int S3_ERROR=2;
-static int S3_LOGGING_LEVEL=S3_INFO;
+static int S3_LOGGING_LEVEL=S3_DEBUG;
 #endif
 
 /**
@@ -1024,6 +1024,15 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   std::string lpath(path);
   std::auto_ptr<FileHandle> fileHandle(new FileHandle);
 
+  // we ignore the passed mode
+  mode_t lmode;
+  if ( (mode & S_IFMT)==S_IFLNK){
+    S3_LOG(S3_DEBUG,"s3_create(...)","########### symbolic link");
+    lmode = S_IFLNK | 0777;
+  }else{
+    lmode = S_IFREG | 0777;
+  }
+
   // initialize result
   int result=0;
   memset(fileinfo, 0, sizeof(struct fuse_file_info));
@@ -1043,7 +1052,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
     fileHandle->size = 0;
     fileHandle->s3key = lpath.substr(1);// cut off the first slash
     //TODO this is a hack
-    fileHandle->mode = S_IFREG | 0777;
+    fileHandle->mode = lmode;
     fileHandle->filestream = tempfile.release();
     fileHandle->is_write = true;
     fileHandle->mtime = getCurrentTime();
@@ -1058,7 +1067,7 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
     // init stat
     struct stat stbuf;
     //TODO this is a hack
-    stbuf.st_mode = S_IFREG | 0777;
+    stbuf.st_mode = lmode;
     stbuf.st_gid = getgid();
     stbuf.st_uid = getuid();
     stbuf.st_mtime = getCurrentTime();
@@ -1138,6 +1147,10 @@ s3_unlink(const char * path)
       // delete cached dir entries of parent folder
       std::string parentfolder=AWSCache::getParentFolder(lpath.substr(1));
       key=theCache->getkey(AWSCache::PREFIX_DIR_LS,parentfolder,"");
+      theCache->delete_key(key);
+
+      // delete symbolic link target if it is existent
+      key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"").c_str();
       theCache->delete_key(key);
     }
 #endif // S3FS_USE_MEMCACHED
@@ -1558,6 +1571,145 @@ s3_opendir(const char *path, struct fuse_file_info *fi)
   return 0;
 }
 
+/*
+ * Create a symbolic link
+ *
+ */
+static int
+s3_symlink(const char * oldpath, const char * newpath) 
+{
+  S3_LOG(S3_DEBUG,"s3_symlink(...)","oldpath: " << oldpath << " newpath: " << newpath);
+  std::string lpath(newpath);
+  int result=0;
+  std::string key;
+  
+  try{
+
+    // tell s3_create to create a symlink
+    mode_t mode= S_IFLNK | 0777;
+    std::auto_ptr<fuse_file_info> fileinfo(new fuse_file_info);
+    S3_LOG(S3_DEBUG,"s3_symlink(...)","create " << newpath);
+    result=s3_create(newpath, mode, fileinfo.get());
+
+    // write the target into the created file
+    if(result==0){
+      S3_LOG(S3_DEBUG,"s3_symlink(...)","write");
+      result=s3_write(newpath, oldpath, strlen(oldpath), 0, fileinfo.get());
+
+      // release it to s3
+      S3_LOG(S3_DEBUG,"s3_symlink(...)","release " << newpath);
+      result=s3_release(newpath, fileinfo.get());
+    }
+
+#ifdef S3FS_USE_MEMCACHED
+    if(result==0){ 
+
+      // we only have to remember the link, anything else is managed by s3_create...
+      key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"").c_str();
+      theCache->save_key(key, oldpath);
+    }
+#endif //USE_MEMCACHED
+
+  }catch(...){
+    S3_LOG(S3_ERROR,"s3_symlink(...)","An Error occured while trying to create symlink " << newpath << " to file/folder " << oldpath );
+
+#ifdef S3FS_USE_MEMCACHED
+
+    // cleanup cache to prevent future errors
+    key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"");
+    theCache->delete_key(key);
+    key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"");
+    theCache->delete_key(key);
+#endif // S3FS_USE_MEMCACHED
+
+    return -EIO; // I/O Error
+  }
+
+  return result;
+}
+
+
+/*
+ * Read the target of a symbolic link
+ *
+ * The buffer should be filled with a null terminated string. The buffer size 
+ * argument includes the space for the terminating null character. If the linkname
+ * is too long to fit in the buffer, it should be truncated. The return value should
+ * be 0 for success.
+ */ 
+static int
+s3_readlink(const char * path, char * link, size_t size)
+{
+  S3_LOG(S3_DEBUG,"s3_readlink(...)","path: " << path << " buffer size: " << sizeof(link));
+  std::string lpath(path);
+  int result=0;
+  std::string key;
+
+  try{
+#ifdef S3FS_USE_MEMCACHED
+    std::string value;
+    memcached_return rc;
+
+    // check if the cache knows if the link exists
+    key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"");
+    value=theCache->read_key(key, &rc);
+    if (value.length() > 0 && value.compare("0")==0) // link does not exist
+    {
+      S3_LOG(S3_DEBUG,"s3_readlink(...)","[Memcached] link: " << lpath.substr(1) << " is marked as non existent in cache.");
+      return -ENOENT;
+    }else if(value.length() > 0 && value.compare("1")==0) // link does exist
+    {
+      S3_LOG(S3_DEBUG,"s3_readlink(...)","[Memcached] link: " << lpath.substr(1) << " is marked as existent in cache.");
+
+      // get the target link
+      key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"");
+      value=theCache->read_key(key, &rc);
+      strcpy(link,value.c_str());
+    }else 
+    {
+#endif
+      // open the file that contains the target path info
+      std::auto_ptr<fuse_file_info> fileinfo(new fuse_file_info);
+      S3_LOG(S3_DEBUG,"s3_readlink(...)","open " << path);
+      result=s3_open(path, fileinfo.get());
+
+      if(result==0){
+        // read the target path
+        S3_LOG(S3_DEBUG,"s3_readlink(...)","read " << path);
+        s3_read(path,link,size,0,fileinfo.get());
+        S3_LOG(S3_DEBUG,"s3_readlink(...)","link " << link);
+
+        // release the file
+        S3_LOG(S3_DEBUG,"s3_readlink(...)","release " << path);
+        result=s3_release(path, fileinfo.get());
+      }
+
+#ifdef S3FS_USE_MEMCACHED
+      if(result==0){ 
+
+        // we only have to remember the link, anything else is managed by s3_create...
+        key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"").c_str();
+        theCache->save_key(key, link);
+      }
+    }
+#endif //USE_MEMCACHED
+
+  }catch(...){
+    S3_LOG(S3_ERROR,"s3_readlink(...)","An Error occured while trying to read symlink " << path);
+
+#ifdef S3FS_USE_MEMCACHED
+
+    // cleanup cache to prevent future errors
+    key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"");
+    theCache->delete_key(key);
+    key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"");
+    theCache->delete_key(key);
+#endif // S3FS_USE_MEMCACHED
+
+    return -EIO; // I/O Error
+  }
+  return result;
+}
 
 
 static struct fuse_operations s3_filesystem_operations;
@@ -1583,6 +1735,8 @@ main(int argc, char **argv)
   s3_filesystem_operations.write       = s3_write;
   s3_filesystem_operations.open       = s3_open;
   s3_filesystem_operations.release       = s3_release;
+  s3_filesystem_operations.symlink       = s3_symlink;
+  s3_filesystem_operations.readlink       = s3_readlink;
 
   // initialization
   theFactory = AWSConnectionFactory::getInstance();
