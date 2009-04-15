@@ -549,7 +549,8 @@ s3_truncate(const char * path, off_t offset)
 #ifdef S3FS_USE_MEMCACHED
   std::string key;
 #endif // S3FS_USE_MEMCACHED
-  std::auto_ptr<fuse_file_info> fileinfo(new fuse_file_info);
+  fuse_file_info fileinfo;
+  memset(&fileinfo, 0, sizeof(struct fuse_file_info));
 
   try{
     if(offset==0){
@@ -578,7 +579,7 @@ s3_truncate(const char * path, off_t offset)
       fileHandle->mtime = getCurrentTime();
 
       //remember tempfile
-      fileinfo->fh = (uint64_t)fileHandle->id;
+      fileinfo.fh = (uint64_t)fileHandle->id;
       int lTmpPointer = fileHandle->id;
       tempfilemap.insert( std::pair<int,struct FileHandle*>(lTmpPointer,fileHandle.release()) );
 
@@ -595,7 +596,7 @@ s3_truncate(const char * path, off_t offset)
 #endif // S3FS_USE_MEMCACHED
 
       // write the empty file to s3
-      s3_release(path, fileinfo.get());
+      s3_release(path, &fileinfo);
 
     }else{
       S3_LOG(S3_ERROR,"s3_truncate(...)","Truncate only implemented for 0.");
@@ -1588,18 +1589,20 @@ s3_symlink(const char * oldpath, const char * newpath)
 
     // tell s3_create to create a symlink
     mode_t mode= S_IFLNK | 0777;
-    std::auto_ptr<fuse_file_info> fileinfo(new fuse_file_info);
+    fuse_file_info fileinfo;
+    memset(&fileinfo, 0, sizeof(struct fuse_file_info));
+
     S3_LOG(S3_DEBUG,"s3_symlink(...)","create " << newpath);
-    result=s3_create(newpath, mode, fileinfo.get());
+    result=s3_create(newpath, mode, &fileinfo);
 
     // write the target into the created file
     if(result==0){
       S3_LOG(S3_DEBUG,"s3_symlink(...)","write");
-      result=s3_write(newpath, oldpath, strlen(oldpath), 0, fileinfo.get());
+      result=s3_write(newpath, oldpath, strlen(oldpath), 0, &fileinfo);
 
       // release it to s3
       S3_LOG(S3_DEBUG,"s3_symlink(...)","release " << newpath);
-      result=s3_release(newpath, fileinfo.get());
+      result=s3_release(newpath, &fileinfo);
     }
 
 #ifdef S3FS_USE_MEMCACHED
@@ -1670,19 +1673,20 @@ s3_readlink(const char * path, char * link, size_t size)
     {
 #endif
       // open the file that contains the target path info
-      std::auto_ptr<fuse_file_info> fileinfo(new fuse_file_info);
+      fuse_file_info fileinfo;
+      memset(&fileinfo, 0, sizeof(struct fuse_file_info));
       S3_LOG(S3_DEBUG,"s3_readlink(...)","open " << path);
-      result=s3_open(path, fileinfo.get());
+      result=s3_open(path, &fileinfo);
 
       if(result==0){
         // read the target path
         S3_LOG(S3_DEBUG,"s3_readlink(...)","read " << path);
-        s3_read(path,link,size,0,fileinfo.get());
+        s3_read(path,link,size,0,&fileinfo);
         S3_LOG(S3_DEBUG,"s3_readlink(...)","link " << link);
 
         // release the file
         S3_LOG(S3_DEBUG,"s3_readlink(...)","release " << path);
-        result=s3_release(path, fileinfo.get());
+        result=s3_release(path, &fileinfo);
       }
 
 #ifdef S3FS_USE_MEMCACHED
