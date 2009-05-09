@@ -54,11 +54,12 @@
 #include <stdlib.h>
 #include <memory>
 #include <cassert>
+#include <stdio.h>
+#include <unistd.h>
+
 
 #include <libaws/aws.h>
 #include "properties.h"
-
-#include "boost/filesystem.hpp"   // includes all needed Boost.Filesystem declarations
 
 #ifdef S3FS_USE_MEMCACHED
 #  include <libmemcached/memcached.h>
@@ -144,9 +145,15 @@ FileHandle::~FileHandle()
  * checks if the theS3FSTempFolder exists. if it doesn't exist for whatever reason, it is made.
  */
 static std::string& getTempFolder(){
-	if(!boost::filesystem::exists(theS3FSTempFolder)){
-		boost::filesystem::create_directories(theS3FSTempFolder);
-	}
+  struct stat st;
+  if (stat(argv[1], &st) == -1) {
+    std::cerr << "temporary directory does not exist " << theS3FSTempFolder << std::endl;
+    if (::mkdir(argv[1] ,0777) == -1) {
+      std::cerr << "couldnt create temporary directory" <<  << std::endl;
+    } else {
+      std::cerr << "created directory " << theS3FSTempFolder << std::endl;
+    }
+  } 
 	return theS3FSTempFolder;
 }
 
