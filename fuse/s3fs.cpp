@@ -80,6 +80,7 @@ static unsigned int AWS_TRIES_ON_ERROR=3;
 static std::string theAccessKeyId;
 static std::string theSecretAccessKey;
 static std::string theS3FSTempFolder;
+static std::string theS3FSTempFilePattern;
 static std::string theBucketname("");
 static std::string thePropertyFile("");
 
@@ -140,11 +141,11 @@ FileHandle::~FileHandle()
 }
 
 /**
- * getTempFolder()
+ * checkTempFolder()
  *
  * checks if the theS3FSTempFolder exists. if it doesn't exist for whatever reason, it is made.
  */
-static std::string& getTempFolder(){
+static void checkTempFolder(){
   struct stat st;
   if (stat(argv[1], &st) == -1) {
     std::cerr << "temporary directory does not exist " << theS3FSTempFolder << std::endl;
@@ -568,9 +569,10 @@ s3_truncate(const char * path, off_t offset)
       std::auto_ptr<FileHandle> fileHandle(new FileHandle);
 
       // generate temp file and open it
-      int ltempsize=getTempFolder().length();
+      checkTempFolder();
+      int ltempsize=theS3FSTempFilePattern.length();
       char ltempfile[ltempsize];
-      strcpy(ltempfile,getTempFolder().c_str());
+      strcpy(ltempfile,theS3FSTempFilePattern.c_str());
       fileHandle->id=mkstemp(ltempfile);
       fileHandle->filename = std::string(ltempfile);
       S3_LOG(S3_DEBUG,"s3_truncate(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
@@ -1049,9 +1051,10 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
   try{
 
     // generate temp file and open it
-    int ltempsize=getTempFolder().length();
+    checkTempFolder();
+    int ltempsize=theS3FSTempFilePattern.length();
     char ltempfile[ltempsize];
-    strcpy(ltempfile,getTempFolder().c_str());
+    strcpy(ltempfile,theS3FSTempFilePattern.c_str());
     fileHandle->id=mkstemp(ltempfile);
     S3_LOG(S3_DEBUG,"s3_create(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
     std::auto_ptr<std::fstream> tempfile(new std::fstream());
@@ -1225,9 +1228,10 @@ s3_open(const char *path,
     memset(fileinfo, 0, sizeof(struct fuse_file_info));
 
     // generate temp file and open it
-    int ltempsize=getTempFolder().length();
+    checkTempFolder();
+    int ltempsize=theS3FSTempFilePattern.length();
     char ltempfile[ltempsize];
-    strcpy(ltempfile,getTempFolder().c_str());
+    strcpy(ltempfile,theS3FSTempFilePattern.c_str());
     fileHandle->id=mkstemp(ltempfile);
     fileHandle->filename = std::string(ltempfile);
     S3_LOG(S3_DEBUG,"s3_open(...)","File Descriptor # is: " << fileHandle->id << " file name = " << ltempfile);
@@ -1835,23 +1839,29 @@ main(int argc, char **argv)
   if(getenv("S3FS_TEMP")!=NULL){
     theS3FSTempFolder = getenv("S3FS_TEMP");
     if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
-      theS3FSTempFolder.append("s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("s3fs_file_XXXXXX");
     }else{
-      theS3FSTempFolder.append("/s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("/s3fs_file_XXXXXX");
     }
   }else if(getenv("TMP")!=NULL){
     theS3FSTempFolder = getenv("TMP");
     if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
-      theS3FSTempFolder.append("s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("s3fs_file_XXXXXX");
     }else{
-      theS3FSTempFolder.append("/s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("/s3fs_file_XXXXXX");
     }
   }else if(getenv("TMPDIR")!=NULL){
     theS3FSTempFolder = getenv("TMPDIR");
     if(theS3FSTempFolder.length()>0 && theS3FSTempFolder.at(theS3FSTempFolder.length()-1)=='/'){
-      theS3FSTempFolder.append("s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("s3fs_file_XXXXXX");
     }else{
-      theS3FSTempFolder.append("/s3fs_file_XXXXXX");
+      theS3FSTempFilePattern=theS3FSTempFolder;
+      theS3FSTempFilePattern.append("/s3fs_file_XXXXXX");
     }
   }else{
     std::cerr << "Please specify the S3FS_TEMP environment variable. It should point to a folder where you have write access." << std::endl;
