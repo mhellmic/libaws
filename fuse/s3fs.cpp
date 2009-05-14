@@ -147,15 +147,14 @@ FileHandle::~FileHandle()
  */
 static void checkTempFolder(){
   struct stat st;
-  if (stat(argv[1], &st) == -1) {
+  if (stat(theS3FSTempFolder.c_str(), &st) == -1) {
     std::cerr << "temporary directory does not exist " << theS3FSTempFolder << std::endl;
-    if (::mkdir(argv[1] ,0777) == -1) {
-      std::cerr << "couldnt create temporary directory" <<  << std::endl;
+    if (::mkdir(theS3FSTempFolder.c_str() ,0777) == -1) {
+      std::cerr << "couldnt create temporary directory"  << std::endl;
     } else {
       std::cerr << "created directory " << theS3FSTempFolder << std::endl;
     }
   } 
-	return theS3FSTempFolder;
 }
 
 
