@@ -82,14 +82,18 @@ listBucket(S3ConnectionPtr aS3, std::string aBucketName, std::string aPrefix,
 }
 
 bool
-del(S3ConnectionPtr aS3, std::string aBucketName, std::string aKey)
+del(S3ConnectionPtr aS3, std::string aBucketName, std::string aKey, std::string aPrefix)
 {
   ListBucketResponsePtr lListBucket;
   ListBucketResponse::Object lObject;
 
   std::string lMarker;
   try {
-    DeleteResponsePtr lDel = aS3->del(aBucketName, aKey);
+    if (aKey.size() != 0) {
+      DeleteResponsePtr lDel = aS3->del(aBucketName, aKey);
+    } else {
+      DeleteAllResponsePtr lDel = aS3->deleteAll(aBucketName, aPrefix);
+    }
   } catch (S3Exception &e) {
     std::cerr << e.what() << std::endl;
     return false;
@@ -267,7 +271,7 @@ main ( int argc, char** argv )
         lBucketName = optarg;
         break;
       case 'p':
-       lPrefix = optarg;
+        lPrefix = optarg;
         break;
       case 'm':
         lMarker = optarg;
@@ -402,12 +406,12 @@ main ( int argc, char** argv )
       std::cerr << "Use -n as a command line argument." << std::endl;
       exit(1);
     }
-    if (!lKey) {
-      std::cerr << "No key parameter specified." << std::endl;
-      std::cerr << "Use -k as a command line argument." << std::endl;
+    if (!lKey && !lPrefix) {
+      std::cerr << "No key or prefix parameter specified." << std::endl;
+      std::cerr << "Use -k or -p as a command line argument." << std::endl;
       exit(1);
     }
-    del(lS3Rest, lBucketName, lKey);
+    del(lS3Rest, lBucketName, lKey==0?"":lKey, lPrefix==0?"":lPrefix);
   }
   else {
     std::cerr << "Invalid action: \"" << lActionString << "\"." << std::endl;
