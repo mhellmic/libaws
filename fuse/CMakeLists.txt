@@ -17,6 +17,7 @@ SET(FUSE_SRCS
   properties.cpp
 )
 
+INCLUDE_DIRECTORIES(AFTER ${FUSE_INCLUDE_DIR})
 SET(s3fs_required_libs aws ${FUSE_LIBRARY})
 
 # find MEMCACHED
