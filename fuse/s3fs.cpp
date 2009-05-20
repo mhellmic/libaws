@@ -242,7 +242,7 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
  */
 #ifdef S3FS_LOG_SYSLOG
 #  define S3_LOG_OUTPUT(level, log_message) \
-     syslog( level, log_message );
+     syslog( level, "%s", log_message );
 #else
 #  define S3_LOG_OUTPUT(level, log_message) \
      std::cerr << log_message << std::endl;
