@@ -146,7 +146,7 @@ static int s3fs_opt_proc(void *data, const char *arg, int key, struct fuse_args 
   return 1;
 }
 
-typedef enum LogLevel {
+enum LogLevel {
   S3_ERROR = 0,
   S3_INFO  = 1,
   S3_DEBUG = 2
@@ -1835,7 +1835,7 @@ main(int argc, char **argv)
     theS3FSTempFolder = conf.temp_dir;
   if (conf.bucket)
     theBucketname = conf.bucket;
-  if (0 <= conf.log_level <= 2)
+  if (0 <= conf.log_level && conf.log_level <= 2)
     theLogLevel = (LogLevel) conf.log_level; 
 
   // error checking
