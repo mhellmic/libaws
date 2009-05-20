@@ -14,6 +14,7 @@ public:
   static const char* AWS_ACCESS_KEY;
   static const char* AWS_SECRET_ACCESS_KEY;
   static const char* TEMP_DIR;
+  static const char* MEMCACHED_SERVERS;
 };
 
 class PropertyUtil
