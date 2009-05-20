@@ -1812,6 +1812,7 @@ main(int argc, char **argv)
 
   // read from config file specified
   if (conf.property_file) {
+    S3_LOG_INFO("reading config file " << conf.property_file);
     s3fs::utils::PropertyUtil::PropertyMapT lProperties;
     s3fs::utils::PropertyUtil::read(conf.property_file, lProperties);       
     thePropertyFile = conf.property_file;
@@ -1848,23 +1849,28 @@ main(int argc, char **argv)
 
   // error checking
   if (theAccessKeyId.length() == 0) {
+    S3_LOG_ERROR("Please specify your aws access key (-o access-key=string).");
     std::cerr << "Please specify your aws access key (-o access-key=string)." << std::endl;
     return 1;
   }
   if (theSecretAccessKey.length() == 0) {
+    S3_LOG_ERROR("Please specify your aws secret access key (-o secret-key=string).");
     std::cerr << "Please specify your aws secret access key (-o secret-key=string)." << std::endl;
     return 2;
   }
   if (theS3FSTempFolder.length() == 0) {
+    S3_LOG_ERROR("Please specify a temporary directory (-o temp-dir=string).");
     std::cerr << "Please specify a temporary directory (-o temp-dir=string)." << std::endl;
     return 3;
   }
   if (theBucketname.length() == 0) {
+    S3_LOG_ERROR("Please specify a S3 bucket (-o bucket=string).");
     std::cerr << "Please specify a S3 bucket (-o bucket=string)." << std::endl;
     return 4;
   }
 #ifdef S3FS_USE_MEMCACHED
   if (theMemcachedServers.length() == 0) {
+    S3_LOG_ERROR("Please specify the memcached servers (-o memcached-servers=string).");
     std::cerr << "Please specify the memcached servers (-o memcached-servers=string)." << std::endl;
     return 5;
   }
@@ -1895,19 +1901,17 @@ main(int argc, char **argv)
       while (lRes->next(o)) { }
       lRes->close();
      } catch (aws::AuthenticationException& auth_exception) {
+       S3_LOG_ERROR("couldn't authenticate with s3 " << auth_exception.what());
        std::cerr << auth_exception.what() << std::endl;
-       std::cerr << "access-key " << theAccessKeyId << std::endl;
-       std::cerr << "secret-key " << theSecretAccessKey << std::endl;
        return 6;
      } catch (aws::AWSException& e) {
+       S3_LOG_ERROR("error talking to s3 " << e.what());
        std::cerr << e.what() << std::endl;
-       std::cerr << "access-key " << theAccessKeyId << std::endl;
-       std::cerr << "secret-key " << theSecretAccessKey << std::endl;
        return 6;
      }
   }
 
-  S3_LOG_DEBUG("mounting bucket " << theBucketname << " to " << argv[1]);
+  S3_LOG_INFO("mounting bucket " << theBucketname << " to " << argv[1]);
 
   return fuse_main(args.argc, args.argv, &s3_filesystem_operations, NULL);
 }
