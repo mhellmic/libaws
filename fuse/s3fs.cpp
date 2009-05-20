@@ -80,8 +80,9 @@ std::string theAccessKeyId;
 std::string theSecretAccessKey;
 std::string theS3FSTempFolder;
 std::string theS3FSTempFilePattern;
-std::string theBucketname("");
-std::string thePropertyFile("");
+std::string theBucketname;
+std::string thePropertyFile;
+std::string theMemcachedServers;
 
 static std::string DELIMITER_FOLDER_ENTRIES=",";
 
@@ -92,6 +93,7 @@ struct s3fs_config {
   char* temp_dir;
   char* property_file;
   char* bucket;
+  char* memcached_servers;
   int   log_level;
 };
 
@@ -102,12 +104,13 @@ enum {
 #define S3FS_OPT(t, p, v) { t, offsetof(struct s3fs_config, p), v }
 
 static struct fuse_opt s3fs_opts[] = {
-   S3FS_OPT("config-file=%s",     property_file, 0),
-   S3FS_OPT("access-key=%s",      access_key, 0),
-   S3FS_OPT("secret-key=%s",      secret_key, 0),
-   S3FS_OPT("temp-dir=%s",        temp_dir, 0),
-   S3FS_OPT("bucket=%s",          bucket, 0),
-   S3FS_OPT("log-level=%i",       log_level, 0),
+   S3FS_OPT("config-file=%s",       property_file, 0),
+   S3FS_OPT("access-key=%s",        access_key, 0),
+   S3FS_OPT("secret-key=%s",        secret_key, 0),
+   S3FS_OPT("temp-dir=%s",          temp_dir, 0),
+   S3FS_OPT("bucket=%s",            bucket, 0),
+   S3FS_OPT("log-level=%i",         log_level, 0),
+   S3FS_OPT("memcached-servers=%s", memcached_servers, 0),
 
    FUSE_OPT_KEY("-h",             KEY_HELP),
    FUSE_OPT_KEY("-H",             KEY_HELP),
@@ -132,12 +135,13 @@ static int s3fs_opt_proc(void *data, const char *arg, int key, struct fuse_args 
             "    -h   -H   --help      print help\n"
             "\n"
             "S3FS options:\n"
-            "    -o config-file=STRING    config file that may contain the options below\n"
-            "    -o access-key=STRING     AWS Access Key ID\n"
-            "    -o secret-key=STRING     AWS Secret Access Key\n"
-            "    -o temp-dir=STRING       temporary directory used by s3fs\n"
-            "    -o bucket=STRING         bucket to mount\n"
-            "    -o log-level=INT         logging level (0=ERROR, 1=INFO, 2=DEBUG)\n"
+            "    -o config-file=STRING       config file that may contain the options below\n"
+            "    -o access-key=STRING        AWS Access Key ID\n"
+            "    -o secret-key=STRING        AWS Secret Access Key\n"
+            "    -o temp-dir=STRING          temporary directory used by s3fs\n"
+            "    -o bucket=STRING            bucket to mount\n"
+            "    -o memcached_servers=STRING memcached servers used for caching\n"
+            "    -o log-level=INT            logging level (0=ERROR, 1=INFO, 2=DEBUG)\n"
             , outargs->argv[0]);
     fuse_opt_add_arg(outargs, "-ho");
     fuse_main(outargs->argc, outargs->argv, &s3_filesystem_operations, NULL);
@@ -1806,10 +1810,6 @@ main(int argc, char **argv)
   memset(&conf, 0, sizeof(conf));
   fuse_opt_parse(&args, &conf, s3fs_opts, s3fs_opt_proc);
 
-#ifdef S3FS_USE_MEMCACHED
-  theCache.reset(new AWSCache(theBucketname));
-#endif //S3FS_USE_MEMCACHED
-
   // read from config file specified
   if (conf.property_file) {
     s3fs::utils::PropertyUtil::PropertyMapT lProperties;
@@ -1824,6 +1824,10 @@ main(int argc, char **argv)
       theS3FSTempFolder   = lProperties[s3fs::utils::Properties::TEMP_DIR];
     if (!conf.bucket)
       theBucketname       = lProperties[s3fs::utils::Properties::BUCKET_NAME];
+#ifdef S3FS_USE_MEMCACHED
+    if (!conf.memcached_servers)
+      theMemcachedServers = lProperties[s3fs::utils::Properties::MEMCACHED_SERVERS];
+#endif
   } 
 
   // command line parameters override config file
@@ -1835,6 +1839,10 @@ main(int argc, char **argv)
     theS3FSTempFolder = conf.temp_dir;
   if (conf.bucket)
     theBucketname = conf.bucket;
+#ifdef S3FS_USE_MEMCACHED
+  if (conf.memcached_servers)
+    theMemcachedServers = conf.memcached_servers;
+#endif
   if (0 <= conf.log_level && conf.log_level <= 2)
     theLogLevel = (LogLevel) conf.log_level; 
 
@@ -1855,11 +1863,22 @@ main(int argc, char **argv)
     std::cerr << "Please specify a S3 bucket (-o bucket=string)." << std::endl;
     return 4;
   }
+#ifdef S3FS_USE_MEMCACHED
+  if (theMemcachedServers.length() == 0) {
+    std::cerr << "Please specify the memcached servers (-o memcached-servers=string)." << std::endl;
+    return 5;
+  }
+  setenv("MEMCACHED_SERVERS", theMemcachedServers.c_str(), 1); // replace the MEMCACHED_SERVERS var in the environment
+#endif
 
   theS3FSTempFilePattern = theS3FSTempFolder;
   if (theS3FSTempFolder.at(theS3FSTempFolder.length()-1) != '/')
     theS3FSTempFilePattern.append("/");
   theS3FSTempFilePattern.append("s3fs_file_XXXXXX");
+
+#ifdef S3FS_USE_MEMCACHED
+  theCache.reset(new AWSCache(theBucketname));
+#endif //S3FS_USE_MEMCACHED
 
   // initialization
   theFactory = AWSConnectionFactory::getInstance();
@@ -1879,7 +1898,7 @@ main(int argc, char **argv)
        std::cerr << auth_exception.what() << std::endl;
        std::cerr << "access-key " << theAccessKeyId << std::endl;
        std::cerr << "secret-key " << theSecretAccessKey << std::endl;
-       return 5;
+       return 6;
      } catch (aws::AWSException& e) {
        std::cerr << e.what() << std::endl;
        std::cerr << "access-key " << theAccessKeyId << std::endl;
