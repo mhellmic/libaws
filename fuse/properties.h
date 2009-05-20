@@ -13,6 +13,7 @@ public:
   static const char* BUCKET_NAME;
   static const char* AWS_ACCESS_KEY;
   static const char* AWS_SECRET_ACCESS_KEY;
+  static const char* TEMP_DIR;
 };
 
 class PropertyUtil

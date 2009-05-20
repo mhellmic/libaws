@@ -52,9 +52,6 @@ namespace aws {
          // there are still connections in the queue, so return one of them
          T connection = std::queue<T>::front(); 
          std::queue<T>::pop(); 
-#ifndef NDEBUG
-         std::cerr << "[ConnectionPool] still " << (int)std::queue<T>::size() << " connections remaining in the pool" << std::endl;
-#endif
          theConnectionPoolMutex.unlock(); 
          return connection; 
        }else{
