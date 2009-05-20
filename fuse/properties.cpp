@@ -10,6 +10,7 @@ const char* Properties::BUCKET_NAME="bucket-name";
 const char* Properties::AWS_ACCESS_KEY="aws-access-key";
 const char* Properties::AWS_SECRET_ACCESS_KEY="aws-secret-access-key";
 const char* Properties::TEMP_DIR="temp-dir";
+const char* Properties::MEMCACHED_SERVERS="memcached-servers";
 
 void PropertyUtil::read(const char *filename, PropertyMapT &map)
 {
