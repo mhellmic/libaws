@@ -101,25 +101,25 @@ namespace aws {
 	public:
 		virtual ~DomainMetadataResponse() { }
 
-    virtual const long
+    virtual long
     getItemCount() const;
 
-    virtual const long
+    virtual long
     getItemNamesSizeBytes() const;
 
-    virtual const int
+    virtual int
     getAttributeNameCount() const;
 
-    virtual const long
+    virtual long
     getAttributeNamesSizeBytes() const;
 
-    virtual const long
+    virtual long
     getAttributeValueCount() const;
 
-    virtual const long
+    virtual long
     getAttributeValuesSizeBytes() const;
 
-    virtual const long
+    virtual long
     getTimestamp() const;
 
 	protected:

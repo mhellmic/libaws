@@ -64,43 +64,43 @@ namespace aws {
 		SDBTemplateResponse<sdb::DomainMetadataResponse> (r) {
 	}
 
-  const long
+  long
   DomainMetadataResponse::getItemCount() const
   {
     return theSDBResponse->getItemCount();
   }
 
-  const long
+  long
   DomainMetadataResponse::getItemNamesSizeBytes() const
   {
     return theSDBResponse->getItemNamesSizeBytes();
   }
 
-  const int
+  int
   DomainMetadataResponse::getAttributeNameCount() const
   {
     return theSDBResponse->getAttributeNameCount();
   }
 
-  const long
+  long
   DomainMetadataResponse::getAttributeNamesSizeBytes() const
   {
     return theSDBResponse->getAttributeNamesSizeBytes();
   }
 
-  const long
+  long
   DomainMetadataResponse::getAttributeValueCount() const
   {
     return theSDBResponse->getAttributeValueCount();
   }
 
-  const long
+  long
   DomainMetadataResponse::getAttributeValuesSizeBytes() const
   {
     return theSDBResponse->getAttributeValuesSizeBytes();
   }
 
-  const long
+  long
   DomainMetadataResponse::getTimestamp() const
   {
     return theSDBResponse->getTimestamp();
