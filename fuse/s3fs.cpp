@@ -257,7 +257,7 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
    do { \
      if (theLogLevel <= S3_DEBUG) { \
        std::ostringstream logMessage; \
-       logMessage << "S3FS (bucket: " << theBucketname << "; func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
+       logMessage << "(func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
                   << "[DEBUG] ## " << message << " ## "; \
        S3_LOG_OUTPUT(LOG_DEBUG, logMessage.str().c_str()); \
      } \
@@ -267,7 +267,7 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
    do { \
      if (theLogLevel <= S3_INFO) { \
        std::ostringstream logMessage; \
-       logMessage << "S3FS (bucket: " << theBucketname << "; func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
+       logMessage << "(func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
                   << "[INFO] ## " << message << " ## "; \
        S3_LOG_OUTPUT(LOG_INFO, logMessage.str().c_str()); \
      } \
@@ -277,7 +277,7 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
    do { \
      if (theLogLevel <= S3_ERROR) { \
        std::ostringstream logMessage; \
-       logMessage << "S3FS (bucket: " << theBucketname << "; func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
+       logMessage << "(func: " << __FUNCTION__ << "; line: " << __LINE__ << ") " \
                   << "[ERROR] ## " << message << " ## "; \
        S3_LOG_OUTPUT(LOG_ERR, logMessage.str().c_str()); \
      } \
@@ -448,7 +448,17 @@ s3_getattr(const char *path, struct stat *stbuf)
 
       S3_LOG_DEBUG("requested getattr for root / => exit");
       return result;
-    }else{
+    } else if (strcmp(path, "/s3fs.stat") == 0) {
+      stbuf->st_mode |= S_IFREG;
+      stbuf->st_size = 0;
+      stbuf->st_nlink = 1;
+      stbuf->st_gid  = getgid();
+      stbuf->st_uid  = getuid();
+      stbuf->st_mtime  = getCurrentTime();
+
+      S3_LOG_DEBUG("requested getattr for s3fs.stat => exit");
+      return result;
+    } else {
 
 #ifdef S3FS_USE_MEMCACHED
       std::string value;
@@ -1847,6 +1857,19 @@ main(int argc, char **argv)
   if (0 <= conf.log_level && conf.log_level <= 2)
     theLogLevel = (LogLevel) conf.log_level; 
 
+#ifdef S3FS_LOG_SYSLOG
+  openlog ("s3fs ", LOG_PID, LOG_DAEMON);
+#endif
+  if (theBucketname.length() == 0) {
+    S3_LOG_ERROR("Please specify a S3 bucket (-o bucket=string).");
+    std::cerr << "Please specify a S3 bucket (-o bucket=string)." << std::endl;
+    return 4;
+  }
+  std::string lSyslogId = "s3fs " + theBucketname + " ";
+#ifdef S3FS_LOG_SYSLOG
+  openlog (lSyslogId.c_str(), LOG_PID, LOG_DAEMON);
+#endif
+
   // error checking
   if (theAccessKeyId.length() == 0) {
     S3_LOG_ERROR("Please specify your aws access key (-o access-key=string).");
@@ -1862,11 +1885,6 @@ main(int argc, char **argv)
     S3_LOG_ERROR("Please specify a temporary directory (-o temp-dir=string).");
     std::cerr << "Please specify a temporary directory (-o temp-dir=string)." << std::endl;
     return 3;
-  }
-  if (theBucketname.length() == 0) {
-    S3_LOG_ERROR("Please specify a S3 bucket (-o bucket=string).");
-    std::cerr << "Please specify a S3 bucket (-o bucket=string)." << std::endl;
-    return 4;
   }
 #ifdef S3FS_USE_MEMCACHED
   if (theMemcachedServers.length() == 0) {
