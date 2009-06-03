@@ -1336,20 +1336,25 @@ s3_open(const char *path,
 
       do{
         trycounter++;
+        S3_LOG_DEBUG("going to make get call to s3 for " << lpath.substr(1) << "; trycounter " << trycounter);
         S3FS_TRY
           GetResponsePtr lGet = lCon->get(theBucketname, lpath.substr(1));
+          S3_LOG_DEBUG("successfully made get request");
           std::istream& lInStream = lGet->getInputStream();
-          S3_LOG_DEBUG("content length: " << lGet->getContentLength());
+          S3_LOG_DEBUG("received content with length: " << lGet->getContentLength());
           fileHandle->size=lGet->getContentLength();
 
+          S3_LOG_DEBUG("going to write data to tempfile");
           // write data to temp file
+          char data[1024];
           while (lInStream.good())     // loop while extraction from file is possible
           {
-            char data;
-            lInStream.get(data);       // get character from file
-            tempfile->put(data);
+            lInStream.read(data, 1024);       // get character from file
+            tempfile->write(data, lInStream.gcount());
+            S3_LOG_DEBUG("wrote " << lInStream.gcount() << "bytes to tempfile");
           }
           tempfile->flush();
+          S3_LOG_DEBUG("finished writing to tempfile");
 
           fileHandle->filestream = tempfile.release();
           fileHandle->is_write = false;
@@ -1361,6 +1366,7 @@ s3_open(const char *path,
           fileinfo->fh = (uint64_t)fileHandle->id;
           int lTmpPointer = fileHandle->id;
           tempfilemap.insert( std::pair<int,struct FileHandle*>(lTmpPointer,fileHandle.release()) );
+          S3_LOG_DEBUG("put tempfile into map");
 
         S3FS_CATCH(Get)
       }while(haserror && trycounter<AWS_TRIES_ON_ERROR);
@@ -1369,8 +1375,10 @@ s3_open(const char *path,
     }
 #endif // S3FS_USE_MEMCACHED
     if (result!=0){
+      S3_LOG_DEBUG("setting the fileinfo filehandle to NULL");
       fileinfo->fh = NULL;
     }
+    S3_LOG_DEBUG("returning with result " << result);
     return result;
   }catch(...){
     S3_LOG_ERROR("An Error occured while trying to open a file.");
