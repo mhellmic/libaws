@@ -296,8 +296,9 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
          haserror=true; \
       } else{ \
          haserror=false; \
+         result=-ENOENT;\
       } \
-      result=-ENOENT;\
+      result=-EIO;\
     } catch (AWSConnectionException & conException) { \
      S3_LOG_ERROR("AWSConnectionException: "<<conException.what()); \
       haserror=true; \
@@ -305,7 +306,7 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
     }catch (AWSException & awsException) { \
       S3_LOG_ERROR("AWSException: "<<awsException.what()); \
       haserror=true; \
-      result=-ENOENT;\
+      result=-EIO;\
     }
 #else
 #  define S3FS_CATCH(kind) \
@@ -314,14 +315,15 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
          haserror=true; \
       } else{ \
          haserror=false; \
+         result=-ENOENT;\
       } \
-      result=-ENOENT;\
+      result=-EIO;\
     } catch (AWSConnectionException & conException) { \
       haserror=true; \
       result=-ECONNREFUSED; \
     }catch (AWSException & awsException) { \
       haserror=true; \
-      result=-ENOENT;\
+      result=-EIO;\
     }
 #endif
 
@@ -490,6 +492,7 @@ s3_getattr(const char *path, struct stat *stbuf)
            trycounter++;
 					 if(haserror){	
 					 	  S3_LOG_INFO("trying again: TRY " << trycounter);
+              haserror=false;
            }
 
            // get metadata from s3
@@ -720,6 +723,7 @@ s3_mkdir(const char *path, mode_t mode)
   try{
     do{
       trycounter++;
+      haserror=false;
       S3FS_TRY
         map_t lDirMap;
         lDirMap.insert(pair_t("dir", "1"));
@@ -813,6 +817,7 @@ s3_rmdir(const char *path)
          trycounter++;
          ListBucketResponsePtr lRes;
          lentries="";
+         haserror=false;
          S3FS_TRY
            std::string lMarker;
            do {
@@ -873,6 +878,7 @@ s3_rmdir(const char *path)
     // delete folder on s3
     do{
       trycounter++;
+      haserror=false;
       S3FS_TRY
         DeleteResponsePtr lRes = lCon->del(theBucketname, lpath.substr(1));
       S3FS_CATCH(Put)
@@ -1002,6 +1008,7 @@ s3_readdir(const char *path,
 
       do{
         trycounter++;
+        haserror=false;
         ListBucketResponsePtr lRes;
         S3FS_TRY
           std::string lMarker;
@@ -1207,6 +1214,7 @@ s3_unlink(const char * path)
 
     do{
       trycounter++;
+      haserror=false;
       S3FS_TRY
         DeleteResponsePtr lRes = lCon->del(theBucketname, lpath.substr(1));
       S3FS_CATCH(Put)
@@ -1336,6 +1344,7 @@ s3_open(const char *path,
 
       do{
         trycounter++;
+        haserror=false;
         S3_LOG_DEBUG("going to make get call to s3 for " << lpath.substr(1) << "; trycounter " << trycounter);
         S3FS_TRY
           GetResponsePtr lGet = lCon->get(theBucketname, lpath.substr(1));
@@ -1512,6 +1521,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 
           do{
             trycounter++;
+            haserror=false;
             S3FS_TRY
               map_t lDirMap;
               lDirMap.insert(pair_t("file", "1"));
