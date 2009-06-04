@@ -294,11 +294,11 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
       S3_LOG_ERROR("S3Exception(ERRORCODE="<<((int)s3Exception.getErrorCode())<<"):"<<s3Exception.what()); \
       if (s3Exception.getErrorCode() != aws::S3Exception::NoSuchKey) { \
          haserror=true; \
+         result=-EIO;\
       } else{ \
          haserror=false; \
          result=-ENOENT;\
       } \
-      result=-EIO;\
     } catch (AWSConnectionException & conException) { \
      S3_LOG_ERROR("AWSConnectionException: "<<conException.what()); \
       haserror=true; \
@@ -313,11 +313,11 @@ static void releaseConnection(const S3ConnectionPtr& aConnection) {
     } catch (kind ## Exception & s3Exception) { \
       if (s3Exception.getErrorCode() != aws::S3Exception::NoSuchKey) { \
          haserror=true; \
+         result=-EIO;\
       } else{ \
          haserror=false; \
          result=-ENOENT;\
       } \
-      result=-EIO;\
     } catch (AWSConnectionException & conException) { \
       haserror=true; \
       result=-ECONNREFUSED; \
