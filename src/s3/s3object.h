@@ -34,7 +34,7 @@ public:
     typedef std::pair<std::string, std::list<std::string> > metadatapair_t;
 
     std::string      theContentType;
-    size_t           theContentLength;
+    uint64_t         theContentLength;
     metadata_t       theMetadata;
 
     // use either of the following memebers

@@ -719,7 +719,7 @@ S3Connection::makeRequest(const std::string& aBucketName,
     curl_easy_setopt(theCurl, CURLOPT_READDATA, (void*) aObject);
     aHeaderMap->addMetadataHeaders(aObject);
     aHeaderMap->addHeader("Content-Type", aObject->theContentType);
-    curl_easy_setopt(theCurl, CURLOPT_INFILESIZE, aObject->theContentLength);
+    curl_easy_setopt(theCurl, CURLOPT_INFILESIZE_LARGE, aObject->theContentLength);
     aHeaderMap->addHeader("Transfer-Encoding", "");
     aHeaderMap->addHeader("Expect", "");
   } else {
