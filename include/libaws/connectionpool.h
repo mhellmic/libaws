@@ -24,8 +24,6 @@
 #include <libaws/awsconnectionfactory.h>
 #include <iostream>
 
-using namespace aws;
-
 namespace aws { 
 
 template <class T>
