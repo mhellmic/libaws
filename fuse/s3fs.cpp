@@ -1744,6 +1744,7 @@ s3_readlink(const char * path, char * link, size_t size)
 #ifdef S3FS_USE_MEMCACHED
     std::string value;
     memcached_return rc;
+    bool readlink=false;
 
     // check if the cache knows if the link exists
     key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"");
@@ -1759,9 +1760,22 @@ s3_readlink(const char * path, char * link, size_t size)
       // get the target link
       key=theCache->getkey(AWSCache::PREFIX_SYMLINK,lpath.substr(1),"");
       value=theCache->read_key(key, &rc);
-      strcpy(link,value.c_str());
-    }else 
-    {
+      if (value.compare("")==0){
+      	
+      	// although the link was marked as existent in cache the target value was not in the cache, so it needs to be read from s3
+      	readlink=true;
+      }else{      
+      	
+      	//found the target value in the cache
+        strcpy(link,value.c_str());
+      }
+    }else{
+    		
+    		// existence of link is not marked in the cache
+    		readlink=true;
+    } 
+    
+    if(readlink){
 #endif
       // open the file that contains the target path info
       fuse_file_info fileinfo;
