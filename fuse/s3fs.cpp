@@ -1739,6 +1739,7 @@ s3_readlink(const char * path, char * link, size_t size)
   std::string lpath(path);
   int result=0;
   std::string key;
+  int readsize=0;
 
   try{
 #ifdef S3FS_USE_MEMCACHED
@@ -1786,7 +1787,12 @@ s3_readlink(const char * path, char * link, size_t size)
       if(result==0){
         // read the target path
         S3_LOG_DEBUG("read " << path);
-        s3_read(path,link,size,0,&fileinfo);
+        readsize=s3_read(path,link,size-1,0,&fileinfo);
+        
+        // the fuse doc says: If the linkname is too long to fit in the buffer, it should be truncated. 
+        // therefore we don't care for links that are longer than size
+        // null termination
+        link[readsize]='\0';
         S3_LOG_DEBUG("link " << link);
 
         // release the file
