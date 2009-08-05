@@ -95,6 +95,7 @@ struct s3fs_config {
   char* bucket;
   char* memcached_servers;
   int   log_level;
+  int   create_mount_dir;
 };
 
 enum {
@@ -111,6 +112,7 @@ static struct fuse_opt s3fs_opts[] = {
    S3FS_OPT("bucket=%s",            bucket, 0),
    S3FS_OPT("log-level=%i",         log_level, 0),
    S3FS_OPT("memcached-servers=%s", memcached_servers, 0),
+   S3FS_OPT("create-mountdir=%i", create_mount_dir, 0),
 
    FUSE_OPT_KEY("-h",             KEY_HELP),
    FUSE_OPT_KEY("-H",             KEY_HELP),
@@ -142,6 +144,7 @@ static int s3fs_opt_proc(void *data, const char *arg, int key, struct fuse_args 
             "    -o bucket=STRING            bucket to mount\n"
             "    -o memcached_servers=STRING memcached servers used for caching\n"
             "    -o log-level=INT            logging level (0=ERROR, 1=INFO, 2=DEBUG)\n"
+            "    -o create-mountdir=INT      create mount dir if not existent? (0=no, 1=yes)\n"
             , outargs->argv[0]);
     fuse_opt_add_arg(outargs, "-ho");
     fuse_main(outargs->argc, outargs->argv, &s3_filesystem_operations, NULL);
@@ -1967,6 +1970,25 @@ main(int argc, char **argv)
      }
   }
 
+  // check if mouting dir exists
+  {
+    std::string mount_dir=argv[1];
+    struct stat st;
+    if (stat(mount_dir.c_str(), &st) == -1) {
+       if(conf.create_mount_dir){
+          S3_LOG_INFO("mount dir " << mount_dir << "does not exist. Option create-mountdir is set. Trying to create folder.");
+          if (::mkdir(mount_dir.c_str(),0777) == -1) {
+             S3_LOG_ERROR("creating directory " << mount_dir << " failed");
+             return 7;
+          } else {
+             S3_LOG_INFO("successfully created directory " << mount_dir);
+          }
+       }else{
+          S3_LOG_ERROR("mount dir " << mount_dir << "does not exist. Option create-mountdir not set. mounting failed.");
+          return 8;
+       }
+    } 
+  }
   S3_LOG_INFO("mounting bucket " << theBucketname << " to " << argv[1]);
 
   return fuse_main(args.argc, args.argv, &s3_filesystem_operations, NULL);
