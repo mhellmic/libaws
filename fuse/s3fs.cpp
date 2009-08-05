@@ -1860,6 +1860,7 @@ main(int argc, char **argv)
   struct s3fs_config conf;
   memset(&conf, 0, sizeof(conf));
   fuse_opt_parse(&args, &conf, s3fs_opts, s3fs_opt_proc);
+  bool create_mount_dir=false;
 
   // read from config file specified
   if (conf.property_file) {
@@ -1876,6 +1877,13 @@ main(int argc, char **argv)
       theS3FSTempFolder   = lProperties[s3fs::utils::Properties::TEMP_DIR];
     if (!conf.bucket)
       theBucketname       = lProperties[s3fs::utils::Properties::BUCKET_NAME];
+    if (!conf.create_mount_dir){
+      std::string temp_create_mount_dir = lProperties[s3fs::utils::Properties::CREATE_MOUNT_DIR];
+      if(temp_create_mount_dir.compare("1")==0)
+            create_mount_dir = true;
+    }else{
+      create_mount_dir=true;
+    }
 #ifdef S3FS_USE_MEMCACHED
     if (!conf.memcached_servers)
       theMemcachedServers = lProperties[s3fs::utils::Properties::MEMCACHED_SERVERS];
@@ -1975,7 +1983,7 @@ main(int argc, char **argv)
     std::string mount_dir=argv[1];
     struct stat st;
     if (stat(mount_dir.c_str(), &st) == -1) {
-       if(conf.create_mount_dir){
+       if(create_mount_dir){
           S3_LOG_INFO("mount dir " << mount_dir << "does not exist. Option create-mountdir is set. Trying to create folder.");
           if (::mkdir(mount_dir.c_str(),0777) == -1) {
              S3_LOG_ERROR("creating directory " << mount_dir << " failed");
