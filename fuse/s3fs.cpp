@@ -154,9 +154,9 @@ static int s3fs_opt_proc(void *data, const char *arg, int key, struct fuse_args 
 }
 
 enum LogLevel {
-  S3_ERROR = 0,
+  S3_DEBUG = 0,
   S3_INFO  = 1,
-  S3_DEBUG = 2
+  S3_ERROR = 2
 };
 
 static LogLevel theLogLevel = S3_ERROR;
@@ -1891,6 +1891,11 @@ main(int argc, char **argv)
   } 
 
   // command line parameters override config file
+  if (conf.log_level){
+    if(conf.log_level==0)theLogLevel=S3_DEBUG;
+    if(conf.log_level==1)theLogLevel=S3_INFO;
+    if(conf.log_level==2)theLogLevel=S3_ERROR;
+  }
   if (conf.access_key)
     theAccessKeyId = conf.access_key;
   if (conf.secret_key)
