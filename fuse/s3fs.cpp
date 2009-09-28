@@ -1135,7 +1135,6 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
     fileHandle->filename = std::string(ltempfile);
     fileHandle->size = 0;
     fileHandle->s3key = lpath.substr(1);// cut off the first slash
-    //TODO this is a hack
     fileHandle->mode = lmode;
     fileHandle->filestream = tempfile.release();
     fileHandle->is_write = true;
@@ -1150,7 +1149,6 @@ s3_create(const char *path, mode_t mode, struct fuse_file_info *fileinfo)
 
     // init stat
     struct stat stbuf;
-    //TODO this is a hack
     stbuf.st_mode = lmode;
     stbuf.st_gid = getgid();
     stbuf.st_uid = getuid();
@@ -1316,9 +1314,10 @@ s3_open(const char *path,
     bool got_file_cont_from_cache=false;
     memcached_return rc;
     unsigned int filesize=(unsigned int)stbuf.st_size;
-
+    
     // file can only be in cach if content is not too big
     if(filesize<AWSCache::FILE_CACHING_UPPER_LIMIT){
+      S3_LOG_DEBUG("trying to get File of size " << filesize << " from cache");
       key=theCache->getkey(AWSCache::PREFIX_FILE,lpath.substr(1),"").c_str();
       theCache->read_file(key,dynamic_cast<std::fstream*>(tempfile.get()),&rc);
 
@@ -1537,7 +1536,7 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
 #ifdef S3FS_USE_MEMCACHED
               // invalidate cached data of file
               key=theCache->getkey(AWSCache::PREFIX_FILE,lpath.substr(1),"").c_str();
-              theCache->save_file(key,dynamic_cast<std::fstream*>(fileHandle->filestream),fileHandle->size); 
+              theCache->delete_key(key); 
               key=theCache->getkey(AWSCache::PREFIX_EXISTS,lpath.substr(1),"").c_str();
               theCache->delete_key(key);
 #endif // S3FS_USE_MEMCACHED
@@ -1553,11 +1552,8 @@ s3_release(const char *path, struct fuse_file_info *fileinfo)
           // we have to send no changes to s3 -> readonly
 
 #ifdef S3FS_USE_MEMCACHED
-          // only cache file content if not too big
-          if(fileHandle->size < AWSCache::FILE_CACHING_UPPER_LIMIT){
-              key=theCache->getkey(AWSCache::PREFIX_FILE,lpath.substr(1),"").c_str();
-              theCache->save_file(key,dynamic_cast<std::fstream*>(fileHandle->filestream),fileHandle->size); 
-           }
+          key=theCache->getkey(AWSCache::PREFIX_FILE,lpath.substr(1),"").c_str();
+          theCache->save_file(key,dynamic_cast<std::fstream*>(fileHandle->filestream),fileHandle->size); 
 #endif // S3FS_USE_MEMCACHED
         }
 

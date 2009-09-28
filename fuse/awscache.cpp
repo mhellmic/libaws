@@ -19,6 +19,7 @@
 #include <syslog.h>
 
 #define S3FS_LOG_SYSLOG 1
+//#define CACHE_TEXT_FILES_ONLY 1
 
 #ifndef NDEBUG
 static int S3CACHE_DEBUG=0;
@@ -78,7 +79,7 @@ namespace aws {
   std::string AWSCache::PREFIX_FILE("file");
   std::string AWSCache::PREFIX_SYMLINK("symlink");
 
-  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=0; // 1000 (means approx. 1kb)
+  unsigned int AWSCache::FILE_CACHING_UPPER_LIMIT=300000; // 1000 (means approx. 1kb)
   std::string AWSCache::DELIMITER_FOLDER_ENTRIES=",";
 
   AWSCache::AWSCache(std::string bucketname):
@@ -206,7 +207,7 @@ namespace aws {
 #ifndef NDEBUG
     if (rc == MEMCACHED_SUCCESS){
       std::string lvalue(memblock.get());
-      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_cache_key_file(...)","   successfully stored file: '" << key << "'");// value: '"<<lvalue<<"'");
+      S3CACHE_LOG(S3CACHE_INFO,"AWSCache::save_cache_key_file(...)","   successfully stored file: '" << key << "'; size: " << size);// value: '"<<lvalue<<"'");
     }else{
       S3CACHE_LOG(S3CACHE_INFO,"AWSCache::save_cache_key_file(...)","    [ERROR] could not store file: '" << key << "' in cache (rc=" << (int) rc << ": "<< memcached_strerror(memc,rc) <<")");
     }
@@ -219,26 +220,37 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     try{
       memc=get_Memcached_struct();
 
+      // only cache file content if not too big
+      if(size < AWSCache::FILE_CACHING_UPPER_LIMIT){
+          
+#ifdef CACHE_TEXT_FILES_ONLY
       // check if file type is known
-      if(key.length()>3 && key.substr(key.length()-3,key.length()).compare(".xq")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".xml")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".txt")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".fcgi")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".cgi")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".html")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".htm")==0){
-        save_file(memc, key, fstream, size);
-      }else if(key.length()==9 && key.compare(".htaccess")==0){
-        save_file(memc, key, fstream, size);
+         if(key.length()>3 && key.substr(key.length()-3,key.length()).compare(".xq")==0){
+            save_file(memc, key, fstream, size);
+         }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".xml")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".txt")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".fcgi")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".cgi")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()>5 && key.substr(key.length()-5,key.length()).compare(".html")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()>4 && key.substr(key.length()-4,key.length()).compare(".htm")==0){
+           save_file(memc, key, fstream, size);
+         }else if(key.length()==9 && key.compare(".htaccess")==0){
+           save_file(memc, key, fstream, size);
+         }else{
+           S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
+         }
+#else
+         save_file(memc, key, fstream, size);
+#endif
       }else{
-        S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_file(...)","due to an unsupported file type: not caching file: '" << key << "'");
+        S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::save_file(...)","not caching file, because it is too large '" << key << "' (size: " << size << ").");
       }
+
       free_Memcached_struct(memc);
     }catch(...){
       S3CACHE_LOG(S3CACHE_ERROR,"AWSCache::save_file(...)","error saving file: '" << key << "'");
@@ -345,14 +357,17 @@ void AWSCache::save_file(const std::string& key, std::fstream* fstream, size_t s
     std::string lkey(key);
     if (*rc == MEMCACHED_SUCCESS){
       if(value!=NULL){
-        (*fstream) << value;
+        S3CACHE_LOG(S3CACHE_INFO,"AWSCache::read_file(...)","successfully read cached file: '" << lkey << "'; size: " << value_length);
+        fstream->seekg(0,std::ios_base::beg);
+	fstream->write(value, value_length);
         fstream->flush();
+      }else{
+      	S3CACHE_LOG(S3CACHE_INFO,"AWSCache::read_file(...)","[WARNING] value is NULL.");
       }
-      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::read_file(...)","successfully read cached file: '" << lkey << "'");
     }
 #ifndef NDEBUG
     else{
-      S3CACHE_LOG(S3CACHE_DEBUG,"AWSCache::read_file(...)","[WARNING] could not read file: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
+      S3CACHE_LOG(S3CACHE_INFO,"AWSCache::read_file(...)","[WARNING] could not read file: '" << lkey << "' from cache (rc=" << (int) *rc << ": "<< memcached_strerror(memc,*rc) <<")");
     }
 #endif
   }
