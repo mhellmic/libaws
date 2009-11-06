@@ -17,6 +17,12 @@
 #define LIBAWS_COMMON_API_H
 
 #include <libaws/config.h>
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <libaws/smart_ptr.h>
 
 namespace aws {

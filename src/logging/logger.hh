@@ -2,6 +2,7 @@
 #define AWS_LOGGER_H
 
 #include <string>
+#include <libaws/common.h>
 
 namespace logging {
 
