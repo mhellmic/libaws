@@ -28,6 +28,9 @@ namespace aws {
     class GetHandler;
     class DeleteHandler;
     class HeadHandler;
+    class BucketLoggingStatusHandler;
+    class SetBucketLoggingHandler;
+    class DisableBucketLoggingHandler;
   } /* namespace s3 */
 	
   class Response 
@@ -41,6 +44,9 @@ namespace aws {
     friend class aws::s3::GetHandler;
     friend class aws::s3::DeleteHandler;
     friend class aws::s3::HeadHandler;
+    friend class aws::s3::BucketLoggingStatusHandler;
+    friend class aws::s3::SetBucketLoggingHandler;
+    friend class aws::s3::DisableBucketLoggingHandler;
 
   public:
     Response();

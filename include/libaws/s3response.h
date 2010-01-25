@@ -35,6 +35,9 @@ namespace aws {
       class HeadResponse;
       class DeleteResponse;
       class DeleteAllResponse;
+      class BucketLoggingStatusResponse;
+      class SetBucketLoggingResponse;
+      class DisableBucketLoggingResponse;
   } /* namespace s3 */
 
   /** \brief S3Response is the base class of all classes that can be
@@ -135,7 +138,7 @@ namespace aws {
         std::string KeyValue;
         std::string LastModified;
         std::string ETag;
-        size_t      Size;
+        intmax_t    Size;
       };
 
       ListBucketResponse(s3::ListBucketResponse*);
@@ -278,6 +281,54 @@ namespace aws {
       friend class S3ConnectionImpl;
       DeleteAllResponse(s3::DeleteAllResponse*);
   }; /* class DeleteAllResponse */
+
+  class BucketLoggingStatusResponse : public S3Response<s3::BucketLoggingStatusResponse>
+  {
+    public:
+      virtual ~BucketLoggingStatusResponse() {}
+
+      virtual const std::string&
+      getBucketName() const;
+
+      virtual const std::string&
+      getTargetBucket() const;
+  
+      virtual const std::string&
+      getTargetPrefix() const;
+
+      virtual bool
+      isLoggingEnabled() const;
+
+    private:
+      friend class S3ConnectionImpl;
+      BucketLoggingStatusResponse(s3::BucketLoggingStatusResponse*);
+  }; /* class BucketLoggingStatusResponse */
+
+  class SetBucketLoggingResponse : public S3Response<s3::SetBucketLoggingResponse>
+  {
+    public:
+      virtual ~SetBucketLoggingResponse() {}
+
+      virtual const std::string&
+      getBucketName() const;
+
+    private:
+      friend class S3ConnectionImpl;
+      SetBucketLoggingResponse(s3::SetBucketLoggingResponse*);
+  }; /* class SetBucketLoggingResponse */
+
+  class DisableBucketLoggingResponse : public S3Response<s3::DisableBucketLoggingResponse>
+  {
+    public:
+      virtual ~DisableBucketLoggingResponse() {}
+
+      virtual const std::string&
+      getBucketName() const;
+
+    private:
+      friend class S3ConnectionImpl;
+      DisableBucketLoggingResponse(s3::DisableBucketLoggingResponse*);
+  }; /* class DisableBucketLoggingResponse */
 
 } /* namespace aws */
 #endif

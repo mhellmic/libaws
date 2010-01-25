@@ -47,6 +47,9 @@ namespace aws {
     class HeadResponse;
     class DeleteResponse;
     class DeleteAllResponse;
+    class BucketLoggingStatusResponse;
+    class SetBucketLoggingResponse;
+    class DisableBucketLoggingResponse;
   } /* namespace s3 */
 
 

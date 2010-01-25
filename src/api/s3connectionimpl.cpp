@@ -112,6 +112,28 @@ namespace aws {
     return new HeadResponse(theConnection->head(aBucketName, aKey));
   }
 
+  BucketLoggingStatusResponsePtr
+  S3ConnectionImpl::bucketLoggingStatus(const std::string& aBucketName)
+  {
+    return new BucketLoggingStatusResponse(theConnection->bucketLoggingStatus(aBucketName));
+  }
+
+  SetBucketLoggingResponsePtr
+  S3ConnectionImpl::setBucketLogging(const std::string& aBucketName,
+                                     const std::string& aTargetBucket,
+                                     const std::string& aTargetPrefix)
+  {
+    return new SetBucketLoggingResponse(theConnection->setBucketLogging(aBucketName,
+                                                                        aTargetBucket,
+                                                                        aTargetPrefix));
+  }
+
+  DisableBucketLoggingResponsePtr
+  S3ConnectionImpl::disableBucketLogging(const std::string& aBucketName)
+  {
+    return new DisableBucketLoggingResponse(theConnection->disableBucketLogging(aBucketName));
+  }
+
   S3ConnectionImpl::S3ConnectionImpl(const std::string& aAccessKeyId, 
                                      const std::string& aSecretAccessKey,
                                      const std::string& aCustomHost)

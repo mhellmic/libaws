@@ -32,10 +32,10 @@ namespace aws {
 
 	const char*
 	SDBException::what() const throw() {
-    std::stringstream lTmp;
-    lTmp << "Code:" << theOrigErrorCode << " Message:" << theErrorMessage << " RequestId:" << theRequestId;
-    lTmp.str().c_str();
-    return lTmp.str().c_str();;
+		std::stringstream lTmp;
+		lTmp << "Code:" << theOrigErrorCode << " Message:" << theErrorMessage << " RequestId:" << theRequestId;
+		lTmp.str().c_str();
+		return lTmp.str().c_str();
 	}
 
 	SDBException::ErrorCode SDBException::parseError(const std::string& aString) {

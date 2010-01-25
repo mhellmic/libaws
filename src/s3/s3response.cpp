@@ -239,5 +239,23 @@ namespace aws { namespace s3 {
     {
     }
 
+    BucketLoggingStatusResponse::BucketLoggingStatusResponse(const std::string& aBucketName)
+      : theBucketName ( aBucketName )
+    {
+    }
+
+    SetBucketLoggingResponse::SetBucketLoggingResponse(const std::string& aBucketName,
+                             const std::string& aTargetBucket,
+                             const std::string& aTargetPrefix)
+      : theBucketName ( aBucketName ),
+        theTargetBucket ( aTargetBucket ),
+        theTargetPrefix ( aTargetPrefix )
+    {
+    }
+
+    DisableBucketLoggingResponse::DisableBucketLoggingResponse(const std::string& aBucketName)
+      : theBucketName ( aBucketName )
+    {
+    }
 
 } } // end namespaces

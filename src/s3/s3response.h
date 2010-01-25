@@ -41,6 +41,9 @@ namespace aws { namespace s3  {
     friend class PutHandler;
     friend class HeadHandler;
     friend class DeleteHandler;
+    friend class BucketLoggingStatusHandler;
+    friend class SetBucketLoggingHandler;
+    friend class DisableBucketLoggingHandler;
     friend class S3Connection;
     friend class S3Response;
 
@@ -374,6 +377,70 @@ protected:
     std::string     theBucketName;
     std::string     thePrefix;
 };
+
+class BucketLoggingStatusResponse : public S3Response
+{
+    friend class BucketLoggingStatusHandler;
+  public:
+    BucketLoggingStatusResponse(const std::string& aBucketName);
+    virtual ~BucketLoggingStatusResponse() {}
+
+    const std::string&
+    getBucketName() const { return theBucketName; }
+
+    const std::string&
+    getTargetBucket() const { return theTargetBucket; }
+
+    const std::string&
+    getTargetPrefix() const { return theTargetPrefix; }
+
+    bool
+    isLoggingEnabled() const { return (theTargetBucket.size() != 0); }
+
+  protected:
+    std::string    theBucketName;
+    std::string    theTargetBucket;
+    std::string    theTargetPrefix;
+}; /* class BucketLoggingStatusResponse */
+
+class SetBucketLoggingResponse : public S3Response
+{
+    friend class SetBucketLoggingHandler;
+  public:
+    SetBucketLoggingResponse(const std::string& aBucketName,
+                             const std::string& aTargetBucket,
+                             const std::string& aTargetPrefix);
+
+    virtual ~SetBucketLoggingResponse() {}
+
+    const std::string&
+    getBucketName() const { return theBucketName; }
+
+    const std::string&
+    getTargetBucket() const { return theTargetBucket; }
+
+    const std::string&
+    getTargetPrefix() const { return theTargetPrefix; }
+
+  protected:
+    std::string    theBucketName;
+    std::string    theTargetBucket;
+    std::string    theTargetPrefix;
+}; /* class SetBucketLoggingResponse */
+
+class DisableBucketLoggingResponse : public S3Response
+{
+    friend class DisableBucketLoggingHandler;
+  public:
+    DisableBucketLoggingResponse(const std::string& aBucketName);
+    virtual ~DisableBucketLoggingResponse() {}
+
+    const std::string&
+    getBucketName() const { return theBucketName; }
+
+  protected:
+    std::string    theBucketName;
+}; /* class DisableBucketLoggingResponse */
     
 } } // end namespaces
 

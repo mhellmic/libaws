@@ -343,5 +343,59 @@ namespace aws {
     return theS3Response->getBucketName();
   }
 
+  /**
+   * BucketLoggingStatusResponse
+   */
+  BucketLoggingStatusResponse::BucketLoggingStatusResponse(s3::BucketLoggingStatusResponse* r)
+    : S3Response<s3::BucketLoggingStatusResponse>(r) {}
+
+  const std::string&
+  BucketLoggingStatusResponse::getBucketName() const
+  {
+    return theS3Response->getBucketName();
+  }
+
+  const std::string&
+  BucketLoggingStatusResponse::getTargetBucket() const
+  {
+    return theS3Response->getTargetBucket();
+  }
+  
+  const std::string&
+  BucketLoggingStatusResponse::getTargetPrefix() const
+  {
+    return theS3Response->getTargetPrefix();
+  }
+
+  bool
+  BucketLoggingStatusResponse::isLoggingEnabled() const
+  {
+    return theS3Response->isLoggingEnabled();
+  }
+
+  /**
+   * SetBucketLoggingResponse
+   */
+  SetBucketLoggingResponse::SetBucketLoggingResponse(s3::SetBucketLoggingResponse* r)
+    : S3Response<s3::SetBucketLoggingResponse>(r) {}
+
+  const std::string&
+  SetBucketLoggingResponse::getBucketName() const
+  {
+    return theS3Response->getBucketName();
+  }
+
+  /**
+   * DisableBucketLoggingResponse
+   */
+  DisableBucketLoggingResponse::DisableBucketLoggingResponse(s3::DisableBucketLoggingResponse* r)
+    : S3Response<s3::DisableBucketLoggingResponse>(r) {}
+
+  const std::string&
+  DisableBucketLoggingResponse::getBucketName() const
+  {
+    return theS3Response->getBucketName();
+  }
+
 } /* namespace aws */
 

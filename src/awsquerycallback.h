@@ -111,7 +111,7 @@ namespace aws
 
     public:
       void setState ( uint64_t s )   { theCurrentState |= s; }
-      bool isSet ( uint64_t s )      { return theCurrentState & s; }
+      bool isSet ( uint64_t s )      { return (theCurrentState & s) == s; }
       void unsetState ( uint64_t s ) { theCurrentState ^= s; }
 
 

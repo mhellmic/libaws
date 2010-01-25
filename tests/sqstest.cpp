@@ -149,7 +149,7 @@ testMessages(SQSConnection* lSQSCon)
 }
 
 int
-sqstest(int argc, char** argv)
+sqstest(int argc, char* argv[])
 {
 
   AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();

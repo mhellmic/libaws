@@ -31,7 +31,7 @@ namespace aws {
 
   DEFINE_LOGGER ( aws::AWSQueryConnection );
 
-  std::string AWSQueryConnection::QUERY_DATE_FORMAT("%FT%H:%M:%SZ");
+  std::string AWSQueryConnection::QUERY_DATE_FORMAT("%Y-%m-%dT%H:%M:%SZ");
 
   AWSQueryConnection::AWSQueryConnection ( const std::string &aAccessKeyId,
       const std::string &aSecretAccessKey,

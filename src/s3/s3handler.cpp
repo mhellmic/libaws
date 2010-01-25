@@ -824,4 +824,280 @@ DeleteHandler::endElementNs(void * ctx,
   }
 }
 
+BucketLoggingStatusHandler::BucketLoggingStatusHandler()
+    : S3Handler()
+{
+    
+}
+
+
+void
+BucketLoggingStatusHandler::startElementNs( void * ctx, 
+                                    const xmlChar * localname, 
+                                    const xmlChar * prefix, 
+                                    const xmlChar * URI, 
+                                    int nb_namespaces, 
+                                    const xmlChar ** namespaces, 
+                                    int nb_attributes, 
+                                    int nb_defaulted, 
+                                    const xmlChar ** attributes )
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  BucketLoggingStatusResponse* lRes     = static_cast<BucketLoggingStatusResponse*>( lWrapper->theResponse );
+  BucketLoggingStatusHandler*  lHandler = static_cast<BucketLoggingStatusHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Error")) {
+    lRes->theIsSuccessful = false;
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->setState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->setState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->setState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->setState(HostId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "TargetBucket")) {
+    lHandler->setState(TargetBucket);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "TargetPrefix")) {
+    lHandler->setState(TargetPrefix);
+  }
+}
+    
+void
+BucketLoggingStatusHandler::charactersSAXFunc(void * ctx, 
+    					              const xmlChar * value, 
+    					              int len)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  BucketLoggingStatusResponse* lRes     = static_cast<BucketLoggingStatusResponse*>( lWrapper->theResponse );
+  BucketLoggingStatusHandler*  lHandler = static_cast<BucketLoggingStatusHandler*>(lWrapper->theHandler);
+            
+  if (lHandler->isSet(Code)) {
+    lRes->theS3ResponseError.theErrorCode = S3ResponseError::parseError(std::string((const char*)value, len));
+  } 
+  else if (lHandler->isSet(Message)) {
+    lRes->theS3ResponseError.theErrorMessage = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(RequestId)) {
+    lRes->theS3ResponseError.theRequestId = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(HostId)) {
+    lRes->theS3ResponseError.theHostId = std::string((const char*)value, len);         
+  }
+  else if (lHandler->isSet(TargetBucket)) {
+    lRes->theTargetBucket = std::string((const char*)value, len);         
+  }
+  else if (lHandler->isSet(TargetPrefix)) {
+    lRes->theTargetPrefix = std::string((const char*)value, len);         
+  }
+}
+
+void
+BucketLoggingStatusHandler::endElementNs(void * ctx, 
+    					         const xmlChar * localname, 
+    					         const xmlChar * prefix, 
+    					         const xmlChar * URI)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  BucketLoggingStatusResponse* lRes     = static_cast<BucketLoggingStatusResponse*>( lWrapper->theResponse );
+  BucketLoggingStatusHandler*  lHandler = static_cast<BucketLoggingStatusHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->unsetState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->unsetState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->unsetState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->unsetState(HostId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "TargetBucket")) {
+    lHandler->unsetState(TargetBucket);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "TargetPrefix")) {
+    lHandler->unsetState(TargetPrefix);
+  }
+}
+
+SetBucketLoggingHandler::SetBucketLoggingHandler()
+    : S3Handler()
+{
+    
+}
+
+
+void
+SetBucketLoggingHandler::startElementNs( void * ctx, 
+                                    const xmlChar * localname, 
+                                    const xmlChar * prefix, 
+                                    const xmlChar * URI, 
+                                    int nb_namespaces, 
+                                    const xmlChar ** namespaces, 
+                                    int nb_attributes, 
+                                    int nb_defaulted, 
+                                    const xmlChar ** attributes )
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  SetBucketLoggingResponse* lRes     = static_cast<SetBucketLoggingResponse*>( lWrapper->theResponse );
+  SetBucketLoggingHandler*  lHandler = static_cast<SetBucketLoggingHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Error")) {
+    lRes->theIsSuccessful = false;
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->setState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->setState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->setState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->setState(HostId);
+  }
+}
+    
+void
+SetBucketLoggingHandler::charactersSAXFunc(void * ctx, 
+    					              const xmlChar * value, 
+    					              int len)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  SetBucketLoggingResponse* lRes     = static_cast<SetBucketLoggingResponse*>( lWrapper->theResponse );
+  SetBucketLoggingHandler*  lHandler = static_cast<SetBucketLoggingHandler*>(lWrapper->theHandler);
+            
+  if (lHandler->isSet(Code)) {
+    lRes->theS3ResponseError.theErrorCode = S3ResponseError::parseError(std::string((const char*)value, len));
+  } 
+  else if (lHandler->isSet(Message)) {
+    lRes->theS3ResponseError.theErrorMessage = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(RequestId)) {
+    lRes->theS3ResponseError.theRequestId = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(HostId)) {
+    lRes->theS3ResponseError.theHostId = std::string((const char*)value, len);         
+  }
+}
+
+void
+SetBucketLoggingHandler::endElementNs(void * ctx, 
+    					         const xmlChar * localname, 
+    					         const xmlChar * prefix, 
+    					         const xmlChar * URI)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  SetBucketLoggingResponse* lRes     = static_cast<SetBucketLoggingResponse*>( lWrapper->theResponse );
+  SetBucketLoggingHandler*  lHandler = static_cast<SetBucketLoggingHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->unsetState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->unsetState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->unsetState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->unsetState(HostId);
+  }
+}
+
+DisableBucketLoggingHandler::DisableBucketLoggingHandler()
+    : S3Handler()
+{
+    
+}
+
+
+void
+DisableBucketLoggingHandler::startElementNs( void * ctx, 
+                                    const xmlChar * localname, 
+                                    const xmlChar * prefix, 
+                                    const xmlChar * URI, 
+                                    int nb_namespaces, 
+                                    const xmlChar ** namespaces, 
+                                    int nb_attributes, 
+                                    int nb_defaulted, 
+                                    const xmlChar ** attributes )
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  DisableBucketLoggingResponse* lRes     = static_cast<DisableBucketLoggingResponse*>( lWrapper->theResponse );
+  DisableBucketLoggingHandler*  lHandler = static_cast<DisableBucketLoggingHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Error")) {
+    lRes->theIsSuccessful = false;
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->setState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->setState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->setState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->setState(HostId);
+  }
+}
+    
+void
+DisableBucketLoggingHandler::charactersSAXFunc(void * ctx, 
+    					              const xmlChar * value, 
+    					              int len)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  DisableBucketLoggingResponse* lRes     = static_cast<DisableBucketLoggingResponse*>( lWrapper->theResponse );
+  DisableBucketLoggingHandler*  lHandler = static_cast<DisableBucketLoggingHandler*>(lWrapper->theHandler);
+            
+  if (lHandler->isSet(Code)) {
+    lRes->theS3ResponseError.theErrorCode = S3ResponseError::parseError(std::string((const char*)value, len));
+  } 
+  else if (lHandler->isSet(Message)) {
+    lRes->theS3ResponseError.theErrorMessage = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(RequestId)) {
+    lRes->theS3ResponseError.theRequestId = std::string((const char*)value, len);
+  }
+  else if (lHandler->isSet(HostId)) {
+    lRes->theS3ResponseError.theHostId = std::string((const char*)value, len);         
+  }
+}
+
+void
+DisableBucketLoggingHandler::endElementNs(void * ctx, 
+    					         const xmlChar * localname, 
+    					         const xmlChar * prefix, 
+    					         const xmlChar * URI)
+{
+  S3CallBackWrapper*    lWrapper = static_cast<S3CallBackWrapper*>( ctx );
+  DisableBucketLoggingResponse* lRes     = static_cast<DisableBucketLoggingResponse*>( lWrapper->theResponse );
+  DisableBucketLoggingHandler*  lHandler = static_cast<DisableBucketLoggingHandler*>(lWrapper->theHandler);
+
+  if (xmlStrEqual(localname, BAD_CAST "Code")) {
+    lHandler->unsetState(Code);
+  } 
+  else if (xmlStrEqual(localname, BAD_CAST "Message")) {
+    lHandler->unsetState(Message);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "RequestId")) {
+    lHandler->unsetState(RequestId);
+  }
+  else if (xmlStrEqual(localname, BAD_CAST "HostId")) {
+    lHandler->unsetState(HostId);
+  }
+}
+
 } } // end namespaces

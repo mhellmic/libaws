@@ -135,6 +135,25 @@ bool deleteAllEntries(S3ConnectionPtr aS3, std::string aBucketName)
   return true;
 }
 
+bool logging( S3ConnectionPtr aS3, const std::string& aBucketName) {
+  try {
+    BucketLoggingStatusResponsePtr lRes = aS3->bucketLoggingStatus(aBucketName);
+    std::cout << "bucket logging: " << std::endl;
+    std::cout << "   bucket-name: "  << lRes->getBucketName() << std::endl;
+    if (lRes->isLoggingEnabled()) {
+      std::cout << "   logging: enabled" << std::endl;
+      std::cout << "   target bucket: " << lRes->getTargetBucket() << std::endl;
+      std::cout << "   target prefix: " << lRes->getTargetPrefix() << std::endl;
+    } else {
+      std::cout << "   logging: disabled" << std::endl;
+    }
+  } catch (BucketLoggingStatusException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
+
 bool createBucket( S3ConnectionPtr aS3, const std::string& aBucketName) {
   try {
     CreateBucketResponsePtr lRes = aS3->createBucket(aBucketName);
@@ -224,6 +243,7 @@ usage(AWSConnectionFactory* lFactory)
       std::endl;
   std::cout << "          \"delete-all-entries\": delete all entries in "
       "a bucket" << std::endl;
+  std::cout << "          \"logging\": get the logging information for a bucket" << std::endl;
   std::cout << "          \"put\": put a file on s3" << std::endl;
   std::cout << "          \"putbin\": put a binary file on s3" << std::endl;
   std::cout << "          \"get\": get a file from s3" << std::endl;
@@ -364,6 +384,13 @@ main ( int argc, char** argv )
       exit(1);
     }
     deleteAllEntries(lS3Rest, lBucketName);
+  } else if ( lActionString.compare ( "logging" ) == 0) {
+    if (!lBucketName) {
+      std::cerr << "No bucket name parameter specified." << std::endl;
+      std::cerr << "Use -n as a command line argument" << std::endl;
+      exit(1);
+    }
+    logging(lS3Rest, lBucketName);
   } else if ( lActionString.compare ( "put" ) == 0) {
     if (!lBucketName) {
       std::cerr << "No bucket name parameter specified." << std::endl;

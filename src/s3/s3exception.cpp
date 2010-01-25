@@ -99,4 +99,19 @@ namespace aws {
 
   DeleteAllException::~DeleteAllException() throw() {}
 
+  BucketLoggingStatusException::BucketLoggingStatusException(const s3::S3ResponseError& aError)
+  : S3Exception(aError) {}
+
+  BucketLoggingStatusException::~BucketLoggingStatusException() throw() {}
+
+  SetBucketLoggingException::SetBucketLoggingException(const s3::S3ResponseError& aError)
+  : S3Exception(aError) {}
+
+  SetBucketLoggingException::~SetBucketLoggingException() throw() {}
+
+  DisableBucketLoggingStatus::DisableBucketLoggingStatus(const s3::S3ResponseError& aError)
+  : S3Exception(aError) {}
+
+  DisableBucketLoggingStatus::~DisableBucketLoggingStatus() throw() {}
+
 } /* namespace aws */

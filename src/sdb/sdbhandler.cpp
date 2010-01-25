@@ -420,6 +420,23 @@ namespace aws {
 				unsetState(NextToken);
 			}
 		}
-
+#ifdef WIN32
+		/* work around a bug in Visual C++ Compiler*/
+		/* The compiler complains these "local" member functions
+ 		aren't referenced (turn your warning level to 4)
+		So the compiler removes them
+		But then the linker complains that the symbols don't exist */
+#define INSTANTIATE_HANDLER_CLASS(x) void __instantiationFunction##x() { ##x t; t.responseStartElement(NULL,0,NULL);}
+		INSTANTIATE_HANDLER_CLASS(CreateDomainHandler);
+		INSTANTIATE_HANDLER_CLASS(DeleteDomainHandler);
+		INSTANTIATE_HANDLER_CLASS(DomainMetadataHandler);
+		INSTANTIATE_HANDLER_CLASS(ListDomainsHandler);
+		INSTANTIATE_HANDLER_CLASS(PutAttributesHandler);
+		INSTANTIATE_HANDLER_CLASS(BatchPutAttributesHandler);
+		INSTANTIATE_HANDLER_CLASS(DeleteAttributesHandler);
+		INSTANTIATE_HANDLER_CLASS(GetAttributesHandler);
+		INSTANTIATE_HANDLER_CLASS(QueryHandler);
+		INSTANTIATE_HANDLER_CLASS(QueryWithAttributesHandler);
+#endif
 	} /* namespace sqs  */
 } /* namespace aws */

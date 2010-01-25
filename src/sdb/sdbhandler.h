@@ -17,22 +17,9 @@
 #define AWS_SDB_SDBHANDLER_H
 
 #include "awsquerycallback.h"
-
+#include "sdbresponse.h"
 namespace aws {
 	namespace sdb {
-
-		class SDBResponse;
-		class CreateDomainResponse;
-		class DeleteDomainResponse;
-		class DomainMetadataResponse;
-		class ListDomainsResponse;
-		class PutAttributesResponse;
-    class BatchPutAttributesResponse;
-		class DeleteAttributesResponse;
-		class GetAttributesResponse;
-		class SDBQueryResponse;
-    class SDBQueryWithAttributesResponse;
-
 		template<class T>
 		class SDBHandler: public SimpleQueryCallBack {
 			friend class SDBConnection;

@@ -34,6 +34,11 @@
 #include "s3/s3response.h"
 #include "s3/s3callbackwrapper.h"
 
+/* min(a,b) macro defined in WinDef.h */
+#ifdef min
+#  undef min
+#endif
+
 using namespace aws;
 
 namespace aws { namespace s3 {
@@ -607,6 +612,36 @@ S3Connection::head(const std::string& aBucketName, const std::string& aKey)
   return lRes.release();
 }
 
+BucketLoggingStatusResponse*
+S3Connection::bucketLoggingStatus(const std::string& aBucketName)
+{
+  std::auto_ptr<BucketLoggingStatusResponse> lRes(new BucketLoggingStatusResponse(aBucketName));
+
+  REQUEST_PROLOG(BucketLoggingStatus);
+
+  PathArgs_t lPathArgsMap;
+  lPathArgsMap.insert(stringpair_t("logging", ""));
+
+  makeRequest(aBucketName, BUCKET_LOGGING, &lWrapper, &lPathArgsMap, 0);
+
+  REQUEST_EPILOG(BucketLoggingStatus);
+
+  return lRes.release();
+
+}
+
+SetBucketLoggingResponse*
+S3Connection::setBucketLogging(const std::string& aBucketName,
+                               const std::string& aTargetBucket,
+                               const std::string& aTargetPrefix)
+{
+}
+
+DisableBucketLoggingResponse*
+S3Connection::disableBucketLogging(const std::string& aBucketName)
+{
+}
+
 void
 S3Connection::setRequestMethod(ActionType aActionType)
 {
@@ -663,6 +698,12 @@ S3Connection::setRequestMethod(ActionType aActionType)
           curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "DELETE");
           curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
           curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 0);
+          break;
+      }
+      case BUCKET_LOGGING: {
+          curl_easy_setopt(theCurl, CURLOPT_CUSTOMREQUEST, "GET");
+          curl_easy_setopt(theCurl, CURLOPT_UPLOAD, 0);
+          curl_easy_setopt(theCurl, CURLOPT_HTTPGET, 1);
           break;
       }
       default: {
@@ -728,9 +769,8 @@ S3Connection::makeRequest(const std::string& aBucketName,
   }
 
   // authorization
-  lStringToSign = Canonizer::canonicalize(aActionType, aBucketName, aKey,
-      aHeaderMap);
-
+  lStringToSign = Canonizer::canonicalize(aActionType, aBucketName, aKey, aHeaderMap,
+                                          false, false, aActionType==BUCKET_LOGGING);
   {
     // compute signature
     HMAC(EVP_sha1(), theSecretAccessKey.c_str(),  theSecretAccessKey.size(),
@@ -946,6 +986,9 @@ S3Connection::requestTypeForAction(ActionType aType)
       }
       case HEAD: {
           return "HEAD";
+      }
+      case BUCKET_LOGGING: {
+          return "GET";
       }
       default: {
           assert(false);

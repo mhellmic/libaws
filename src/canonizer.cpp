@@ -21,6 +21,7 @@
 #include "s3/s3connection.h"
 #include "requestheadermap.h"
 #include "callingformat.h"
+#include <cassert>
 
 namespace aws { 
 
@@ -48,14 +49,16 @@ Canonizer::canonicalize(s3::S3Connection::ActionType aType,
     }
     
     // add params
-    // TODO check that only one of the parameters is true (xor?)
     if (aAclParam) {
         lStringToSign << "?acl";
+        assert(!(aTorrentParam | aLoggingParam));
     } else if (aTorrentParam) {
         lStringToSign << "?torrent";
+        assert(!(aAclParam | aLoggingParam));
     } if (aLoggingParam) {
         lStringToSign << "?logging";
-    }
+        assert(!(aTorrentParam | aAclParam));
+    } 
     
     return lStringToSign.str();
 }
@@ -80,7 +83,9 @@ Canonizer::convertPathArgs(PathArgs_t* aPathArgs)
                 s << "&";
             } 
 
-            s << (*lIter).first << "=" << (*lIter).second;
+            s << (*lIter).first;
+            if ((*lIter).second.size() != 0)
+              s << "=" << (*lIter).second;
         }
     }
     

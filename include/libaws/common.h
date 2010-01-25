@@ -25,6 +25,12 @@
 #endif
 #include <libaws/smart_ptr.h>
 
+#ifdef WIN32
+# include <win32_strptime.h>
+# include <win32_atoll.h>
+# include <XGetopt.h>
+#endif
+
 namespace aws {
 
   /**
@@ -62,6 +68,15 @@ namespace aws {
 
   class HeadResponse;
   typedef SmartPtr<HeadResponse> HeadResponsePtr;
+
+  class BucketLoggingStatusResponse;
+  typedef SmartPtr<BucketLoggingStatusResponse> BucketLoggingStatusResponsePtr;
+
+  class SetBucketLoggingResponse;
+  typedef SmartPtr<SetBucketLoggingResponse> SetBucketLoggingResponsePtr;
+
+  class DisableBucketLoggingResponse;
+  typedef SmartPtr<DisableBucketLoggingResponse> DisableBucketLoggingResponsePtr;
 
   /**
    * SQS stuff

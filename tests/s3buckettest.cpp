@@ -140,7 +140,7 @@ int deletebuckettest(S3Connection* lS3Rest)
 
 
 int
-s3buckettest(int argc, char** argv) 
+s3buckettest(int argc, char* argv[]) 
 {
 	
 	AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();

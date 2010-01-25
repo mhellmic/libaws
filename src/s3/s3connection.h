@@ -23,6 +23,10 @@
 
 #include "awsconnection.h"
 
+/* defined in WinNT.h */
+#ifdef DELETE 
+#  undef DELETE
+#endif
 namespace aws {
 
   // forward declarations
@@ -60,7 +64,10 @@ namespace aws {
         PUT,
         GET,
         DELETE,
-        HEAD
+        HEAD,
+        BUCKET_LOGGING,
+        SET_BUCKET_LOGGING,
+        DISABLE_BUCKET_LOGGING
       };
 
       unsigned int    theEncryptedResultSize;
@@ -125,6 +132,17 @@ namespace aws {
 
       HeadResponse*
       head(const std::string& aBucketName, const std::string& aKey);
+
+      BucketLoggingStatusResponse*
+      bucketLoggingStatus(const std::string& aBucketName);
+
+      SetBucketLoggingResponse*
+      setBucketLogging(const std::string& aBucketName,
+                       const std::string& aTargetBucket,
+                       const std::string& aTargetPrefix);
+
+      DisableBucketLoggingResponse*
+      disableBucketLogging(const std::string& aBucketName);
 
     private:
       void

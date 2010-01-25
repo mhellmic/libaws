@@ -230,6 +230,30 @@ namespace aws {
       head(const std::string& aBucketName,
           const std::string& aKey) = 0;
 
+      /*! \brief Retrieve the logging status of the bucket.
+       *
+       * This function retrieves the logging status of the bucket. It returns
+       * information according to the description in
+       * http://docs.amazonwebservices.com/AmazonS3/2006-03-01/LoggingAPI.html
+       *
+       * @param aBucketName The name of the bucket to return logging status for.
+       *
+       * \throws aws::s3::BucketLoggingStatusException if the loggint status
+       *         couldn't be retrieved for the given bucket.
+       * \throws aws::AWSConnectionException if a connection error occured.
+       */
+      virtual BucketLoggingStatusResponsePtr
+      bucketLoggingStatus(const std::string& aBucketName) = 0;
+
+      virtual SetBucketLoggingResponsePtr
+      setBucketLogging(const std::string& aBucketName,
+                       const std::string& aTargetBucket,
+                       const std::string& aTargetPrefix) = 0;
+
+      virtual DisableBucketLoggingResponsePtr
+      disableBucketLogging(const std::string& aBucketName) = 0;
+
+
   }; /* class S3Connection */
 
 } /* namespace aws */

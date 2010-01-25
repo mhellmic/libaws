@@ -54,9 +54,8 @@ namespace aws {
         CreateDomainResponse* lPtr = lHandler.theResponse;
         setCommons(lHandler, lPtr);
         return lPtr;
-      }
-			else {
-				throw CreateDomainException(lHandler.getQueryErrorResponse());
+      } else {
+		throw CreateDomainException(lHandler.getQueryErrorResponse());
       }
     }
 

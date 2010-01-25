@@ -187,6 +187,34 @@ namespace aws {
                          const std::string&  theRequestId,
                          const std::string&  theHostId);
     };
+
+    class BucketLoggingStatusException : public S3Exception 
+    {
+    public:
+      virtual ~BucketLoggingStatusException() throw();
+    private:
+      friend class s3::S3Connection;
+      BucketLoggingStatusException(const s3::S3ResponseError&);
+    };
+
+    class SetBucketLoggingException : public S3Exception 
+    {
+    public:
+      virtual ~SetBucketLoggingException() throw();
+    private:
+      friend class s3::S3Connection;
+      SetBucketLoggingException(const s3::S3ResponseError&);
+    };
+
+    class DisableBucketLoggingStatus : public S3Exception 
+    {
+    public:
+      virtual ~DisableBucketLoggingStatus() throw();
+    private:
+      friend class s3::S3Connection;
+      DisableBucketLoggingStatus(const s3::S3ResponseError&);
+    };
+
 } /* namespace aws */
 
 #endif

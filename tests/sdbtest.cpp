@@ -42,6 +42,7 @@ int createDomain(SDBConnection* lCon) {
 	catch (CreateDomainException& e) {
 		std::cerr << "Couldn't create domain" << std::endl;
 		std::cerr << e.what() << std::endl;
+		abort();
 		return 1;
 	}
 	return 0;
@@ -181,7 +182,7 @@ int queryWithAttributes(SDBConnection* lCon) {
 	return 0;
 }
 
-int sdbtest(int argc, char** argv) {
+int sdbtest(int argc, char* argv[]) {
 	AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
 
 	std::cout << "Testing libaws version " << lFactory->getVersion() << std::endl;

@@ -30,7 +30,7 @@ public:
     S3Handler();
     
     void setState(uint64_t s)   { theCurrentState |= s; }
-    bool isSet(uint64_t s)      { return theCurrentState & s; }
+    bool isSet(uint64_t s)      { return (theCurrentState & s) == s; }
     void unsetState(uint64_t s) { theCurrentState ^= s; }
     
 protected:
@@ -334,7 +334,112 @@ public:
                              const xmlChar * URI);
 };
 
+class BucketLoggingStatusHandler  : public S3Handler
+{
+public:
+    BucketLoggingStatusHandler();
+
+protected:
+    enum States {
+        Code         = 1,
+        Message      = 2,
+        RequestId    = 4,
+        HostId       = 8,
+        TargetBucket = 16,
+        TargetPrefix = 32
+    };
+
     
+public:
+    static void startElementNs( void * ctx, 
+                                const xmlChar * localname, 
+                                const xmlChar * prefix, 
+                                const xmlChar * URI, 
+                                int nb_namespaces, 
+                                const xmlChar ** namespaces, 
+                                int nb_attributes, 
+                                int nb_defaulted, 
+                                const xmlChar ** attributes );
+    
+    static void	charactersSAXFunc(void * ctx, 
+    					          const xmlChar * value, 
+                                  int len);
+    
+    static void	endElementNs(void * ctx, 
+    					     const xmlChar * localname, 
+    					     const xmlChar * prefix, 
+                             const xmlChar * URI);
+};
+
+class SetBucketLoggingHandler  : public S3Handler
+{
+public:
+    SetBucketLoggingHandler();
+
+protected:
+    enum States {
+        Code        = 1,
+        Message     = 2,
+        RequestId   = 4,
+        HostId      = 8
+    };
+
+    
+public:
+    static void startElementNs( void * ctx, 
+                                const xmlChar * localname, 
+                                const xmlChar * prefix, 
+                                const xmlChar * URI, 
+                                int nb_namespaces, 
+                                const xmlChar ** namespaces, 
+                                int nb_attributes, 
+                                int nb_defaulted, 
+                                const xmlChar ** attributes );
+    
+    static void	charactersSAXFunc(void * ctx, 
+    					          const xmlChar * value, 
+                                  int len);
+    
+    static void	endElementNs(void * ctx, 
+    					     const xmlChar * localname, 
+    					     const xmlChar * prefix, 
+                             const xmlChar * URI);
+};
+    
+class DisableBucketLoggingHandler  : public S3Handler
+{
+public:
+    DisableBucketLoggingHandler();
+
+protected:
+    enum States {
+        Code        = 1,
+        Message     = 2,
+        RequestId   = 4,
+        HostId      = 8
+    };
+
+    
+public:
+    static void startElementNs( void * ctx, 
+                                const xmlChar * localname, 
+                                const xmlChar * prefix, 
+                                const xmlChar * URI, 
+                                int nb_namespaces, 
+                                const xmlChar ** namespaces, 
+                                int nb_attributes, 
+                                int nb_defaulted, 
+                                const xmlChar ** attributes );
+    
+    static void	charactersSAXFunc(void * ctx, 
+    					          const xmlChar * value, 
+                                  int len);
+    
+    static void	endElementNs(void * ctx, 
+    					     const xmlChar * localname, 
+    					     const xmlChar * prefix, 
+                             const xmlChar * URI);
+};
 } } // end namespaces
 
 

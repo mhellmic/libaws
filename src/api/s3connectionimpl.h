@@ -81,6 +81,17 @@ namespace aws {
       HeadResponsePtr
       head(const std::string& aBucketName, const std::string& aKey);
 
+      BucketLoggingStatusResponsePtr
+      bucketLoggingStatus(const std::string& aBucketName);
+
+      SetBucketLoggingResponsePtr
+      setBucketLogging(const std::string& aBucketName,
+                       const std::string& aTargetBucket,
+                       const std::string& aTargetPrefix);
+
+      DisableBucketLoggingResponsePtr
+      disableBucketLogging(const std::string& aBucketName);
+
     protected:
       // only the factory can create us
       friend class AWSConnectionFactoryImpl;

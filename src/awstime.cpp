@@ -20,6 +20,10 @@
 #include <stdlib.h>
 #include <libaws/awstime.h>
 
+#ifdef WIN32
+# include <win32_strptime.h>
+#endif
+
 namespace aws {
   Time::Time() : theTime(0) {}
   Time::Time ( time_t aTime) : theTime(aTime) {}
@@ -44,7 +48,7 @@ namespace aws {
     memset(&aTm, 0, sizeof(aTm));
 #ifndef NDEBUG
     char* lParseResult = strptime(aDateTime.c_str(), aFormat.c_str(), &aTm);
-    assert(lParseResult);
+    assert(lParseResult != NULL);
 #else
     strptime(aDateTime.c_str(), aFormat.c_str(), &aTm);
 #endif

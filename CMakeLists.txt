@@ -13,6 +13,13 @@
 # limitations under the License.
 #
 PROJECT(libaws)
+SET(LIBCRYPTO "crypto")
+SET(LIBPTHREADS "pthread")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  INCLUDE(CMakeWindows.cmake)
+  SET(LIBCRYPTO "")
+  SET(LIBPTHREADS "${PTHREAD_LIB_PATHS}/pthreadVCE.lib")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # ctest support
 ENABLE_TESTING()
@@ -52,7 +59,7 @@ ENDIF(CURL_FOUND)
 FIND_PACKAGE(OpenSSL)
 IF(OPENSSL_FOUND)
   INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
-  SET(requiredlibs ${requiredlibs} ${OPENSSL_LIBRARIES} crypto) # bugfix, because libcrypto is not found automatically
+  SET(requiredlibs ${requiredlibs} ${OPENSSL_LIBRARIES} ${LIBCRYPTO}) # bugfix, because libcrypto is not found automatically
 ELSE(OPENSSL_FOUND)
   MESSAGE(FATAL_ERROR "Could not find the OpenSSL library and development files.")
 ENDIF(OPENSSL_FOUND)
@@ -67,15 +74,16 @@ ELSE(LIBXML2_FOUND)
 ENDIF(LIBXML2_FOUND)
 
 INCLUDE (CheckIncludeFiles)
-SET(CMAKE_REQUIRED_LIBRARIES pthread)
+
+SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${PTHREADLIB})
+
 CHECK_INCLUDE_FILES(pthread.h LIBAWS_HAVE_PTHREAD_H)
-
-if(NOT LIBAWS_HAVE_PTHREAD_H)
+MESSAGE(STATUS "CMAKE REQUIRED INCLUDES:${CMAKE_REQUIRED_INCLUDES}")
+IF(NOT LIBAWS_HAVE_PTHREAD_H)
   MESSAGE(FATAL_ERROR "Could not find pthread development headers.")
-ELSEIF(NOT LIBAWS_HAVE_PTHREAD_H)
-    SET(requiredlibs ${requiredlibs} pthread) 
+ELSE(NOT LIBAWS_HAVE_PTHREAD_H)
+  SET(requiredlibs ${requiredlibs} ${LIBPTHREADS})
 ENDIF(NOT LIBAWS_HAVE_PTHREAD_H)
-
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 INCLUDE(CMakeConfiguration.txt)

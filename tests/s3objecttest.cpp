@@ -20,12 +20,13 @@
 
 using namespace aws;
 
+const char bucketName[] = "28msec_s3buckettest";
 int
 createbucket(S3Connection* lS3Rest)
 {
   {
     try {
-      CreateBucketResponsePtr lCreateBucket = lS3Rest->createBucket("28msec_s3buckettest");
+      CreateBucketResponsePtr lCreateBucket = lS3Rest->createBucket(bucketName);
   		std::cout << "Bucket created successfully" << std::endl;
     } catch (CreateBucketException& e) {
   		std::cerr << "Couldn't create bucket" << std::endl;
@@ -43,7 +44,7 @@ put(S3Connection* lS3Rest)
     try {
       std::istringstream lStream("This is a test!");
 
-      PutResponsePtr lPut = lS3Rest->put("28msec_s3buckettest", "a/b/c",
+      PutResponsePtr lPut = lS3Rest->put(bucketName, "a/b/c",
                                          lStream, "text/plain");
       std::cout << "Object sent successfully" << std::endl;
     } catch (PutException& e) {
@@ -57,7 +58,7 @@ put(S3Connection* lS3Rest)
     try {
       char msg[5];
       msg[0] = 'H'; msg[1] = 'e'; msg[2] = 'l'; msg[3] = 'l'; msg[4] = 'o';
-      PutResponsePtr lPut = lS3Rest->put("28msec_s3buckettest", "a/b/c/d",
+      PutResponsePtr lPut = lS3Rest->put(bucketName, "a/b/c/d",
                                          msg, "text/plain", 5);
       std::cout << "Object sent successfully" << std::endl;
     } catch (PutException& e) {
@@ -74,7 +75,7 @@ put(S3Connection* lS3Rest)
       std::map<std::string, std::string> lMetaData;
       lMetaData.insert(std::pair<std::string, std::string>("name", "value"));
 
-      PutResponsePtr lPut = lS3Rest->put("28msec_s3buckettest", "a/b/c",
+      PutResponsePtr lPut = lS3Rest->put(bucketName, "a/b/c",
                                          lStream, "text/plain", &lMetaData);
  
       std::cout << "Object sent successfully" << std::endl;
@@ -92,7 +93,7 @@ listbucket(S3Connection* lS3Rest)
 {
   {
     try {
-      ListBucketResponsePtr lListBucket = lS3Rest->listBucket("28msec_s3buckettest");
+      ListBucketResponsePtr lListBucket = lS3Rest->listBucket(bucketName);
       std::cout << "Listing Buckets:" << std::endl;
       ListBucketResponse::Object lObject;
       lListBucket->open();
@@ -115,16 +116,17 @@ int
 getobject(S3Connection* lS3Rest)
 {
   {
+	char *lBuf = NULL;
     try {
-      GetResponsePtr lGet = lS3Rest->get("28msec_s3buckettest", "a/b/c");
+      GetResponsePtr lGet = lS3Rest->get(bucketName, "a/b/c");
 
       std::istream& lInStream = lGet->getInputStream();
 
       std::cout << "content-length: " << lGet->getContentLength() << std::endl;
       std::cout << "content-type: " << lGet->getContentType() << std::endl;
       std::cout << "ETag " << lGet->getETag() << std::endl;
-
-      char lBuf[lGet->getContentLength()+1];
+      /* TODO: when Visual C++ supports C99 variable length arrays, use it */
+      lBuf = new char[lGet->getContentLength()+1];
       size_t lRead = lInStream.readsome(lBuf, lGet->getContentLength());
       lBuf[lRead] = 0;
 
@@ -136,9 +138,11 @@ getobject(S3Connection* lS3Rest)
            lIter != lMap.end(); ++lIter) {
         std::cout << "Meta-data name: " << (*lIter).first << " value: " << (*lIter).second << std::endl;
       }
-
-    
+	  delete[] lBuf;
     } catch (GetException& e) {
+	  if (lBuf != NULL) {
+	      delete[] lBuf;
+      }
       std::cerr << "Could get object" << std::endl;
       std::cerr << e.what() << std::endl;
       return 1;
@@ -147,7 +151,7 @@ getobject(S3Connection* lS3Rest)
 
   {
     try {
-      lS3Rest->get("28msec_s3buckettest", "x");
+      lS3Rest->get(bucketName, "x");
       return 1;
     } catch (GetException& e) {
       std::cerr << "Couldn't get object" << std::endl;
@@ -162,8 +166,8 @@ deleteobject(S3Connection* lS3Rest)
 {
   {
     try {
-      lS3Rest->del("28msec_s3buckettest", "a/b/c");
-      lS3Rest->del("28msec_s3buckettest", "a/b/c/d");
+      lS3Rest->del(bucketName, "a/b/c");
+      lS3Rest->del(bucketName, "a/b/c/d");
       std::cout << "Object deleted successfully" << std::endl;
     } catch (DeleteException& e) {
   		std::cerr << "Couldn't delete object" << std::endl;
@@ -178,7 +182,7 @@ int deletebucket(S3Connection* lS3Rest)
 {
 	{
     try {
-      DeleteBucketResponsePtr lDeleteBucket = lS3Rest->deleteBucket("28msec_s3buckettest");
+      DeleteBucketResponsePtr lDeleteBucket = lS3Rest->deleteBucket(bucketName);
       std::cout << "Bucket delete successfully" << std::endl;
 		} catch (DeleteBucketException& e) {
 			std::cerr << "Couldn't delete bucket" << std::endl;
@@ -191,7 +195,7 @@ int deletebucket(S3Connection* lS3Rest)
 
 
 int
-s3objecttest(int argc, char** argv) 
+s3objecttest(int argc, char* argv[]) 
 {
 	
 	AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
