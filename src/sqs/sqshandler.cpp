@@ -20,6 +20,7 @@
 #include "awsconnection.h"
 
 #include <string>
+#include <cstring>
 
 using namespace aws;
 
@@ -161,6 +162,10 @@ namespace aws {
       }
     }
 
+    ReceiveMessageHandler::ReceiveMessageHandler(bool aDecode) : theDecode(aDecode)
+    {
+    }
+
     void
     SendMessageHandler::responseCharacters ( const xmlChar *  value, int len )
     {
@@ -242,7 +247,14 @@ namespace aws {
       }else if ( xmlStrEqual ( localname, BAD_CAST "Body" ) ) {
       	unsetState ( Body );
         ReceiveMessageResponse::Message& lMessage = theReceiveMessageResponse->theMessages.back();
-        lMessage.message_body = AWSConnection::base64Decode(theBody.c_str(), theBody.size(), lMessage.message_size);
+        if (theDecode) {
+          lMessage.message_body = AWSConnection::base64Decode(theBody.c_str(), theBody.size(), lMessage.message_size);
+        } else {
+          char* lBody = new char[strlen(theBody.c_str()) + 1];
+          strcpy(lBody, theBody.c_str());
+          lMessage.message_body = lBody;
+          lMessage.message_size = theBody.size();
+        }
         //std::cout << std::endl << "ID" << lMessage.message_id << "Original[" << theBody << "]" << std::endl;
         //std::cout << std::endl << "ID" << lMessage.message_id << "Encoded[" << lMessage.message_body  << "]" << std::endl;
         //std::cout << std::endl << "UNSET BODY " << "ID" << lMessage.message_id << std::endl;

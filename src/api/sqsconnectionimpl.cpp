@@ -41,19 +41,21 @@ namespace aws {
 
   // Message handling functions
   SendMessageResponsePtr
-  SQSConnectionImpl::sendMessage(const std::string &aQueueUrl, const std::string &aMessageBody )
+  SQSConnectionImpl::sendMessage(const std::string &aQueueUrl, const std::string &aMessageBody, bool aEncode)
   {
-    return new SendMessageResponse(theConnection->sendMessage(aQueueUrl, aMessageBody));
+    return new SendMessageResponse(theConnection->sendMessage(aQueueUrl, aMessageBody, aEncode));
   }
 
   ReceiveMessageResponsePtr
   SQSConnectionImpl::receiveMessage(const std::string &aQueueUrl,
                 int aNumberOfMessages,
-                int aVisibilityTimeout)
+                int aVisibilityTimeout,
+                bool aDecode)
   {
     return new ReceiveMessageResponse(theConnection->receiveMessage(aQueueUrl,
                                                                     aNumberOfMessages,
-                                                                    aVisibilityTimeout));
+                                                                    aVisibilityTimeout,
+                                                                    aDecode));
   }
 
   DeleteMessageResponsePtr

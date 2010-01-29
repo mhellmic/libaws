@@ -81,9 +81,9 @@ bool deleteAllQueues (SQSConnectionPtr aSQS) {
 }
 
 
-bool sendMessage (SQSConnectionPtr aSQS, std::string aQueueName, std::string aMessage) {
+bool sendMessage (SQSConnectionPtr aSQS, std::string aQueueName, std::string aMessage, bool aEncode = true) {
   try {
-      SendMessageResponsePtr lRes = aSQS->sendMessage (aQueueName, aMessage);
+      SendMessageResponsePtr lRes = aSQS->sendMessage (aQueueName, aMessage, aEncode);
       std::cout << "send message successfully" << std::endl;
       std::cout << "   url: ["  << lRes->getMessageId() << std::endl;
       std::cout << "   md5: ["  << lRes->getMD5OfMessageBody() << std::endl;
@@ -95,9 +95,9 @@ bool sendMessage (SQSConnectionPtr aSQS, std::string aQueueName, std::string aMe
 }
 
 
-bool receiveMessage (SQSConnectionPtr aSQS, std::string aQueueName,  int aMaxNbMessages, int aVisibilityTimeout) {
+bool receiveMessage (SQSConnectionPtr aSQS, std::string aQueueName,  int aMaxNbMessages, int aVisibilityTimeout, bool aDecode = true) {
   try {
-      ReceiveMessageResponsePtr lReceiveMessages = aSQS->receiveMessage (aQueueName, aMaxNbMessages, aVisibilityTimeout);
+      ReceiveMessageResponsePtr lReceiveMessages = aSQS->receiveMessage (aQueueName, aMaxNbMessages, aVisibilityTimeout, aDecode);
       lReceiveMessages->open();
       ReceiveMessageResponse::Message lMessage;
       std::cout << "received messages:" << std::endl;
@@ -170,13 +170,14 @@ main (int argc, char** argv) {
   char* lSecretAccessKey = 0;
   char* lReceiptHandle = 0;
   char* lHost = 0;
+  bool lBase64 = true;
 
   int c;
   opterr = 0;
 
   AWSConnectionFactory* lFactory = AWSConnectionFactory::getInstance();
 
-  while ( (c = getopt (argc, argv, "hi:s:a:n:p:x:m:r:")) != -1)
+  while ( (c = getopt (argc, argv, "hbi:s:a:n:p:x:m:r:")) != -1)
     switch (c) {
       case 'i':
         lAccessKeyId = optarg;
@@ -229,9 +230,13 @@ main (int argc, char** argv) {
           std::cout << "  -m message: the message to send" << std::endl;
           std::cout << "  -v visibility timeout: the visibility timeout" << std::endl;
           std::cout << "  -r receipt-handle: the receipt-handle" << std::endl;
+          std::cout << "  -b base64-handle: do not encode/decode message bodies to/from base64" << std::endl;
           std::cout << "  -h help: display help" << std::endl;
           exit (1);
         }
+      case 'b':
+        lBase64 = false;
+        break;
       case '?':
         if (isprint (optopt))
           fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -314,14 +319,14 @@ main (int argc, char** argv) {
           std::cerr << "Use -m as a command line argument" << std::endl;
           exit (1);
         }
-      sendMessage (lSQSRest, lQueueName, lMessage);
+      sendMessage (lSQSRest, lQueueName, lMessage, lBase64);
     } else if (lActionString.compare ("list-messages") == 0 || lActionString.compare ("list-message") == 0) {
       if (!lQueueName) {
           std::cerr << "No queue name parameter specified." << std::endl;
           std::cerr << "Use -n as a command line argument" << std::endl;
           exit (1);
         }
-      receiveMessage (lSQSRest, lQueueName, lMaxNbMessages, lVisibilityTimeOut);
+      receiveMessage (lSQSRest, lQueueName, lMaxNbMessages, lVisibilityTimeOut, lBase64);
     } else if (lActionString.compare ("delete-message") == 0) {
       if (!lQueueName) {
           std::cerr << "No queue name parameter specified." << std::endl;

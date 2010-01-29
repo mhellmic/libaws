@@ -40,12 +40,15 @@ namespace aws {
       listQueues(const std::string &aQueueNamePrefix = "");
 
       virtual SendMessageResponsePtr
-      sendMessage(const std::string &aQueueUrl, const std::string &aMessageBody);
+      sendMessage(const std::string &aQueueUrl,
+                  const std::string &aMessageBody,
+                  bool aEncodeToBase64 = true);
 
       virtual ReceiveMessageResponsePtr
       receiveMessage(const std::string &aQueueUrl,
                     int aNumberOfMessages = 0,
-                    int aVisibilityTimeout = -1);
+                    int aVisibilityTimeout = -1,
+                    bool aDecodeFromBase64 = true);
 
       virtual DeleteMessageResponsePtr
       deleteMessage(const std::string &aQueueUrl, const std::string &aReceiptHandle);

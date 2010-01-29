@@ -105,11 +105,15 @@ namespace aws { namespace sqs {
   }
 
   SendMessageResponse*
-  SQSConnection::sendMessage(const std::string &aQueueUrl, const std::string &aMessageBody)
+  SQSConnection::sendMessage(const std::string &aQueueUrl, const std::string &aMessageBody, bool aEncode)
   {
     ParameterMap lMap;
     long lBody64Len;
-    std::string enc = AWSConnection::base64Encode(aMessageBody.c_str(), aMessageBody.size(), lBody64Len);
+    std::string enc;
+    if (aEncode)
+      enc = AWSConnection::base64Encode(aMessageBody.c_str(), aMessageBody.size(), lBody64Len);
+    else
+      enc = aMessageBody;
     if (enc.size() > 32768) {
       std::stringstream lTmp;
       lTmp << "Message larger than 32kB : " << enc.size() / 1024 << " kb";
@@ -135,7 +139,8 @@ namespace aws { namespace sqs {
   ReceiveMessageResponse*
   SQSConnection::receiveMessage (const std::string &aQueueUrl,
                                  int aNumberOfMessages,
-                                 int aVisibilityTimeout) {
+                                 int aVisibilityTimeout,
+                                 bool aDecode) {
     ParameterMap lMap;
     if (aNumberOfMessages != 0) {
         std::stringstream s;
@@ -148,13 +153,14 @@ namespace aws { namespace sqs {
         lMap.insert (ParameterPair ("VisibilityTimeout", s.str()));
       }
   
-    return receiveMessage (aQueueUrl, lMap);
+    return receiveMessage (aQueueUrl, lMap, aDecode);
   } 
   
   ReceiveMessageResponse*
   SQSConnection::receiveMessage (const std::string &aQueueUrl,
-                                 ParameterMap& lMap) {
-    ReceiveMessageHandler lHandler;
+                                 ParameterMap& lMap,
+                                 bool aDecode) {
+    ReceiveMessageHandler lHandler(aDecode);
     makeQueryRequest (aQueueUrl, "ReceiveMessage", &lMap, &lHandler);
     if (lHandler.isSuccessful()) {
       setCommons(lHandler, lHandler.theReceiveMessageResponse);

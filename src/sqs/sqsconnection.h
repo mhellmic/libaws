@@ -61,18 +61,20 @@ namespace aws {
         listQueues ( const std::string &aQueueNamePrefix = "" );
 
         virtual SendMessageResponse*
-        sendMessage ( const std::string &aQueueUrl, const std::string &aMessageBody );
+        sendMessage ( const std::string &aQueueUrl, const std::string &aMessageBody, bool aEncode=true);
         
         virtual SendMessageResponse* sendMessage (const std::string &aQueueUrl, ParameterMap& lMap);
 
         virtual ReceiveMessageResponse*
         receiveMessage( const std::string &aQueueUrl,
                         int aNumberOfMessages = 0,
-                        int aVisibilityTimeout = -1);
+                        int aVisibilityTimeout = -1,
+                        bool aDecode = true);
         
         virtual ReceiveMessageResponse*
         receiveMessage (const std::string &aQueueUrl,
-                        ParameterMap& lMap);
+                        ParameterMap& lMap,
+                        bool aDecode = true);
 
         virtual DeleteMessageResponse*
         deleteMessage( const std::string &aQueueUrl, const std::string &aReceiptHandle);

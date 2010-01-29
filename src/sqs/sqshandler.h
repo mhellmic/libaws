@@ -111,10 +111,13 @@ namespace aws {
     {
       private:
         std::string theBody;
+        bool theDecode;
       protected:
         friend class SQSConnection;
         ReceiveMessageResponse* theReceiveMessageResponse;
 
+      public:
+        ReceiveMessageHandler(bool aDecode = true);
       public:
         virtual void responseStartElement ( const xmlChar *  localname, int nb_attributes, const xmlChar ** attributes );
         virtual void responseCharacters ( const xmlChar *  value, int len );
