@@ -54,9 +54,10 @@ namespace aws {
                         std::istream& aData,
                         const std::string& aContentType,
                         const std::map<std::string, std::string>* aMetaDataMap,
-                        long aSize)
+                        long aSize,
+                        bool aReducedRedunancy)
   {
-    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize));
+    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize, aReducedRedunancy));
   }
 
   PutResponsePtr
@@ -65,9 +66,10 @@ namespace aws {
                         const char* aData,
                         const std::string& aContentType,
                         long aSize,
-                        const std::map<std::string, std::string>* aMetaDataMap)
+                        const std::map<std::string, std::string>* aMetaDataMap,
+                        bool aReducedRedunancy)
   {
-    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize));
+    return new PutResponse(theConnection->put(aBucketName, aKey, aData, aContentType, aMetaDataMap, aSize, aReducedRedunancy));
   }
 
   std::string

@@ -106,6 +106,8 @@ namespace aws {
        * @param aSize An optional parameter specificying the size of the object.
        *              If -1 is passed, seek is used on the input stream to determine the size
        *              of the object to send.
+       * @param aReducedRedunancy An optional parameter that specifies whether the AWS
+       *        reduced redunancy feature should be used for the object.
        *
        * \throws aws::s3::PutException if the object couldn't be stored.
        * \throws aws::AWSConnectionException if a connection error occured.
@@ -116,7 +118,8 @@ namespace aws {
           std::istream& aData,
           const std::string& aContentType,
           const std::map<std::string, std::string>* aMetaDataMap = 0,
-          long aSize = -1) = 0;
+          long aSize = -1,
+          bool aReducedRedunancy = false) = 0;
 
 
       /*! \brief Put an object on S3.
@@ -128,6 +131,8 @@ namespace aws {
        * @param aData The object to store as a char pointer.
        * @param aContentType The content type of the object to store.
        * @param aSize Parameter specificying the size of the object.
+       * @param aReducedRedunancy An optional parameter that specifies whether the AWS
+       *        reduced redunancy feature should be used for the object.
        *
        * \throws aws::s3::PutException if the object couldn't be stored
        * \throws aws::AWSConnectionException if a connection error occured.
@@ -138,7 +143,8 @@ namespace aws {
            const char* aData,
            const std::string& aContentType,
            long aSize,
-           const std::map<std::string, std::string>* aMetaDataMap = 0) = 0;
+           const std::map<std::string, std::string>* aMetaDataMap = 0,
+           bool aReducedRedunancy = false) = 0;
 
       /*! \brief Create a get query string for encoding in a web page.
        *

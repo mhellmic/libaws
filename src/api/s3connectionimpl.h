@@ -49,7 +49,8 @@ namespace aws {
           std::istream& aData,
           const std::string& aContentType,
           const std::map<std::string, std::string>* aMetaDataMap = 0,
-          long aSize = -1);
+          long aSize = -1,
+          bool aReducedRedunancy = false);
 
       PutResponsePtr
       put(const std::string& aBucketName,
@@ -57,7 +58,8 @@ namespace aws {
           const char* aData,
           const std::string& aContentType,
           long aSize,
-          const std::map<std::string, std::string>* aMetaDataMap = 0);
+          const std::map<std::string, std::string>* aMetaDataMap = 0,
+          bool aReducedRedunancy = false);
 
       std::string
       getQueryString(const std::string& aBucket,

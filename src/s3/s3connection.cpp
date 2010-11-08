@@ -267,7 +267,8 @@ S3Connection::put(const std::string& aBucketName,
                   std::istream& aObject,
                   const std::string& aContentType,
                   const std::map<std::string, std::string>* aMetaDataMap,
-                  long aSize)
+                  long aSize,
+                  bool aReducedRedunancy)
 {
   std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
 
@@ -303,11 +304,23 @@ S3Connection::put(const std::string& aBucketName,
       lObject.theContentLength = aSize;
     }
 
-    if (aMetaDataMap) {
+    if (aMetaDataMap || aReducedRedunancy) {
       RequestHeaderMap lRequestHeaderMap;
-      for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
-           lIter != aMetaDataMap->end(); ++lIter) {
-        lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+      if (aReducedRedunancy) {
+        lRequestHeaderMap.addHeader("x-amz-storage-class", "REDUCED_REDUNDANCY");
+      }
+
+      if (aMetaDataMap) {
+        for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
+            lIter != aMetaDataMap->end(); ++lIter) {
+          // special header case since we are not supposed to have prefix in the MetaDataMap
+          if (((*lIter).first).find("x-amz") != std::string::npos) {
+            // add the header as it is
+            lRequestHeaderMap.addHeader((*lIter).first, (*lIter).second);
+          } else {
+            lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+          }
+        }
       }
 
       makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject);
@@ -333,7 +346,8 @@ S3Connection::put(const std::string& aBucketName,
                   const char* aObject,
                   const std::string& aContentType,
                   const std::map<std::string, std::string>* aMetaDataMap,
-                  long aSize)
+                  long aSize,
+                  bool aReducedRedunancy)
 {
   std::auto_ptr<PutResponse> lRes(new PutResponse(aBucketName));
 
@@ -357,13 +371,24 @@ S3Connection::put(const std::string& aBucketName,
     S3Object lObject;
     lObject.theDataPointer = aObject;
     lObject.theContentType = aContentType;
-  lObject.theContentLength = aSize;
+    lObject.theContentLength = aSize;
 
-    if (aMetaDataMap) {
+    if (aMetaDataMap || aReducedRedunancy) {
       RequestHeaderMap lRequestHeaderMap;
-      for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
-           lIter != aMetaDataMap->end(); ++lIter) {
-        lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+
+      if (aReducedRedunancy) {
+        lRequestHeaderMap.addHeader("x-amz-storage-class", "REDUCED_REDUNDANCY");
+      }
+      if (aMetaDataMap) {
+        for (std::map<std::string, std::string>::const_iterator lIter = aMetaDataMap->begin();
+            lIter != aMetaDataMap->end(); ++lIter) {
+          if (((*lIter).first).find("x-amz") != std::string::npos) {
+            // add the header as it is
+            lRequestHeaderMap.addHeader((*lIter).first, (*lIter).second);
+          } else {
+            lRequestHeaderMap.addHeader("x-amz-meta-" + (*lIter).first, (*lIter).second);
+          }
+        }
       }
 
       makeRequest(aBucketName, PUT, &lWrapper, 0, &lRequestHeaderMap, lEscapedKey, &lObject);
