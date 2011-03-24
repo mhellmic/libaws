@@ -3,7 +3,7 @@ Summary:        Amazon AWS Library
 Name:           libaws
 Version:        0.9.3
 Release:        1
-URL:            tbd
+URL:            http://aws.28msec.com/
 Source:         %{name}-%{version}.tar.gz
 License:        Apache 2.0
 Group:          Applications/Communications
