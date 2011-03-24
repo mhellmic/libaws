@@ -5,7 +5,7 @@ Version:        0.9.3
 Release:        1
 URL:            tbd
 Source:         %{name}-%{version}.tar.gz
-License:        GPLv2+
+License:        Apache 2.0
 Group:          Applications/Communications
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root-%(%{__id_u} -n)
 
